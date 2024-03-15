@@ -23,7 +23,7 @@ ctrl_interface=/var/run/hostapd
 ctrl_interface_group=0
 interface=wlan0
 driver=nl80211
-ssid=wolvez2023_ip1
+ssid=wolvez2024_ip1
 hw_mode=g
 country_code=JP
 channel=11
@@ -31,7 +31,7 @@ macaddr_acl=0
 auth_algs=1
 ignore_broadcast_ssid=0
 wpa=2
-wpa_passphrase=wolvez2023
+wpa_passphrase=wolvez2024
 wpa_key_mgmt=WPA-PSK
 wpa_pairwise=TKIP
 rsn_pairwise=CCMP
@@ -55,4 +55,4 @@ sudo sed -i '4,$s/^/# /g' /etc/wpa_supplicant/wpa_supplicant.conf
 sudo rfkill unblock wifi
 
 # reboot
-echo -e "<<設定完了のおしらせ>>\nもしかして天才？再起動したらwolvez2023_ip1で見つかるらしい\n\n接続先：192.168.249.1\nID：wolvez2023\npass:wolvez2023"
+echo -e "<<設定完了のおしらせ>>\nもしかして天才？再起動したらwolvez2024_ip1で見つかるらしい\n\n接続先：192.168.249.1\nID：wolvez2024\npass:wolvez2024"

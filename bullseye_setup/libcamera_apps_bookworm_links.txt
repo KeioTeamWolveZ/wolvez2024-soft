@@ -1,0 +1,22 @@
+declare -A package_names
+declare -A package_download_links 
+
+package_names["bookworm"]="libcamera-apps_1.3.0-1_armhf.deb"
+package_download_links["bookworm"]="https://github.com/ArduCAM/Arducam-Pivariety-V4L2-Driver/releases/download/libcamera-apps-v0.0.5/libcamera-apps_1.3.0-1_armhf.deb"
+
+package_names["bookworm-arm64"]="libcamera-apps_1.3.0-1_arm64.deb"
+package_download_links["bookworm-arm64"]="https://github.com/ArduCAM/Arducam-Pivariety-V4L2-Driver/releases/download/libcamera-apps-v0.0.5/libcamera-apps_1.3.0-1_arm64.deb"
+
+
+package_names["bookworm"]="rpicam-apps_1.4.1-2_armhf.deb"
+package_download_links["bookworm"]="https://github.com/ArduCAM/Arducam-Pivariety-V4L2-Driver/releases/download/libcamera-apps-v0.0.5/rpicam-apps_1.4.1-2_armhf.deb"
+
+package_names["bookworm-arm64"]="rpicam-apps_1.4.1-2_arm64.deb"
+package_download_links["bookworm-arm64"]="https://github.com/ArduCAM/Arducam-Pivariety-V4L2-Driver/releases/download/libcamera-apps-v0.0.5/rpicam-apps_1.4.1-2_arm64.deb"
+
+package_names["bookworm"]="rpicam-apps_1.4.3-2_armhf.deb"
+package_download_links["bookworm"]="https://github.com/ArduCAM/Arducam-Pivariety-V4L2-Driver/releases/download/libcamera-apps-v0.0.5/rpicam-apps_1.4.3-2_armhf.deb"
+
+package_names["bookworm-arm64"]="rpicam-apps_1.4.3-2_arm64.deb"
+package_download_links["bookworm-arm64"]="https://github.com/ArduCAM/Arducam-Pivariety-V4L2-Driver/releases/download/libcamera-apps-v0.0.5/rpicam-apps_1.4.3-2_arm64.deb"
+

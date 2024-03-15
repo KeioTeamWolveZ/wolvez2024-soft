@@ -20,7 +20,7 @@ interface=wlan0
 driver=nl80211
 
 # SSID can be changed here
-ssid=wolvez2023_ip1
+ssid=wolvez2024_ip1
 
 hw_mode=g
 country_code=JP
@@ -31,7 +31,7 @@ ignore_broadcast_ssid=0
 wpa=2
 
 # pass can be changed here
-wpa_passphrase=wolvez2023
+wpa_passphrase=wolvez2024
 
 wpa_key_mgmt=WPA-PSK
 wpa_pairwise=TKIP
@@ -57,4 +57,4 @@ sudo rfkill unblock wifi
 
 # reboot
 # sudo reboot
-echo -e "<<設定完了のおしらせ>>\nもしかして天才？再起動したらwolvez2023_(ipの最後)で見つかるらしい\n接続先：192.168.249.1\nID：wolvez2023\npass:wolvez2023"
+echo -e "<<設定完了のおしらせ>>\nもしかして天才？再起動したらwolvez2024_(ipの最後)で見つかるらしい\n接続先：192.168.249.1\nID：wolvez2024\npass:wolvez2024"

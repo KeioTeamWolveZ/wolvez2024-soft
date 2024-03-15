@@ -39,3 +39,5 @@ sudo reboot
 ## 体験型コンテンツ用のインストール
 #pip3 install keyboard
 #pip3 install pytk
+pip3 install --upgrade pip3
+pip3 install opencv-contrib-python

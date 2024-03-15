@@ -9,6 +9,9 @@ pkg_version=$code_name
 rpi_kernel=$(dpkg-query -f '${Version}' --show raspberrypi-kernel)
 BLACKLIST=/etc/modprobe.d/raspi-blacklist.conf
 
+# 设置调试模式，默认为关闭, true 为不下载本地调试
+debug_mode=false
+
 $(dpkg-architecture -earm64)
 if [ $? == 0 ]; then
     pkg_version=$pkg_version"-arm64"
@@ -34,8 +37,14 @@ NC='\033[0m' # No Color
 
 updatePackages()
 {
-    rm -f $CONFIG_FILE_NAME
-    wget -O $CONFIG_FILE_NAME $CONFIG_FILE_DOWNLOAD_LINK
+
+    if [ "$debug_mode" = true ]; then
+        :
+    else
+        rm -f $CONFIG_FILE_NAME
+        wget -O $CONFIG_FILE_NAME $CONFIG_FILE_DOWNLOAD_LINK
+    fi
+
     source $CONFIG_FILE_NAME
 }
 
@@ -317,6 +326,7 @@ if [ ! -f $CONFIG_FILE_NAME ]; then
     updatePackages
 fi
 
+source /etc/os-release
 source $CONFIG_FILE_NAME
 
 if [ -z $package ]; then
@@ -333,133 +343,286 @@ echo "kernel:$kernel"
 
 package_cfg_name=${package_cfg_names[$package]}
 
-if [[ $package == *"libcamera"* ]]; then
-    if [[ $package == *"apps"* ]]; then
-        verlte '5.15.30' $VERSION
-        if [ $? == 0 ]; then
-            package='libcamera_apps_new'
-        else 
-            package='libcamera_apps'
-        fi
-        package_cfg_download_link=${package_cfg_download_links[$package]}
-    else
-        verlte '5.15.30' $VERSION
-        if [ $? == 0 ]; then
-            package='libcamera'
-        else 
-            package='libcamera_dev'
-        fi
+
+if [[ $VERSION_CODENAME == "bookworm" ]]; then
+
+    bookworm_kernel_verison=$(uname -v | grep -oP '\d+\.\d+\.\d+')
+    echo "kernel version is: $bookworm_kernel_verison"
+
+    if [[ $package == *"libcamera"* ]]; then
+        if [[ $package == *"apps"* ]]; then
+            package='libcamera_apps_bookworm'
         package_cfg_name=${package_cfg_names[$package]}
         package_cfg_download_link=${package_cfg_download_links[$package]}
-    fi
-else
-    package_cfg_download_link=${package_cfg_download_links[$package]}
-fi
-
-if [[ (-z $package_cfg_name) || (-z $package_cfg_download_link) ]]; then
-    echo -e "${RED}Unsupported package.${NC}"
-    echo ""
-    listPackages
-    exit -1
-fi
-
-rm -f $package_cfg_name
-wget -O $package_cfg_name $package_cfg_download_link
-source $package_cfg_name
-
-download_link=
-pkg_name=
-
-if [[ $package == *"kernel_driver"* ]]; then
-    download_link=${package_download_links[$kernel]}
-    pkg_name=${package_names[$kernel]}
-else
-    download_link=${package_download_links[$pkg_version]}
-    pkg_name=${package_names[$pkg_version]}
-fi
-
-if [[ (-z $pkg_name) || (-z $download_link) ]]; then
-
-    package=$(echo $package | cut -d'_' -f1)
-    if [ $VERSION == '6.1.21' -a $package == "64mp" ]; then
-       echo "64mp pdaf"
-    else
-        verlte '6.1.19' $VERSION
-        if [ $? == 0 ]; then
-            package=$(echo $package | cut -d'_' -f1)
-            if [ $package == "imx519" ]; then
-                sudo sh -c 'echo dtoverlay=imx519 >> /boot/config.txt'
-            elif [ $package == "64mp" ]; then
-                sudo sh -c 'echo dtoverlay=arducam-64mp >> /boot/config.txt'
-            elif [ $package == "kernel" ]; then
-                sudo sh -c 'echo dtoverlay=arducam-pivariety >> /boot/config.txt'
-            fi
-            exit -1
         else
-            echo -e "${RED}"
-            echo -e "Cannot find the corresponding package, please send the following information to support@arducam.com"
-            echo -e "Hardware Revision: ${rev}"
-            echo -e "Kernel Version: ${kernel}"
-            echo -e "Package: ${package} -- ${pkg_version}"
+            package='libcamera_bookworm'
+            package_cfg_name=${package_cfg_names[$package]}
+            package_cfg_download_link=${package_cfg_download_links[$package]}
+        fi
+    else
+        package_cfg_download_link=${package_cfg_download_links[$package]}
+    fi
 
-            if [[ $package == *"kernel_driver"* ]]; then
-                echo -e "You are using an unsupported kernel version, please install the official SD Card image(do not execute rpi-update):"
-                echo -e "https://www.raspberrypi.com/software/operating-systems/"
+    if [[ (-z $package_cfg_name) || (-z $package_cfg_download_link) ]]; then
+        echo -e "${RED}Unsupported package.${NC}"
+        echo ""
+        listPackages
+        exit -1
+    fi
+
+    if [ "$debug_mode" = true ]; then
+        echo "package_cfg_name"
+        echo $package_cfg_name
+        echo "package_cfg_download_link"
+        echo $package_cfg_download_link
+    else
+        rm -f $package_cfg_name
+        wget -O $package_cfg_name $package_cfg_download_link
+    fi
+
+    source $package_cfg_name
+
+    download_link=
+    pkg_name=
+
+    if [[ $package == *"kernel_driver"* ]]; then
+        download_link=${package_download_links[$bookworm_kernel_verison]}
+        pkg_name=${package_names[$bookworm_kernel_verison]}
+        if [ "$debug_mode" = true ]; then
+            echo "download_link"
+            echo $download_link
+            echo "pkg_name"
+            echo $pkg_name
+        fi
+    else
+        download_link=${package_download_links[$pkg_version]}
+        pkg_name=${package_names[$pkg_version]}
+    fi
+
+    if [[ (-z $pkg_name) || (-z $download_link) ]]; then
+
+        package=$(echo $package | cut -d'_' -f1)
+        if [[ $VERSION == "6.1.21" && $package == "64mp" ]]; then
+            echo "64mp pdaf"
+        # elif [ $VERSION == '6.1.0' -a $package == "ov64a40" ]; then
+        #     echo "ov64a40"
+        else
+            verlte '6.1.19' $VERSION
+            if [ $? == 0 ]; then
+                package=$(echo $package | cut -d'_' -f1)
+                if [ $package == "imx519" ]; then
+                    sudo sh -c 'echo dtoverlay=imx519 >> /boot/config.txt'
+                elif [ $package == "64mp" ]; then
+                    sudo sh -c 'echo dtoverlay=arducam-64mp >> /boot/config.txt'
+                elif [ $package == "kernel" ]; then
+                    sudo sh -c 'echo dtoverlay=arducam-pivariety >> /boot/config.txt'
+                fi
+                exit -1
+            else
+                echo -e "${RED}"
+                echo -e "Cannot find the corresponding package, please send the following information to support@arducam.com"
+                echo -e "Hardware Revision: ${rev}"
+                echo -e "Kernel Version: ${kernel}"
+                echo -e "Package: ${package} -- ${pkg_version}"
+
+                if [[ $package == *"kernel_driver"* ]]; then
+                    echo -e "You are using an unsupported kernel version, please install the official SD Card image(do not execute rpi-update):"
+                    echo -e "https://www.raspberrypi.com/software/operating-systems/"
+                fi
+
+                echo -e "${NC}"
+                exit -1
             fi
-
-            echo -e "${NC}"
-            exit -1
         fi
     fi
-fi
 
-rm -rf $pkg_name
-wget -O $pkg_name $download_link
 
-if [[ ( $? -ne 0) || (! -f "${pkg_name}") ]]; then
-    echo -e "${RED}download failed${NC}"
-    exit -1
-fi
-
-if [[ $package == *"kernel_driver"* ]]; then
-    echo "is kernel driver"
-    tar -zxvf $pkg_name Release/
-    cd Release/
-    ./install_driver.sh
-    openCamera
-    if [ $PrintCamera ]; then 
-        echo "Your camera is "$PrintCamera",and the relevant drivers have been installed."
-    fi
-else
-    if [[ $package == *"libcamera_dev"* ]]; then
-        echo -e "remove libcamera0"
-        echo ""
-        sudo apt remove -y libcamera0
+    if [ "$debug_mode" = true ]; then
+        :
+    else
+        rm -rf $pkg_name
+        wget -O $pkg_name $download_link
     fi
     
-    sudo apt update
-    if [ $package == 'libcamera' ]; then
-        sudo apt remove -y libcamera-dev
-        sudo apt install -y python3-libcamera
-    fi
-    sudo apt --reinstall install -y ./$pkg_name
-    if [ $package == 'libcamera' ]; then
-        pkg_name=$(echo ${pkg_name/libcamera0/libcamera-dev})
-        download_link=$(echo ${download_link/libcamera0/libcamera-dev})
-        wget -O $pkg_name $download_link
-        sudo apt --reinstall install -y ./$pkg_name
-        sudo apt install -y python3-picamera2
-    fi
-    # if [[ $package == *"libcamera_apps"* && ! -f /usr/lib/arm-linux-gnueabihf/libboost_program_options.so.1.67.0 ]]; then
-    #     echo -e "Soft link to libboost_program_options.so"
-    #     echo ""
-    #     sudo ln -s /usr/lib/arm-linux-gnueabihf/libboost_program_options.so /usr/lib/arm-linux-gnueabihf/libboost_program_options.so.1.67.0
-    # fi
-fi
 
-if [ $? -ne 0 ]; then
-    echo ""
-    echo -e "${RED}Unknown error, please send the error message to support@arducam.com${NC}"
-    exit -1
+    if [[ ( $? -ne 0) || (! -f "${pkg_name}") ]]; then
+        echo -e "${RED}download failed${NC}"
+        exit -1
+    fi
+
+    if [[ $package == *"kernel_driver"* ]]; then
+        echo "is kernel driver"
+        tar -zxvf $pkg_name Release/
+        cd Release/
+        chmod +x install_driver.sh
+        ./install_driver.sh
+        openCamera
+        if [ $PrintCamera ]; then 
+            echo "Your camera is "$PrintCamera",and the relevant drivers have been installed."
+        fi
+    else
+
+        sudo apt update
+        if [ $package == 'libcamera_bookworm' ]; then
+            sudo apt purge libpisp0.0.1 -y
+            sudo apt install libpisp-dev -y
+        fi
+
+        sudo apt --reinstall install -y ./$pkg_name
+        
+        if [ $package == 'libcamera_bookworm' ]; then
+            pkg_name_dev=$(echo "$pkg_name" | sed 's/[0-9]\+\.[0-9]\+/-dev/')
+            download_link_dev=$(echo "$download_link" | sed 's/\([0-9]\+\.[0-9]\+\)_/-dev_/')
+            pkg_name_ipa=$(echo "$pkg_name" | sed 's/[0-9]\+\.[0-9]\+/-ipa/')
+            download_link_ipa=$(echo "$download_link" | sed 's/\([0-9]\+\.[0-9]\+\)_/-ipa_/')
+
+            wget -O $pkg_name_dev $download_link_dev
+            wget -O $pkg_name_ipa $download_link_ipa
+            sudo apt --reinstall install -y ./$pkg_name_dev
+            sudo apt --reinstall install -y ./$pkg_name_ipa
+            sudo apt install -y python3-picamera2
+        fi
+    fi
+
+    if [ $? -ne 0 ]; then
+        echo ""
+        echo -e "${RED}Unknown error, please send the error message to support@arducam.com${NC}"
+        exit -1
+    fi
+else
+
+    if [[ $package == *"libcamera"* ]]; then
+        if [[ $package == *"apps"* ]]; then
+            verlte '5.15.30' $VERSION
+            if [ $? == 0 ]; then
+                package='libcamera_apps_new'
+            else 
+                package='libcamera_apps'
+            fi
+            package_cfg_download_link=${package_cfg_download_links[$package]}
+        else
+            verlte '5.15.30' $VERSION
+            if [ $? == 0 ]; then
+                package='libcamera'
+            else 
+                package='libcamera_dev'
+            fi
+            package_cfg_name=${package_cfg_names[$package]}
+            package_cfg_download_link=${package_cfg_download_links[$package]}
+        fi
+    else
+        package_cfg_download_link=${package_cfg_download_links[$package]}
+    fi
+
+    if [[ (-z $package_cfg_name) || (-z $package_cfg_download_link) ]]; then
+        echo -e "${RED}Unsupported package.${NC}"
+        echo ""
+        listPackages
+        exit -1
+    fi
+
+
+    rm -f $package_cfg_name
+    wget -O $package_cfg_name $package_cfg_download_link
+    source $package_cfg_name
+
+    download_link=
+    pkg_name=
+
+    if [[ $package == *"kernel_driver"* ]]; then
+        download_link=${package_download_links[$kernel]}
+        pkg_name=${package_names[$kernel]}
+    else
+        download_link=${package_download_links[$pkg_version]}
+        pkg_name=${package_names[$pkg_version]}
+    fi
+
+    if [[ (-z $pkg_name) || (-z $download_link) ]]; then
+
+        package=$(echo $package | cut -d'_' -f1)
+        if [ $VERSION == '6.1.21' -a $package == "64mp" ]; then
+        echo "64mp pdaf"
+        else
+            verlte '6.1.19' $VERSION
+            if [ $? == 0 ]; then
+                package=$(echo $package | cut -d'_' -f1)
+                if [ $package == "imx519" ]; then
+                    sudo sh -c 'echo dtoverlay=imx519 >> /boot/config.txt'
+                elif [ $package == "64mp" ]; then
+                    sudo sh -c 'echo dtoverlay=arducam-64mp >> /boot/config.txt'
+                elif [ $package == "kernel" ]; then
+                    sudo sh -c 'echo dtoverlay=arducam-pivariety >> /boot/config.txt'
+                fi
+                exit -1
+            else
+                echo -e "${RED}"
+                echo -e "Cannot find the corresponding package, please send the following information to support@arducam.com"
+                echo -e "Hardware Revision: ${rev}"
+                echo -e "Kernel Version: ${kernel}"
+                echo -e "Package: ${package} -- ${pkg_version}"
+
+                if [[ $package == *"kernel_driver"* ]]; then
+                    echo -e "You are using an unsupported kernel version, please install the official SD Card image(do not execute rpi-update):"
+                    echo -e "https://www.raspberrypi.com/software/operating-systems/"
+                fi
+
+                echo -e "${NC}"
+                exit -1
+            fi
+        fi
+    fi
+
+    rm -rf $pkg_name
+    wget -O $pkg_name $download_link
+
+    if [[ ( $? -ne 0) || (! -f "${pkg_name}") ]]; then
+        echo -e "${RED}download failed${NC}"
+        exit -1
+    fi
+
+    if [[ $package == *"kernel_driver"* ]]; then
+        echo "is kernel driver"
+        tar -zxvf $pkg_name Release/
+        cd Release/
+        chmod +x install_driver.sh
+        ./install_driver.sh
+        openCamera
+        if [ $PrintCamera ]; then 
+            echo "Your camera is "$PrintCamera",and the relevant drivers have been installed."
+        fi
+    else
+        if [[ $package == *"libcamera_dev"* ]]; then
+            echo -e "remove libcamera0"
+            echo ""
+            sudo apt remove -y libcamera0
+        fi
+        
+        sudo apt update
+        if [ $package == 'libcamera' ]; then
+            sudo apt remove -y libcamera0
+            sudo apt install -y python3-libcamera
+        fi
+        sudo apt --reinstall install -y ./$pkg_name
+        if [ $package == 'libcamera' ]; then
+            pkg_name=$(echo ${pkg_name/libcamera0/libcamera-dev})
+            download_link=$(echo ${download_link/libcamera0/libcamera-dev})
+            wget -O $pkg_name $download_link
+            sudo apt --reinstall install -y ./$pkg_name
+            sudo apt install -y python3-picamera2
+        fi
+        # if [[ $package == *"libcamera_apps"* && ! -f /usr/lib/arm-linux-gnueabihf/libboost_program_options.so.1.67.0 ]]; then
+        #     echo -e "Soft link to libboost_program_options.so"
+        #     echo ""
+        #     sudo ln -s /usr/lib/arm-linux-gnueabihf/libboost_program_options.so /usr/lib/arm-linux-gnueabihf/libboost_program_options.so.1.67.0
+        # fi
+    fi
+
+    if [ $? -ne 0 ]; then
+        echo ""
+        echo -e "${RED}Unknown error, please send the error message to support@arducam.com${NC}"
+        exit -1
+    fi
+
+
 fi
 
