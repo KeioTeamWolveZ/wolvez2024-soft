@@ -1,7 +1,7 @@
 import cv2
 
 # カメラを開く
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 
 while True:
     # 画像をキャプチャする

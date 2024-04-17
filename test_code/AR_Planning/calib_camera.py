@@ -17,7 +17,7 @@ pattern_points *= square_size
 objpoints = []
 imgpoints = []
 
-capture = cv2.VideoCapture(0)
+capture = cv2.VideoCapture(1)
 
 while len(objpoints) < reference_img:
 # 画像の取得
