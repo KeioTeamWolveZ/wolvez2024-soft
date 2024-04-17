@@ -2,22 +2,41 @@
 import cv2
 import numpy as np
 import cv2.aruco as aruco
+from picamera2 import Picamera2
+from libcamera import controls
+from datetime import datetime
+from correction import Correct
 
 # カメラのキャプチャ
-cap = cv2.VideoCapture(1)
+# cap = cv2.VideoCapture(1)
+picam2 = Picamera2()
 
 # ARマーカーの辞書の選択
 dictionary = aruco.getPredefinedDictionary(aruco.DICT_4X4_50)
 # マーカーサイズの設定
 marker_length = 0.03  # マーカーの1辺の長さ（メートル）
-camera_matrix = np.load("mtx.npy")
-distortion_coeff = np.load("dist.npy")
+camera_matrix = np.load("../../mtx.npy")
+distortion_coeff = np.load("../../dist.npy")
+
+# カメラを開く
+# cap = cv2.VideoCapture(1)
+size = (1800, 1000)
+config = picam2.create_preview_configuration(
+            main={"format": 'XRGB8888', "size": size})
+picam2.align_configuration(config)
+picam2.configure(config)
+picam2.start()
+picam2.set_controls({"AfMode": controls.AfModeEnum.Continuous})
+
+VEC_GOAL = [0.04684221983188504, 0.023022500376947957, 0.0827390937912762]
+
 
 while True:
     # カメラ画像の取得
-    ret, frame = cap.read()
-    if not ret:
-        break
+    # ret, frame = cap.read()
+    frame = picam2.capture_array()
+    # if not ret:
+    #     break
 
     # グレースケールに変換
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -53,12 +72,14 @@ while True:
             print("yaw  : " + str(euler_angle[2]))
             # 発見したマーカーから1辺が30センチメートルの正方形を描画
             # aruco.drawAxis(frame, camera_matrix, distortion_coeff, rvec, tvec, 0.1)
-            aruco.drawDetectedMarkers(frame, corners, ids, (0, 0, 255))
+            # aruco.drawDetectedMarkers(frame, corners, ids, (0, 0, 255))
             # aruco.drawAxis(frame, camera_matrix, distortion_coeff, rvec, tvec, 0.1)
             # aruco.drawDetectedCornersCharuco(frame, corners, ids, (0, 0, 255))
             point_3d = np.array([[tvec[0], tvec[1], tvec[2]]], dtype=np.float64)
             imgpts, jac = cv2.projectPoints(point_3d,rvec, tvec, camera_matrix, distortion_coeff)
             print(imgpts)
+            distance, angle = Correct(tvec,VEC_GOAL)
+            print("kabuto_function",distance,angle)
     # 結果の表示
     cv2.imshow('ARmarker', frame)
     # キー入力の受付
