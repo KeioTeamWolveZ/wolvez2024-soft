@@ -1,18 +1,24 @@
-import math
+import numpy as np
 
-def Correct(vector1, vector2):
+def Correct(P, Pg):
     '''
-    入力:ダミー？落下位置(x, y, z)、目標位置(xg, yg, zg)
+    入力:ダミー？落下位置P(x, y, z)、目標位置Pg(xg, yg, zg)
     定数:
     出力:補正飛距離distance、補正角度angle (xz平面)
     '''
-    x,y,z = vector1
-    xg,yg,zg = vector2
-    r = (x**2 + z**2)**(1/2) #落下位置のカメラからの距離rの算出(xz平面)
-    rg = (xg**2 + zg**2)**(1/2) #目標位置のカメラからの距離rg(xz平面)
-    distance = rg - r
-    angle = math.acos((r**2 + rg**2 - ((xg - x)**2 + (zg - z)**2))/(2*r*rg))
+    vec = np.array((P[0], P[2]))
+    unit_vec = vec/np.linalg.norm(vec)
+    vecg = np.array((Pg[0], Pg[2]))
+    unit_vecg = vecg/np.linalg.norm(vecg)
+
+    distance = np.linalg.norm(vecg) - np.linalg.norm(vec)
+    
+    cos = np.dot(unit_vec, unit_vecg)
+    angle = np.rad2deg(np.arccos(cos))
+    cross = np.cross(vec, vecg)
+    if cross < 0:
+        angle *= -1
+
     return (distance, angle)
 
-# print(Correct(1, 0, 0, 0, 1, 1))
-# print(math.acos(0))
+# print(Correct((0, 0, 1), (1, 1, 0)))
