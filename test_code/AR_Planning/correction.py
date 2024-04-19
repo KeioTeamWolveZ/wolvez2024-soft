@@ -21,4 +21,4 @@ def Correct(P, Pg):
 
     return (distance, angle)
 
-# print(Correct((0, 0, 1), (1, 1, 0)))
+print(Correct((0, 1, 1), (0.1, 1, 1)))

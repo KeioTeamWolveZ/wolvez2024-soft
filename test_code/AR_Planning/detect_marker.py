@@ -14,7 +14,7 @@ picam2 = Picamera2()
 # ARマーカーの辞書の選択
 dictionary = aruco.getPredefinedDictionary(aruco.DICT_4X4_50)
 # マーカーサイズの設定
-marker_length = 0.03  # マーカーの1辺の長さ（メートル）
+marker_length = 0.0215  # マーカーの1辺の長さ（メートル）
 camera_matrix = np.load("../../mtx.npy")
 distortion_coeff = np.load("../../dist.npy")
 
@@ -28,7 +28,7 @@ picam2.configure(config)
 picam2.start()
 picam2.set_controls({"AfMode": controls.AfModeEnum.Continuous})
 
-VEC_GOAL = [0.04684221983188504, 0.023022500376947957, 0.0827390937912762]
+VEC_GOAL = [0.17389422024940773,0.1968730025228114,0.4020359587429208]
 
 
 while True:
@@ -48,38 +48,40 @@ while True:
     if ids is not None:
         # aruco.drawDetectedMarkers(frame, corners, ids)
         for i in range(len(ids)):
-            image_points_2d = np.array(corners[i],dtype='double')
-            print(corners[i])
+            if ids[i] in [0,1,2,3,4,5]:
+                image_points_2d = np.array(corners[i],dtype='double')
+                print(corners[i])
 
-            rvec, tvec, _ = aruco.estimatePoseSingleMarkers(corners[i], marker_length, camera_matrix, distortion_coeff)
-            tvec = np.squeeze(tvec)
-            rvec = np.squeeze(rvec)
-            # 回転ベクトルからrodoriguesへ変換
-            rvec_matrix = cv2.Rodrigues(rvec)
-            rvec_matrix = rvec_matrix[0] # rodoriguesから抜き出し
-            # 並進ベクトルの転置
-            transpose_tvec = tvec[np.newaxis, :].T
-            # 合成
-            proj_matrix = np.hstack((rvec_matrix, transpose_tvec))
-            # オイラー角への変換
-            euler_angle = cv2.decomposeProjectionMatrix(proj_matrix)[6] # [deg]
+                rvec, tvec, _ = aruco.estimatePoseSingleMarkers(corners[i], marker_length, camera_matrix, distortion_coeff)
+                tvec = np.squeeze(tvec)
+                rvec = np.squeeze(rvec)
+                # 回転ベクトルからrodoriguesへ変換
+                rvec_matrix = cv2.Rodrigues(rvec)
+                rvec_matrix = rvec_matrix[0] # rodoriguesから抜き出し
+                # 並進ベクトルの転置
+                transpose_tvec = tvec[np.newaxis, :].T
+                # 合成
+                proj_matrix = np.hstack((rvec_matrix, transpose_tvec))
+                # オイラー角への変換
+                euler_angle = cv2.decomposeProjectionMatrix(proj_matrix)[6] # [deg]
 
-            print("x : " + str(tvec[0]))
-            print("y : " + str(tvec[1]))
-            print("z : " + str(tvec[2]))
-            print("roll : " + str(euler_angle[0]))
-            print("pitch: " + str(euler_angle[1]))
-            print("yaw  : " + str(euler_angle[2]))
-            # 発見したマーカーから1辺が30センチメートルの正方形を描画
-            # aruco.drawAxis(frame, camera_matrix, distortion_coeff, rvec, tvec, 0.1)
-            # aruco.drawDetectedMarkers(frame, corners, ids, (0, 0, 255))
-            # aruco.drawAxis(frame, camera_matrix, distortion_coeff, rvec, tvec, 0.1)
-            # aruco.drawDetectedCornersCharuco(frame, corners, ids, (0, 0, 255))
-            point_3d = np.array([[tvec[0], tvec[1], tvec[2]]], dtype=np.float64)
-            imgpts, jac = cv2.projectPoints(point_3d,rvec, tvec, camera_matrix, distortion_coeff)
-            print(imgpts)
-            distance, angle = Correct(tvec,VEC_GOAL)
-            print("kabuto_function",distance,angle)
+                print("x : " + str(tvec[0]))
+                print("y : " + str(tvec[1]))
+                print("z : " + str(tvec[2]))
+                print("roll : " + str(euler_angle[0]))
+                print("pitch: " + str(euler_angle[1]))
+                print("yaw  : " + str(euler_angle[2]))
+                # 発見したマーカーから1辺が30センチメートルの正方形を描画
+                # aruco.drawAxis(frame, camera_matrix, distortion_coeff, rvec, tvec, 0.1)
+                # aruco.drawDetectedMarkers(frame, corners, ids, (0, 0, 255))
+                # aruco.drawAxis(frame, camera_matrix, distortion_coeff, rvec, tvec, 0.1)
+                # aruco.drawDetectedCornersCharuco(frame, corners, ids, (0, 0, 255))
+                point_3d = np.array([[tvec[0], tvec[1], tvec[2]]], dtype=np.float64)
+                imgpts, jac = cv2.projectPoints(point_3d,rvec, tvec, camera_matrix, distortion_coeff)
+                print(imgpts)
+                print("ID:",ids[i])
+                distance, angle = Correct(tvec,VEC_GOAL)
+                print("kabuto_function",distance,angle)
     # 結果の表示
     cv2.imshow('ARmarker', frame)
     # キー入力の受付
