@@ -28,13 +28,7 @@ print(polar_change(tvec = [0,-1,1]))
 """
 import math
 import numpy as np
-import matplotlib.pyplot as plt
-
-tvec = [-1,1,1]
-
-vector_1 = np.array([0, 1]) #基準となる線(θ、phi)
-vector_2 = np.array([tvec[0],tvec[2]])
-vector_3 = np.array([tvec[1],math.sqrt(tvec[0]**2 + tvec[2]**2)])
+#import matplotlib.pyplot as plt
 
 def theta_angle(vector_1, vector_2):
     unit_vector_1 = vector_1 / np.linalg.norm(vector_1)
@@ -52,25 +46,42 @@ def phi_angle(vector_1, vector_3):
     phi = phi_angle / np.pi * 180
     return phi
 
-r = math.sqrt(tvec[0]**2 + tvec[1]**2 + tvec[2]**2)
-theta = theta_angle(vector_1, vector_2)
-phi = phi_angle(vector_1, vector_3)
+tvec = [-1,1,1]
+
+
+
+def polar_change(tvec):
+    vector_1 = np.array([0, 1])
+    vector_2 = np.array([tvec[0],tvec[2]])
+    vector_3 = np.array([tvec[1],math.sqrt(tvec[0]**2 + tvec[2]**2)])
+    r = math.sqrt(tvec[0]**2 + tvec[1]**2 + tvec[2]**2)
+    theta = theta_angle(vector_1, vector_2)
+    phi = phi_angle(vector_1, vector_3)
+    if tvec[0] > 0: 
+        theta = theta
+    else:
+        theta = -theta
+    
+    if tvec[1] > 0: 
+        phi = -phi
+    else:
+        theta = phi
+    pvec = [r,theta,phi]
+
+    return pvec
+
+
+
 
 #xが負の時、θが負値をとるよう設定
-if tvec[0] > 0: 
-    theta = theta
-else:
-    theta = -theta
+
     
 #y軸を下向きに取っている場合、
 #ｙが正の時、ｐhiが負値をとるよう設定 
-if tvec[1] > 0: 
-    phi = -phi
-else:
-    theta = phi
+
        
-pvec = [r,theta,phi]
-print(pvec)
+
+#print(polar_change(tvec))
 
 
 

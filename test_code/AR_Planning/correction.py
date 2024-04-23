@@ -21,4 +21,4 @@ def Correct(P, Pg):
 
     return (distance, angle)
 
-print(Correct((0, 1, 1), (0.1, 1, 1)))
+print(Correct((0.17389422024940773,0.1968730025228114,0.4020359587429208), (0.1, 1, 1)))

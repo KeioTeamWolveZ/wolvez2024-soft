@@ -6,6 +6,7 @@ from picamera2 import Picamera2
 from libcamera import controls
 from datetime import datetime
 from correction import Correct
+from polar import polar_change
 
 # カメラのキャプチャ
 # cap = cv2.VideoCapture(1)
@@ -81,7 +82,11 @@ while True:
                 print(imgpts)
                 print("ID:",ids[i])
                 distance, angle = Correct(tvec,VEC_GOAL)
-                print("kabuto_function",distance,angle)
+                print("kabuto_function:",distance,angle)
+                polar_exchange = polar_change(tvec)
+                print("yunosu_function:",polar_exchange)
+
+
     # 結果の表示
     cv2.imshow('ARmarker', frame)
     # キー入力の受付
