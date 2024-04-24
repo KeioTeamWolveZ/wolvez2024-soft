@@ -29,13 +29,17 @@ picam2.configure(config)
 picam2.start()
 picam2.set_controls({"AfMode": controls.AfModeEnum.Continuous})
 
-VEC_GOAL = [0.17389422024940773,0.1968730025228114,0.4020359587429208]
+VEC_GOAL = [0.0,0.1968730025228114,0.3]
 
 
 while True:
     # カメラ画像の取得
     # ret, frame = cap.read()
     frame = picam2.capture_array()
+    height = frame.shape[0]
+    width = frame.shape[1]
+
+    print(height,width)
     # if not ret:
     #     break
 
@@ -77,8 +81,11 @@ while True:
                 # aruco.drawDetectedMarkers(frame, corners, ids, (0, 0, 255))
                 # aruco.drawAxis(frame, camera_matrix, distortion_coeff, rvec, tvec, 0.1)
                 # aruco.drawDetectedCornersCharuco(frame, corners, ids, (0, 0, 255))
+                
+                    
                 point_3d = np.array([[tvec[0], tvec[1], tvec[2]]], dtype=np.float64)
                 imgpts, jac = cv2.projectPoints(point_3d,rvec, tvec, camera_matrix, distortion_coeff)
+                cv2.line(frame, (width//2,0), (width//2,height),(255,255,0))
                 print(imgpts)
                 print("ID:",ids[i])
                 distance, angle = Correct(tvec,VEC_GOAL)
