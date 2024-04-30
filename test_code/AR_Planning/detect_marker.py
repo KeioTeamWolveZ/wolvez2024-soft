@@ -34,7 +34,7 @@ picam2.set_controls({"AfMode":0,"LensPosition":4.5})
 
 VEC_GOAL = [0.0,0.1968730025228114,0.3]
 ultra_count = 0
-prev = np.array([0,0,0])
+prev = [np.array([0,0,0])]
 TorF = True
 
 
@@ -76,18 +76,18 @@ while True:
                 # オイラー角への変換
                 euler_angle = cv2.decomposeProjectionMatrix(proj_matrix)[6] # [deg]
 
-                # if ultra_count == 0:
-                #     prev = tvec
-                #     ultra_count = 1
-                # else:
-                #     TorF, prev = outlier(tvec, prev) # true:correct,false:outlier
-                #     if TorF:
-                print("x : " + str(tvec[0]))
-                print("y : " + str(tvec[1]))
-                print("z : " + str(tvec[2]))
-                print("roll : " + str(euler_angle[0]))
-                print("pitch: " + str(euler_angle[1]))
-                print("yaw  : " + str(euler_angle[2]))
+                if ultra_count == 0:
+                    prev.append(tvec)
+                    ultra_count = 1
+                else:
+                    TorF = outlier(tvec, prev) # true:correct,false:outlier
+                    if TorF:
+                        print("x : " + str(tvec[0]))
+                        print("y : " + str(tvec[1]))
+                        print("z : " + str(tvec[2]))
+                        # print("roll : " + str(euler_angle[0]))
+                        # print("pitch: " + str(euler_angle[1]))
+                        # print("yaw  : " + str(euler_angle[2]))
 
 
                 # 発見したマーカーから1辺が30センチメートルの正方形を描画
