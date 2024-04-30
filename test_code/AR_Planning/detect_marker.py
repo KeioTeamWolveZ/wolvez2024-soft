@@ -38,6 +38,7 @@ prev = np.array([0,0,0])
 TorF = True
 
 
+
 while True:
     # カメラ画像の取得
     # ret, frame = cap.read()
@@ -59,7 +60,7 @@ while True:
     if ids is not None:
         # aruco.drawDetectedMarkers(frame, corners, ids)
         for i in range(len(ids)):
-            if ids[i] in [0,1,2,3,4,5]:
+            if ids[i] in [0]:
                 image_points_2d = np.array(corners[i],dtype='double')
                 # print(corners[i])
 
@@ -85,14 +86,22 @@ while True:
                 print("x : " + str(tvec[0]))
                 print("y : " + str(tvec[1]))
                 print("z : " + str(tvec[2]))
-                print("roll : " + str(euler_angle[0]))
-                print("pitch: " + str(euler_angle[1]))
-                print("yaw  : " + str(euler_angle[2]))
+                # print("roll : " + str(euler_angle[0]))
+                # print("pitch: " + str(euler_angle[1]))
+                # print("yaw  : " + str(euler_angle[2]))
 
 
                 # 発見したマーカーから1辺が30センチメートルの正方形を描画
                 # aruco.drawAxis(frame, camera_matrix, distortion_coeff, rvec, tvec, 0.1)
                 # aruco.drawDetectedMarkers(frame, corners, ids, (0, 0, 255))
+                if tvec[1]>0.3:
+                    color = (255,0,0)
+                else:
+                    color = (0,255,0)
+                line = np.squeeze(corners[i])
+                # print(line)
+                cv2.rectangle(frame,[int(line[0][0]),int(line[0][1])],[int(line[2][0]),int(line[2][1])],color,thickness=2)
+                # cv2.polylines(frame,[line],True,color)
                 # aruco.drawAxis(frame, camera_matrix, distortion_coeff, rvec, tvec, 0.1)
                 # aruco.drawDetectedCornersCharuco(frame, corners, ids, (0, 0, 255))
                 
@@ -106,6 +115,8 @@ while True:
                 # print("kabuto_function:",distance,angle)
                 polar_exchange = polar_change(tvec)
                 # print("yunosu_function:",polar_exchange)
+                
+
 
 
     # 結果の表示
