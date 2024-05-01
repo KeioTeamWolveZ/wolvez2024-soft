@@ -2,6 +2,7 @@ import math
 import numpy as np
 from scipy.optimize import fsolve
 from polar import polar_change
+import time
 
 """
 input:
@@ -9,6 +10,7 @@ input:
 output:
     落下位置[r,θ]
 """
+st = time.time()
 
 m = 0.01 #モジュールの質量 [kg]
 g = 9.81 #重力加速度 [m/(s^2)]
@@ -58,7 +60,7 @@ polar_position = polar_change(Theoretical_position) #落下位置[r,θ,φ]
 del polar_position[2] #φの削除
 
 print("落下位置[r, θ] = ",polar_position)
-
+print(time.time()-st)
 
 """
 メモ：
