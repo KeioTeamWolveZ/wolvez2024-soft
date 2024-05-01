@@ -30,7 +30,7 @@ picam2.align_configuration(config)
 picam2.configure(config)
 picam2.start()
 # picam2.set_controls({"AfMode": controls.AfModeEnum.Continuous})
-picam2.set_controls({"AfMode":0,"LensPosition":4.5})
+picam2.set_controls({"AfMode":0,"LensPosition":5.5})
 
 VEC_GOAL = [0.0,0.1968730025228114,0.3]
 ultra_count = 0
@@ -80,7 +80,7 @@ while True:
                     prev.append(tvec)
                     ultra_count = 1
                 else:
-                    TorF = outlier(tvec, prev) # true:correct,false:outlier
+                    TorF = outlier(tvec, prev,0.1) # true:correct,false:outlier
                     if TorF:
                         print("x : " + str(tvec[0]))
                         print("y : " + str(tvec[1]))
@@ -88,6 +88,8 @@ while True:
                         # print("roll : " + str(euler_angle[0]))
                         # print("pitch: " + str(euler_angle[1]))
                         # print("yaw  : " + str(euler_angle[2]))
+                        polar_exchange = polar_change(tvec)
+                        print(f"yunosu_function_{ids[i]}:",polar_exchange)
 
 
                 # 発見したマーカーから1辺が30センチメートルの正方形を描画
@@ -104,8 +106,7 @@ while True:
                 # print("ID:",ids[i])
                 distance, angle = Correct(tvec,VEC_GOAL)
                 # print("kabuto_function:",distance,angle)
-                polar_exchange = polar_change(tvec)
-                # print("yunosu_function:",polar_exchange)
+                # polar_exchange = polar_change(tvec)
 
 
     # 結果の表示
