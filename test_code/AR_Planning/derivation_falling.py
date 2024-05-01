@@ -21,6 +21,10 @@ x_0 = 0
 y_0 = -0.1 #ｙ軸下向きを正としているため、負値
 z_0 = 0
 
+U_x = 0
+U_y = 0
+U_z = 0
+
 #カメラの傾き
 alpha = math.radians(0) #x軸周り [rad]
 beta = math.radians(0) #z軸周り [rad]
@@ -29,22 +33,22 @@ h = 0.1 #カメラ座標原点の高さ [m]
 
 #放出から落下までの時間の導出
 def equation(t):
-    return m/k * (V_0*math.sin(theta_initial)-m*g/k*math.cos(alpha)*math.cos(beta))\
-    *(1-math.exp(-k/m*t)) + (m*g/k*math.cos(alpha)*math.cos(beta))*t + y_0 - h
+    return  m/k * (V_0*math.sin(theta_initial)-U_y-m*g/k*math.cos(alpha)*math.cos(beta))\
+    *(1-math.exp(-k/m*t)) + (U_y+m*g/k*math.cos(alpha)*math.cos(beta))*t + y_0 - h
 
-t_initial = 0 #tの初期値
+equal = 0 #等式が成り立つ
 
-solution = fsolve(equation, t_initial)
+solution = fsolve(equation, equal)
 t = solution[0]
 
 print("t:",t)
 
-x = m/k * (-m*g/k*math.cos(alpha)*math.sin(beta))*(1-math.exp(-k/m*t))\
-    + (m*g/k*math.cos(alpha)*math.sin(beta))*t + x_0
-y = m/k * (V_0*math.sin(theta_initial)-m*g/k*math.cos(alpha)*math.cos(beta))\
-    *(1-math.exp(-k/m*t)) + (m*g/k*math.cos(alpha)*math.cos(beta))*t + y_0
+x = m/k * (-U_x-m*g/k*math.cos(alpha)*math.sin(beta))*(1-math.exp(-k/m*t))\
+    + (U_x+m*g/k*math.cos(alpha)*math.sin(beta))*t + x_0
+y = m/k * (V_0*math.sin(theta_initial)-U_y-m*g/k*math.cos(alpha)*math.cos(beta))\
+    *(1-math.exp(-k/m*t)) + (U_y+m*g/k*math.cos(alpha)*math.cos(beta))*t + y_0
 z = m/k  * (V_0*math.cos(theta_initial)-m*g/k*math.sin(alpha))\
-    *(1-math.exp(-k/m*t)) + (-m*g/k*math.sin(alpha))*t +z_0
+    *(1-U_z+math.exp(-k/m*t)) + (U_z-m*g/k*math.sin(alpha))*t +z_0
 
 Theoretical_position = [x, y, z]  #落下位置[x,y,z]
 
