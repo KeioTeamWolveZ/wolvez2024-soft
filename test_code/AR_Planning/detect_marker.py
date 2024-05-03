@@ -8,6 +8,7 @@ from datetime import datetime
 from correction import Correct
 from polar import polar_change
 from AR_outlier import outlier
+from collections import deque
 
 # カメラのキャプチャ
 # cap = cv2.VideoCapture(1)
@@ -34,7 +35,8 @@ picam2.set_controls({"AfMode":0,"LensPosition":5.5})
 
 VEC_GOAL = [0.0,0.1968730025228114,0.3]
 ultra_count = 0
-prev = [np.array([0,0,0])]
+reject_count = 0 # 拒否された回数をカウントするための変数
+prev = deque([],20)
 TorF = True
 
 while True:
@@ -77,10 +79,12 @@ while True:
 
                 if ultra_count == 0:
                     prev.append(tvec)
-                    ultra_count = 1
-                else:
-                    TorF = outlier(tvec, prev,0.1) # true:correct,false:outlier
+                    print("ARマーカーの位置を算出中")
+                    ultra_count += 1 #最初（位置リセット後も）は20回取得して平均取得
+                elif ultra_count > 20:
+                    TorF = outlier(tvec, prev, 0.1) # true:correct,false:outlier
                     if TorF:
+                        reject_count = 0
                         print("x : " + str(tvec[0]))
                         print("y : " + str(tvec[1]))
                         print("z : " + str(tvec[2]))
@@ -89,7 +93,12 @@ while True:
                         # print("yaw  : " + str(euler_angle[2]))
                         polar_exchange = polar_change(tvec)
                         print(f"yunosu_function_{ids[i]}:",polar_exchange)
-
+                    else:
+                        print("state of marker is rejected")
+                        reject_count += 1 # 拒否された回数をカウント
+                        if reject_count > 10: # 拒否され続けたらリセットしてARマーカーの基準を上書き（再計算）
+                            ultra_count = 0
+                            reject_count = 0 #あってもなくても良い
 
                 # 発見したマーカーから1辺が30センチメートルの正方形を描画
                 # aruco.drawAxis(frame, camera_matrix, distortion_coeff, rvec, tvec, 0.1)
