@@ -36,7 +36,7 @@ picam2.set_controls({"AfMode":0,"LensPosition":5.5})
 VEC_GOAL = [0.0,0.1968730025228114,0.3]
 ultra_count = 0
 reject_count = 0 # 拒否された回数をカウントするための変数
-prev = deque([],20)
+prev = np.array([])
 TorF = True
 
 while True:
@@ -60,7 +60,7 @@ while True:
     if ids is not None:
         # aruco.drawDetectedMarkers(frame, corners, ids)
         for i in range(len(ids)):
-            if ids[i] in [0]:
+            if ids[i] in [0,1,2,3,4,5]:
                 image_points_2d = np.array(corners[i],dtype='double')
                 # print(corners[i])
 
@@ -76,13 +76,13 @@ while True:
                 proj_matrix = np.hstack((rvec_matrix, transpose_tvec))
                 # オイラー角への変換
                 euler_angle = cv2.decomposeProjectionMatrix(proj_matrix)[6] # [deg]
-
-                if ultra_count == 0:
+                prev = list(prev)
+                if ultra_count < 20:
                     prev.append(tvec)
                     print("ARマーカーの位置を算出中")
                     ultra_count += 1 #最初（位置リセット後も）は20回取得して平均取得
-                elif ultra_count > 20:
-                    TorF = outlier(tvec, prev, 0.1) # true:correct,false:outlier
+                else:
+                    TorF = outlier(tvec, prev, 0.2) # true:correct,false:outlier
                     if TorF:
                         reject_count = 0
                         print("x : " + str(tvec[0]))
