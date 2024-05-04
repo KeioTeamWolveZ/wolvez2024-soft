@@ -1,7 +1,7 @@
 import math 
 import numpy as np
 from scipy.optimize import fsolve
-from polar import polar_change
+from Ar_tools import Artools
 import time
 
 """
@@ -34,6 +34,8 @@ beta = math.radians(0) #z軸周り [rad]
 h = 0.1 #カメラ座標原点の高さ [m]
 
 #放出から落下までの時間の導出
+ar= Artools()
+polar_change = ar.polar_change
 def equation(t):
     return  m/k * (V_0*math.sin(theta_initial)-U_y-m*g/k*math.cos(alpha)*math.cos(beta))\
     *(1-math.exp(-k/m*t)) + (U_y+m*g/k*math.cos(alpha)*math.cos(beta))*t + y_0 - h
