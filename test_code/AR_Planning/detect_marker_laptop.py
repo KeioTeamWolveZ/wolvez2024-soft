@@ -2,8 +2,6 @@
 import cv2
 import numpy as np
 import cv2.aruco as aruco
-from picamera2 import Picamera2
-from libcamera import controls
 from datetime import datetime
 from correction import Correct
 from polar import polar_change
@@ -11,27 +9,27 @@ from AR_outlier import outlier
 from collections import deque
 
 # カメラのキャプチャ
-# cap = cv2.VideoCapture(1)
-picam2 = Picamera2()
+cap = cv2.VideoCapture(1)
+# picam2 = Picamera2()
 
 # ARマーカーの辞書の選択
 dictionary = aruco.getPredefinedDictionary(aruco.DICT_4X4_50)
 # マーカーサイズの設定
 marker_length = 0.0215  # マーカーの1辺の長さ（メートル）
-camera_matrix = np.load("../../mtx.npy")
-distortion_coeff = np.load("../../dist.npy")
+camera_matrix = np.load("mtx.npy")
+distortion_coeff = np.load("dist.npy")
 
 # カメラを開く
 # cap = cv2.VideoCapture(1)
 size = (1800, 1000)
-config = picam2.create_preview_configuration(
-            main={"format": 'XRGB8888', "size": size})
+# config = picam2.create_preview_configuration(
+#             main={"format": 'XRGB8888', "size": size})
 
-picam2.align_configuration(config)
-picam2.configure(config)
-picam2.start()
-# picam2.set_controls({"AfMode": controls.AfModeEnum.Continuous})
-picam2.set_controls({"AfMode":0,"LensPosition":5.5})
+# picam2.align_configuration(config)
+# picam2.configure(config)
+# picam2.start()
+# # picam2.set_controls({"AfMode": controls.AfModeEnum.Continuous})
+# picam2.set_controls({"AfMode":0,"LensPosition":5.5})
 
 VEC_GOAL = [0.0,0.1968730025228114,0.3]
 ultra_count = 0
@@ -41,8 +39,8 @@ TorF = True
 
 while True:
     # カメラ画像の取得
-    # ret, frame = cap.read()
-    frame = picam2.capture_array()
+    ret, frame = cap.read()
+    # frame = picam2.capture_array()
     height = frame.shape[0]
     width = frame.shape[1]
 
@@ -125,7 +123,7 @@ while True:
 
 
     # 結果の表示
-    # #　画像のリサイズを行う
+    #　画像のリサイズを行う
     # frame = cv2.resize(frame,None,fx=0.7,fy=0.7)
     cv2.imshow('ARmarker', frame)
     # キー入力の受付
