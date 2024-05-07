@@ -34,12 +34,13 @@ import Adafruit_BMP.BMP085 as BMP085
 import gspread
 
 # Google Docs account email, password, and spreadsheet name.
-GDOCS_EMAIL            = 'your google docs account email address'
-GDOCS_PASSWORD         = 'your google docs account password'
-GDOCS_SPREADSHEET_NAME = 'your google docs spreadsheet name'
+GDOCS_EMAIL            = 'wolvez2024@gmail.com'
+GDOCS_PASSWORD         = 'cansat2024'
+GDOCS_SPREADSHEET_NAME = 'bmp180'
+gc = gspread.service_account()
 
 # How long to wait (in seconds) between measurements.
-FREQUENCY_SECONDS      = 30
+FREQUENCY_SECONDS      = 10
 
 
 def login_open_sheet(email, password, spreadsheet):
@@ -47,9 +48,10 @@ def login_open_sheet(email, password, spreadsheet):
 	try:
 		gc = gspread.login(email, password)
 		worksheet = gc.open(spreadsheet).sheet1
+		worksheet = gc.open_by_key("1VWhbKOCBwsbfdHqLK0shgj0L6xjqhwpV1WvxcS5N0E4")
 		return worksheet
 	except:
-		print 'Unable to login and get spreadsheet.  Check email, password, spreadsheet name.'
+		print( 'Unable to login and get spreadsheet.  Check email, password, spreadsheet name.')
 		sys.exit(1)
 
 
@@ -57,8 +59,8 @@ def login_open_sheet(email, password, spreadsheet):
 # 1 based on the revision, on Beaglebone Black default to 1).
 bmp = BMP085.BMP085()
 
-print 'Logging sensor measurements to {0} every {1} seconds.'.format(GDOCS_SPREADSHEET_NAME, FREQUENCY_SECONDS)
-print 'Press Ctrl-C to quit.'
+print ('Logging sensor measurements to {0} every {1} seconds.'.format(GDOCS_SPREADSHEET_NAME, FREQUENCY_SECONDS))
+print ('Press Ctrl-C to quit.')
 worksheet = None
 while True:
 	# Login if necessary.
@@ -70,9 +72,9 @@ while True:
 	pressure = bmp.read_pressure()
 	altitude = bmp.read_altitude()
 
-	print 'Temperature: {0:0.1f} C'.format(temp)
-	print 'Pressure:    {0:0.1f} Pa'.format(pressure)
-	print 'Altitude:    {0:0.1f} m'.format(altitude)
+	print( 'Temperature: {0:0.1f} C'.format(temp))
+	print( 'Pressure:    {0:0.1f} Pa'.format(pressure))
+	print( 'Altitude:    {0:0.1f} m'.format(altitude))
  
 	# Append the data in the spreadsheet, including a timestamp
 	try:
@@ -80,11 +82,11 @@ while True:
 	except:
 		# Error appending data, most likely because credentials are stale.
 		# Null out the worksheet so a login is performed at the top of the loop.
-		print 'Append error, logging in again'
+		print( 'Append error, logging in again')
 		worksheet = None
 		time.sleep(FREQUENCY_SECONDS)
 		continue
 
 	# Wait 30 seconds before continuing
-	print 'Wrote a row to {0}'.format(GDOCS_SPREADSHEET_NAME)
+	print('Wrote a row to {0}'.format(GDOCS_SPREADSHEET_NAME))
 	time.sleep(FREQUENCY_SECONDS)

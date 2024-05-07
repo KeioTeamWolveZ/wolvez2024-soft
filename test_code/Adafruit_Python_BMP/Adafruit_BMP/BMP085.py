@@ -185,7 +185,7 @@ class BMP085(object):
         self._logger.debug('Pressure {0} Pa'.format(p))
         return p
 
-    def read_altitude(self, sealevel_pa=101325.0):
+    def read_altitude(self, sealevel_pa=101680.0):# kaimenkiatu 101325
         """Calculates the altitude in meters."""
         # Calculation taken straight from section 3.6 of the datasheet.
         pressure = float(self.read_pressure())
