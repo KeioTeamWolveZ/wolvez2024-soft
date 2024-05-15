@@ -8,11 +8,11 @@ from Ar_tools import Artools
 
 
 # ==============================ARマーカーの設定==============================
-dictionary = aruco.getPredefinedDictionary(aruco.DICT_4X4_50)
+dictionary = aruco.getPredefinedDictionary(aruco.DICT_ARUCO_ORIGINAL)
 # マーカーサイズの設定
-marker_length = 0.0215  # マーカーの1辺の長さ（メートル）
-camera_matrix = np.load("mtx.npy")
-distortion_coeff = np.load("dist.npy")
+marker_length = 0.02  # マーカーの1辺の長さ（メートル）
+camera_matrix = np.load("../../mtx.npy")
+distortion_coeff = np.load("../../dist.npy")
 
 # ==============================カメラの設定==============================
 
@@ -23,7 +23,7 @@ elif int(camera) == 2:
     from picamera2 import Picamera2 #laptopでは使わないため
     from libcamera import controls #laptopでは使わないため
     picam2 = Picamera2()
-    size = (1800, 1000)
+    size = (1800, 1200)
     config = picam2.create_preview_configuration(
                 main={"format": 'XRGB8888', "size": size})
 
