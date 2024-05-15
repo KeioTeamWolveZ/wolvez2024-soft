@@ -9,13 +9,14 @@ from correction import Correct
 from polar import polar_change
 from AR_outlier import outlier
 from collections import deque
+from camera_rotation import translate_coordinates
 
 # カメラのキャプチャ
 # cap = cv2.VideoCapture(1)
 picam2 = Picamera2()
 
 # ARマーカーの辞書の選択
-dictionary = aruco.getPredefinedDictionary(aruco.DICT_4X4_50)
+dictionary = aruco.getPredefinedDictionary(aruco.DICT_ARUCO_ORIGINAL)
 # マーカーサイズの設定
 marker_length = 0.0215  # マーカーの1辺の長さ（メートル）
 camera_matrix = np.load("../../mtx.npy")
@@ -60,7 +61,7 @@ while True:
     if ids is not None:
         # aruco.drawDetectedMarkers(frame, corners, ids)
         for i in range(len(ids)):
-            if ids[i] in [0,1,2,3,4,5]:
+            if ids[i] in [1]:
                 image_points_2d = np.array(corners[i],dtype='double')
                 # print(corners[i])
 
@@ -82,16 +83,16 @@ while True:
                     print("ARマーカーの位置を算出中")
                     ultra_count += 1 #最初（位置リセット後も）は20回取得して平均取得
                 else:
-                    TorF = outlier(tvec, prev, 0.2) # true:correct,false:outlier
+                    TorF = outlier(tvec, prev, 1) # true:correct,false:outlier
                     if TorF:
                         reject_count = 0
                         print("x : " + str(tvec[0]))
                         print("y : " + str(tvec[1]))
                         print("z : " + str(tvec[2]))
-                        # print("roll : " + str(euler_angle[0]))
-                        # print("pitch: " + str(euler_angle[1]))
-                        # print("yaw  : " + str(euler_angle[2]))
-                        polar_exchange = polar_change(tvec)
+                        #print("roll : " + str(euler_angle[0]))
+                        #print("pitch: " + str(euler_angle[1]))
+                        #print("yaw  : " + str(euler_angle[2]))
+                        #polar_exchange = polar_change(tvec)
                         print(f"yunosu_function_{ids[i]}:",polar_exchange)
                     else:
                         print("state of marker is rejected")
@@ -99,6 +100,7 @@ while True:
                         if reject_count > 10: # 拒否され続けたらリセットしてARマーカーの基準を上書き（再計算）
                             ultra_count = 0
                             reject_count = 0 #あってもなくても良い
+                #print("kabuto:",translate_coordinates(tvec,[0,0,0.05],np.pi/18))
 
                 # 発見したマーカーから1辺が30センチメートルの正方形を描画
                 # aruco.drawAxis(frame, camera_matrix, distortion_coeff, rvec, tvec, 0.1)
