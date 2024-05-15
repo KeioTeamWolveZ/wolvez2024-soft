@@ -79,7 +79,7 @@ class Artools:
 
     # ==================== from AR_outlier.py ====================
     ## 作成者：太田こ
-    def outlier(self,tvec, prev, standard =0.2):
+    def outlier(self,tvec, prev, ultra_count, standard =0.2):
         """
         Check if the tvec is an outlier or not
 
@@ -90,8 +90,12 @@ class Artools:
         """
         # print(prev)
         # print(np.mean([i[0] for i in prev]))
-        
-        mean = np.array([np.mean([i[0] for i in prev]), np.mean([i[1] for i in prev]), np.mean([i[2] for i in prev])])
+        if ultra_count == 20:
+            mean = np.array([np.median([i[0] for i in prev]), np.median([i[1] for i in prev]), np.median([i[2] for i in prev])])
+            print("prev_num: 20")
+        else:
+            mean = np.array([np.median([i[0] for i in prev[-5:]]), np.median([i[1] for i in prev[-5:]]), np.median([i[2] for i in prev[-5:]])])
+            print("prev_num: 5")
 
         if abs(tvec[0] - mean[0]) < standard and abs(tvec[1] - mean[1]) < standard and abs(tvec[2] - mean[2]) < standard:
             prev.append(tvec)

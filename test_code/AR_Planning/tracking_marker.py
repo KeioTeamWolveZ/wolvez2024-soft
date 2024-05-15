@@ -88,7 +88,9 @@ while True:
                     print("ARマーカーの位置を算出中")
                     ultra_count += 1 #最初（位置リセット後も）は20回取得して平均取得
                 else:
-                    TorF = ar.outlier(tvec, prev, 0.3) # true:correct, false:outlier
+                    # print("prev_length: ",len(prev))
+                    TorF = ar.outlier(tvec, prev, ultra_count, 0.3) # true:correct, false:outlier
+                    ultra_count += 1
                     if TorF: # detected AR marker is reliable
                         reject_count = 0
                         print("x : " + str(tvec[0]))
@@ -97,7 +99,7 @@ while True:
                         # print("roll : " + str(euler_angle[0]))
                         # print("pitch: " + str(euler_angle[1]))
                         # print("yaw  : " + str(euler_angle[2]))
-                        tvec[0] = tvec[0]-0.125
+                        tvec[0] = tvec[0]
                         polar_exchange = ar.polar_change(tvec)
                         print(f"yunosu_function_{ids[i]}:",polar_exchange)
                         
@@ -121,6 +123,7 @@ while True:
                             pass
                     else: # detected AR marker is not reliable
                         print("state of marker is rejected")
+                        print(ultra_count)
                         reject_count += 1 # 拒否された回数をカウント
                         if reject_count > 10: # 拒否され続けたらリセットしてARマーカーの基準を上書き（再計算）
                             ultra_count = 0
