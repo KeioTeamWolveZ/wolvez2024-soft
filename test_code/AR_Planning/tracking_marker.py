@@ -105,22 +105,47 @@ while True:
                         
                         distance_of_marker = polar_exchange[0]
                         angle_of_marker = polar_exchange[1]
-                        if angle_of_marker >= 0:
-                            motor1.go(0)
-                            motor2.back(0)
-                            #time.sleep(1)
+                        if distance_of_marker >= 0.41:
+                            if angle_of_marker >= 0.01:
+                                motor1.go(50)
+                                motor2.go(30)
+                                time.sleep(0.1)
+                                motor1.stop()
+                                motor2.stop()
+                            elif 0.01 > angle_of_marker > -0.01:
+                                motor1.go(50)
+                                motor2.go(50)
+                                time.sleep(0.5)
+                                motor1.stop()
+                                motor2.stop()
+                            else:
+                                motor1.go(30)
+                                motor2.go(50)
+                                time.sleep(0.1)
+                                motor1.stop()
+                                motor2.stop()
+                        elif distance_of_marker >= 0.39:
+                            if angle_of_marker >= 0.01:
+                                print("その場回転!!")
+                                motor1.go(0)
+                                motor2.back(0)
+                                #time.sleep(1)
+                                motor1.stop()
+                                motor2.stop()
+                            elif 0.01 > angle_of_marker > -0.01:
+                                print("Let's release the module!!")
+                            else:
+                                print("その場回転!!")
+                                motor1.back(0)
+                                motor2.go(0)
+                                #time.sleep(1)
+                                motor1.stop()
+                                motor2.stop()
+                        else:
                             motor1.stop()
                             motor2.stop()
-                        elif 0.01 > angle_of_marker > -0.01:
-                             print(str(tvec[0]))
-                        #if distance_to_marker >= 0.40:
-                        #    motor1.go(50)
-                        #    motor2.go(50)
-                        #    time.sleep(1)
-                        #    motor1.stop()
-                        #    motor2.stop()
-                        else:
-                            pass
+                            print("need to go back!!")
+                        
                     else: # detected AR marker is not reliable
                         print("state of marker is rejected")
                         print(ultra_count)
