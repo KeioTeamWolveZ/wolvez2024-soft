@@ -3,7 +3,7 @@ import time
 
 #pin1 = 25 red
 #pin2 = 24 para
-#pin3 = 17 blue
+#pin3 = 17 blue4
 
 pin1 = 24
 
