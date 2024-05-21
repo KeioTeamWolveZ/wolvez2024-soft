@@ -11,8 +11,8 @@ from Ar_tools import Artools
 dictionary = aruco.getPredefinedDictionary(aruco.DICT_ARUCO_ORIGINAL)
 # マーカーサイズの設定
 marker_length = 0.02  # マーカーの1辺の長さ（メートル）
-camera_matrix = np.load("../../mtx.npy")
-distortion_coeff = np.load("../../dist.npy")
+camera_matrix = np.load("mtx.npy")
+distortion_coeff = np.load("dist.npy")
 
 # ==============================カメラの設定==============================
 
@@ -115,7 +115,7 @@ while True:
 
     # ====================================結果の表示===================================
     # #　画像のリサイズを行う
-    # frame = cv2.resize(frame,None,fx=0.7,fy=0.7)
+    frame = cv2.resize(frame,None,fx=0.5,fy=0.5)
     cv2.imshow('ARmarker', frame)
     key = cv2.waitKey(1)# キー入力の受付
     if key == 27:  # ESCキーで終了

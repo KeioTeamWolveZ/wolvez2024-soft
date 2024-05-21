@@ -12,11 +12,11 @@ import time
 
 
 # ==============================ARマーカーの設定==============================
-dictionary = aruco.getPredefinedDictionary(aruco.DICT_4X4_50)
+dictionary = aruco.getPredefinedDictionary(aruco.DICT_ARUCO_ORIGINAL)
 # マーカーサイズの設定
 marker_length = 0.0215  # マーカーの1辺の長さ（メートル）
-camera_matrix = np.load("../../mtx.npy")
-distortion_coeff = np.load("../../dist.npy")
+camera_matrix = np.load("mtx.npy")
+distortion_coeff = np.load("dist.npy")
 
 # ==============================カメラの設定==============================
 
@@ -106,42 +106,50 @@ while True:
                         distance_of_marker = polar_exchange[0]
                         angle_of_marker = polar_exchange[1]
                         if distance_of_marker >= 0.41:
-                            if angle_of_marker >= 0.01:
-                                motor1.go(50)
-                                motor2.go(30)
-                                time.sleep(0.1)
+                            if tvec[0] >= 0.05:
+                                motor1.go(60)
+                                motor2.go(40)
+                                time.sleep(0.05)
+                                print(f"---motor LEFT {angle_of_marker}---")
                                 motor1.stop()
                                 motor2.stop()
-                            elif 0.01 > angle_of_marker > -0.01:
-                                motor1.go(50)
-                                motor2.go(50)
-                                time.sleep(0.5)
+                            elif 0.05 > tvec[0] > -0.05:
+                                go_ahead_gain = (distance_of_marker-0.41) / 0.41
+                                motor1.go(40+40*go_ahead_gain)
+                                motor2.go(40+40*go_ahead_gain)
+                                time.sleep(0.05)
+                                print("---motor GO AHEAD---")
                                 motor1.stop()
                                 motor2.stop()
                             else:
-                                motor1.go(30)
-                                motor2.go(50)
-                                time.sleep(0.1)
+                                motor1.go(40)
+                                motor2.go(70)
+                                time.sleep(0.05)
+                                print("---motor RIGHT---")
                                 motor1.stop()
                                 motor2.stop()
                         elif distance_of_marker >= 0.39:
-                            if angle_of_marker >= 0.01:
-                                print("その場回転!!")
-                                motor1.go(0)
-                                motor2.back(0)
-                                #time.sleep(1)
+                            if tvec[0] >= 0.03:
+                                print("---turn RIGHT---")
+                                motor1.go(40)
+                                motor2.back(40)
+                                time.sleep(0.03)
                                 motor1.stop()
                                 motor2.stop()
-                            elif 0.01 > angle_of_marker > -0.01:
-                                print("Let's release the module!!")
+                            elif tvec[0] <= -0.03:
+                                print("---turn LEFT---")
+                                motor1.back(40)
+                                motor2.go(40)
+                                time.sleep(0.03)
+                                motor1.stop()
+                                motor2.stop()
                             else:
-                                print("その場回転!!")
-                                motor1.back(0)
-                                motor2.go(0)
-                                #time.sleep(1)
-                                motor1.stop()
-                                motor2.stop()
+                                print("'\033[32m'---perfect REACHED---'\033[0m'")
+
                         else:
+                            motor1.back(60)
+                            motor2.back(50)
+                            time.sleep(0.02)
                             motor1.stop()
                             motor2.stop()
                             print("need to go back!!")
