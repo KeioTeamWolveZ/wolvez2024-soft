@@ -86,6 +86,7 @@ if __name__ == "__main__":
     while True:
         im = pc2.picam2.capture_array()
         print(im[:,:,:3].shape)
+        im = cv2.resize(im,None,fx=0.5,fy=0.5)
         cv2.imshow("Camera", im)
 
         key = cv2.waitKey(1)

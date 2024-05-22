@@ -32,6 +32,7 @@ elif int(camera) == 2:
     picam2.start()
     # picam2.set_controls({"AfMode": controls.AfModeEnum.Continuous})
     picam2.set_controls({"AfMode":0,"LensPosition":5.5})
+    lens = 5.5
 
 # ====================================定数の定義====================================
 VEC_GOAL = [0.0,0.1968730025228114,0.3]
@@ -47,6 +48,8 @@ ar = Artools()
 # ==============================メインループ==============================
 # =======================================================================
 while True:
+    print(lens)
+    picam2.set_controls({"AfMode":0,"LensPosition":lens})
     # カメラ画像の取得
     if int(camera) == 1:
         ret, frame = cap.read()
@@ -109,6 +112,16 @@ while True:
                 polar_exchange = ar.polar_change(tvec)
                 # print("kabuto_function:",distance,angle)
                 # print("yunosu_function:",polar_exchange)
+                change_lens = -17.2*polar_exchange[0]+9.84
+                print(f"\033[32m{change_lens}\033[0m")
+                if change_lens < 3:
+                    lens = 3
+                elif change_lens > 10:
+                    lens = 10.5
+                else:
+                    lens = change_lens
+                    
+                
                 
 
 

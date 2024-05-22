@@ -36,6 +36,7 @@ elif int(camera) == 2:
     picam2.start()
     # picam2.set_controls({"AfMode": controls.AfModeEnum.Continuous})
     picam2.set_controls({"AfMode":0,"LensPosition":5.5})
+    lens = 5.5
 # ==================================motor setting==================================
 GPIO.setwarnings(False)
 motor1 = motor.motor(6,5,13)
@@ -54,6 +55,7 @@ ar = Artools()
 # ==============================メインループ==============================
 # =======================================================================
 while True:
+    picam2.set_controls({"AfMode":0,"LensPosition":lens})
     # カメラ画像の取得
     if int(camera) == 1:
         ret, frame = cap.read()
@@ -107,22 +109,22 @@ while True:
                         angle_of_marker = polar_exchange[1]
                         if distance_of_marker >= 0.41:
                             if tvec[0] >= 0.05:
-                                motor1.go(60)
-                                motor2.go(40)
+                                motor1.go(70)
+                                motor2.go(45)
                                 time.sleep(0.05)
                                 print(f"---motor LEFT {angle_of_marker}---")
                                 motor1.stop()
                                 motor2.stop()
                             elif 0.05 > tvec[0] > -0.05:
                                 go_ahead_gain = (distance_of_marker-0.41) / 0.41
-                                motor1.go(40+40*go_ahead_gain)
-                                motor2.go(40+40*go_ahead_gain)
+                                motor1.go(40+60*go_ahead_gain)
+                                motor2.go(40+60*go_ahead_gain)
                                 time.sleep(0.05)
                                 print("---motor GO AHEAD---")
                                 motor1.stop()
                                 motor2.stop()
                             else:
-                                motor1.go(40)
+                                motor1.go(45)
                                 motor2.go(70)
                                 time.sleep(0.05)
                                 print("---motor RIGHT---")
@@ -131,16 +133,16 @@ while True:
                         elif distance_of_marker >= 0.39:
                             if tvec[0] >= 0.03:
                                 print("---turn RIGHT---")
-                                motor1.go(40)
-                                motor2.back(40)
+                                motor1.go(45)
+                                motor2.back(45)
                                 time.sleep(0.03)
                                 motor1.stop()
                                 motor2.stop()
                             elif tvec[0] <= -0.03:
                                 print("---turn LEFT---")
-                                motor1.back(40)
-                                motor2.go(40)
-                                time.sleep(0.03)
+                                motor1.back(45)
+                                motor2.go(45)
+                                time.sleep(0.04)
                                 motor1.stop()
                                 motor2.stop()
                             else:
@@ -148,8 +150,8 @@ while True:
 
                         else:
                             motor1.back(60)
-                            motor2.back(50)
-                            time.sleep(0.02)
+                            motor2.back(60)
+                            time.sleep(0.03)
                             motor1.stop()
                             motor2.stop()
                             print("need to go back!!")
@@ -173,6 +175,13 @@ while True:
                 polar_exchange = ar.polar_change(tvec)
                 # print("kabuto_function:",distance,angle)
                 # print("yunosu_function:",polar_exchange)
+                change_lens = -17.2*polar_exchange[0]+9.84
+                if change_lens < 3:
+                    lens = 3
+                elif change_lens > 10:
+                    lens = 10.5
+                else:
+                    lens = change_lens
                 
 
 

@@ -27,10 +27,12 @@ picam2.start()
 #picam2.set_controls({"AFSpeed":controls.AfSpeedEnum.Fast})
 # picam2.set_controls({"AfMode": controls.AfModeEnum.Continuous,"AfSpeed":controls.AfSpeedEnum.Fast})
 picam2.set_controls({"AfMode":0,"LensPosition":3.5})
+#10 : 10cm
+#9 : 13cm
 #8 : 15cm
-#7 : 20cm
-#6 : 25cm
-#5 : 30cm
+#7 : 18cm
+#6 : 23cm
+#5 : 38cm
 #4 : 40cm
 #Display for input data in real -time
 k = 1 
@@ -40,18 +42,10 @@ i = 0
 lens = [i*0.5 for i in range(10,14)]
 print(lens)
 while True:
-  if time.time()-t>1:
-    if i == 3:
-      i = 0
-    picam2.set_controls({"AfMode":0,"LensPosition":lens[i]})
-    print(lens[i])
-    t = time.time()
-    i += 1
-    
-    
-    
+  picam2.set_controls({"AfMode":0,"LensPosition":3})
   
   im = picam2.capture_array()
+  im = cv2.resize(im,None,fx=0.8,fy=0.8)
   cv2.imshow("Camera", im)
   key = cv2.waitKey(1)
   k += 1
