@@ -110,10 +110,11 @@ while True:
                 cv2.line(frame, (width//2,0), (width//2,height),(255,255,0))
                 distance, angle = ar.Correct(tvec,VEC_GOAL)
                 polar_exchange = ar.polar_change(tvec)
+                kabukin = ar.translate_coordinates(tvec,[0,0,-0.06],np.pi/9)
                 # print("kabuto_function:",distance,angle)
                 # print("yunosu_function:",polar_exchange)
                 change_lens = -17.2*polar_exchange[0]+9.84
-                print(f"\033[32m{change_lens}\033[0m")
+                print(f"\033[32m{kabukin}\033[0m")
                 if change_lens < 3:
                     lens = 3
                 elif change_lens > 10:
