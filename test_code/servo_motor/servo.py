@@ -1,53 +1,31 @@
-##################################################################
-### このコードはCanSat機体とは異なるピン配置を使っています。            ###
-### コードを回す際は注意してください。                               ###
-##################################################################
+import pigpio
+import time
 
-#必要なモジュールをインポート
-import RPi.GPIO as GPIO             #GPIO用のモジュールをインポート
-import time                         #時間制御用のモジュールをインポート
-import sys                          #sysモジュールをインポート
+SERVO_PIN = 18
 
-#ポート番号の定義
-Servo_pin = 18                      #変数"Servo_pin"に18を格納
+# pigpioを初期化
+pi = pigpio.pi()
 
-print(f"\033[32m"+"このコードはCanSat機体とは異なるピン配置を使っています。\
-                    \nコードを回す際は注意してください。pin = {Servo_pin}"+"\033[0m")
-ok = input("OK or Stop : ")
-if ok == "OK":
+# サーボモーターを特定の角度に設定する関数
+def set_angle(angle):
+    assert 0 <= angle <= 180, '角度は0から180の間でなければなりません'
+    
+    # 角度を500から2500のパルス幅にマッピングする
+    pulse_width = (angle / 180) * (2500 - 500) + 500
+    
+    # パルス幅を設定してサーボを回転させる
+    pi.set_servo_pulsewidth(SERVO_PIN, pulse_width)
 
-    #GPIOの設定
-    GPIO.setmode(GPIO.BCM)              #GPIOのモードを"GPIO.BCM"に設定
-    GPIO.setup(Servo_pin, GPIO.OUT)     #GPIO18を出力モードに設定
-
-    #PWMの設定
-    #サーボモータSG90の周波数は50[Hz]
-    Servo = GPIO.PWM(Servo_pin, 50)     #GPIO.PWM(ポート番号, 周波数[Hz])
-
-    Servo.start(0)                      #Servo.start(デューティ比[0-100%])
-
-    #角度からデューティ比を求める関数
-    def servo_angle(angle):
-        duty = 2.5 + (12.0 - 2.5) * (angle + 90) / 180   #角度からデューティ比を求める
-        Servo.ChangeDutyCycle(duty)     #デューティ比を変更
-        time.sleep(0.3)                 #0.3秒間待つ
-
-    #while文で無限ループ
-    #サーボモータの角度をデューティ比で制御
-    #Servo.ChangeDutyCycle(デューティ比[0-100%])
-    while True:
-        try:
-            servo_angle(-90)               #サーボモータ -90°
-            servo_angle(-60)               #サーボモータ -60°
-            servo_angle(-30)               #サーボモータ -30°
-            servo_angle(0)                 #サーボモータ  0°
-            servo_angle(30)                #サーボモータ  30°
-            servo_angle(60)                #サーボモータ  60°
-            servo_angle(90)                #サーボモータ  90°
-            print("aa")
-        except KeyboardInterrupt:          #Ctrl+Cキーが押された
-            Servo.stop()                   #サーボモータをストップ
-            GPIO.cleanup()                 #GPIOをクリーンアップ
-            sys.exit()                     #プログラムを終了
-else:
-    print("でなおしてきなしゃーい")
+# 使用例
+while True:
+    set_angle(90) # サーボを90度に設定
+    time.sleep(1)
+    print("a")
+    set_angle(0) # サーボを0度に設定
+    time.sleep(1)
+    
+    set_angle(90) # サーボを90度に設定
+    time.sleep(1)
+    
+    set_angle(180) # サーボを180度に設定
+    time.sleep(1)
