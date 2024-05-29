@@ -8,12 +8,13 @@ import RPi.GPIO as GPIO             #GPIO用のモジュールをインポート
 import time                         #時間制御用のモジュールをインポート
 import sys                          #sysモジュールをインポート
 
-print("\033[32m"+"このコードはCanSat機体とは異なるピン配置を使っています。\
-                    \nコードを回す際は注意してください。"+"\033[0m")
+#ポート番号の定義
+Servo_pin = 18                      #変数"Servo_pin"に18を格納
+
+print(f"\033[32m"+"このコードはCanSat機体とは異なるピン配置を使っています。\
+                    \nコードを回す際は注意してください。pin = {Servo_pin}"+"\033[0m")
 ok = input("OK or Stop : ")
 if ok == "OK":
-    #ポート番号の定義
-    Servo_pin = 23                      #変数"Servo_pin"に18を格納
 
     #GPIOの設定
     GPIO.setmode(GPIO.BCM)              #GPIOのモードを"GPIO.BCM"に設定
@@ -43,6 +44,7 @@ if ok == "OK":
             servo_angle(30)                #サーボモータ  30°
             servo_angle(60)                #サーボモータ  60°
             servo_angle(90)                #サーボモータ  90°
+            print("aa")
         except KeyboardInterrupt:          #Ctrl+Cキーが押された
             Servo.stop()                   #サーボモータをストップ
             GPIO.cleanup()                 #GPIOをクリーンアップ
