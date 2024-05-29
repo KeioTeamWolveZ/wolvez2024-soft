@@ -13,7 +13,7 @@ print("\033[32m"+"このコードはCanSat機体とは異なるピン配置を�
 ok = input("OK or Stop : ")
 if ok == "OK":
     #ポート番号の定義
-    Servo_pin = 18                      #変数"Servo_pin"に18を格納
+    Servo_pin = 23                      #変数"Servo_pin"に18を格納
 
     #GPIOの設定
     GPIO.setmode(GPIO.BCM)              #GPIOのモードを"GPIO.BCM"に設定

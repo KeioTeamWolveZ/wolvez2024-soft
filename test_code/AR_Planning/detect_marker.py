@@ -1,4 +1,4 @@
-# ARマーカーを認識するプログラム
+2# ARマーカーを認識するプログラム
 import cv2
 import numpy as np
 import cv2.aruco as aruco
@@ -15,7 +15,7 @@ camera_matrix = np.load("mtx.npy")
 distortion_coeff = np.load("dist.npy")
 
 # ==============================カメラの設定==============================
-
+2
 camera = input("Which camera do you want to use? (laptop:1 or picamera:2): ")
 if int(camera) == 1:
     cap = cv2.VideoCapture(1)
@@ -110,9 +110,9 @@ while True:
                 cv2.line(frame, (width//2,0), (width//2,height),(255,255,0))
                 distance, angle = ar.Correct(tvec,VEC_GOAL)
                 polar_exchange = ar.polar_change(tvec)
-                kabukin = ar.translate_coordinates(tvec,[0,0,-0.06],np.pi/9)
+                kabukin = ar.translate_coordinates(tvec,[0,0,-0.06],np.deg2rad(25))
                 # print("kabuto_function:",distance,angle)
-                # print("yunosu_function:",polar_exchange)
+                # print("yunosu_function:",polar_exchange)2
                 change_lens = -17.2*polar_exchange[0]+9.84
                 print(f"\033[32m{kabukin}\033[0m")
                 if change_lens < 3:
