@@ -5,7 +5,32 @@ import cv2.aruco as aruco
 from datetime import datetime
 from collections import deque
 from Ar_tools import Artools
+import pigpio
+import time
 
+#ポート番号の定義
+SERVO_PIN = 18    #変数"Servo_pin"に18を格納
+
+print(f"\033[32m"+"このコードはCanSat機体とは異なるピン配置を使っています。\
+                    \nコードを回す際は注意してください。pin = {Servo_pin}"+"\033[0m")
+ok = input("OK or Stop : ")
+
+pi = pigpio.pi()
+servo_cnt = 0
+
+#角度からデューティ比を求める関数
+def servo_angle(angle):
+    assert 0 <= angle <= 180, '角度は0から180の間でなければなりません'
+    
+    # 角度を500から2500のパルス幅にマッピングする
+    pulse_width = (angle / 180) * (2500 - 500) + 500
+    
+    # パルス幅を設定してサーボを回転させる
+    pi.set_servo_pulsewidth(SERVO_PIN, pulse_width)
+
+#while文で無限ループ
+#サーボモータの角度をデューティ比で制御
+#Servo.ChangeDutyCycle(デューティ比[0-100%])
 
 # ==============================ARマーカーの設定==============================
 dictionary = aruco.getPredefinedDictionary(aruco.DICT_ARUCO_ORIGINAL)
@@ -121,6 +146,19 @@ while True:
                     lens = 10.5
                 else:
                     lens = change_lens
+                
+                
+    # servo
+    if servo_cnt < 180:
+ #       servo_angle(servo_cnt)
+        servo_cnt += 2
+        print("===",servo_cnt)
+        if servo_cnt%15 == 0:
+            servo_angle(servo_cnt)
+    else:
+        servo_cnt = 0
+        servo_angle(servo_cnt)
+        time.sleep(0.5)
                     
                 
                 
@@ -133,6 +171,8 @@ while True:
     cv2.imshow('ARmarker', frame)
     key = cv2.waitKey(1)# キー入力の受付
     if key == 27:  # ESCキーで終了
+        Servo.stop()                   #サーボモータをストップ
+        GPIO.cleanup()                 #GPIOをクリーンアップ
         break
 
 # ==============================終了処理==============================
