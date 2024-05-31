@@ -8,29 +8,22 @@ from Ar_tools import Artools
 import pigpio
 import time
 
-#ポート番号の定義
-SERVO_PIN = 18    #変数"Servo_pin"に18を格納
-
 print(f"\033[32m"+"このコードはCanSat機体とは異なるピン配置を使っています。\
                     \nコードを回す際は注意してください。pin = {Servo_pin}"+"\033[0m")
 ok = input("OK or Stop : ")
 
+# ==============================サーボモータの設定==============================
+#ポート番号の定義
+SERVO_PIN = 18    #変数"Servo_pin"に18を格納
 pi = pigpio.pi()
 servo_cnt = 0
-
 #角度からデューティ比を求める関数
 def servo_angle(angle):
     assert 0 <= angle <= 180, '角度は0から180の間でなければなりません'
-    
     # 角度を500から2500のパルス幅にマッピングする
     pulse_width = (angle / 180) * (2500 - 500) + 500
-    
     # パルス幅を設定してサーボを回転させる
     pi.set_servo_pulsewidth(SERVO_PIN, pulse_width)
-
-#while文で無限ループ
-#サーボモータの角度をデューティ比で制御
-#Servo.ChangeDutyCycle(デューティ比[0-100%])
 
 # ==============================ARマーカーの設定==============================
 dictionary = aruco.getPredefinedDictionary(aruco.DICT_ARUCO_ORIGINAL)
@@ -40,7 +33,7 @@ camera_matrix = np.load("mtx.npy")
 distortion_coeff = np.load("dist.npy")
 
 # ==============================カメラの設定==============================
-2
+
 camera = input("Which camera do you want to use? (laptop:1 or picamera:2): ")
 if int(camera) == 1:
     cap = cv2.VideoCapture(1)
@@ -136,8 +129,6 @@ while True:
                 distance, angle = ar.Correct(tvec,VEC_GOAL)
                 polar_exchange = ar.polar_change(tvec)
                 kabukin = ar.translate_coordinates(tvec,[0,0,-0.06],np.deg2rad(25))
-                # print("kabuto_function:",distance,angle)
-                # print("yunosu_function:",polar_exchange)2
                 change_lens = -17.2*polar_exchange[0]+9.84
                 print(f"\033[32m{kabukin}\033[0m")
                 if change_lens < 3:
@@ -146,24 +137,16 @@ while True:
                     lens = 10.5
                 else:
                     lens = change_lens
-                
-                
-    # servo
+    # servoモータ
     if servo_cnt < 180:
- #       servo_angle(servo_cnt)
+        # servo_angle(servo_cnt)
         servo_cnt += 2
-        print("===",servo_cnt)
         if servo_cnt%15 == 0:
             servo_angle(servo_cnt)
     else:
         servo_cnt = 0
         servo_angle(servo_cnt)
         time.sleep(0.5)
-                    
-                
-                
-
-
 
     # ====================================結果の表示===================================
     # #　画像のリサイズを行う
