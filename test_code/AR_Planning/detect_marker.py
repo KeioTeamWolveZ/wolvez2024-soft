@@ -15,7 +15,7 @@ camera_matrix = np.load("mtx.npy")
 distortion_coeff = np.load("dist.npy")
 
 # ==============================カメラの設定==============================
-2
+
 camera = input("Which camera do you want to use? (laptop:1 or picamera:2): ")
 if int(camera) == 1:
     cap = cv2.VideoCapture(1)
@@ -48,18 +48,20 @@ ar = Artools()
 # ==============================メインループ==============================
 # =======================================================================
 while True:
-    print(lens)
-    picam2.set_controls({"AfMode":0,"LensPosition":lens})
+    
     # カメラ画像の取得
     if int(camera) == 1:
         ret, frame = cap.read()
     elif int(camera) == 2:
         frame = picam2.capture_array()
+        print(lens)
+        picam2.set_controls({"AfMode":0,"LensPosition":lens})
     height = frame.shape[0]
     width = frame.shape[1]
 
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # グレースケールに変換
-    corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, dictionary) # ARマーカーの検出    
+    corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, dictionary) # ARマーカーの検出
+
 
     if ids is not None:
         # aruco.drawDetectedMarkers(frame, corners, ids)
