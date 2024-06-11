@@ -107,58 +107,48 @@ while True:
                         tvec[0] = tvec[0]
                         polar_exchange = ar.polar_change(tvec)
                         print(f"yunosu_function_{ids[i]}:",polar_exchange)
-                        
-                        distance_of_marker = polar_exchange[0]
-                        angle_of_marker = polar_exchange[1]
-                        if distance_of_marker >= closing_threshold:
-                            if tvec[0] >= 0.05:
-                                motor1.go(70)
-                                motor2.go(45)
-                                time.sleep(0.05)
-                                print(f"---motor LEFT {angle_of_marker}---")
-                                motor1.stop()
-                                motor2.stop()
-                            elif 0.05 > tvec[0] > -0.05:
-                                go_ahead_gain = (distance_of_marker-closing_threshold) / closing_threshold
-                                motor1.go(40+60*go_ahead_gain)
-                                motor2.go(40+60*go_ahead_gain)
-                                time.sleep(0.05)
-                                print("---motor GO AHEAD---")
-                                motor1.stop()
-                                motor2.stop()
-                            else:
-                                motor1.go(45)
+                        distance_of_marker = polar_exchange[0] #r
+                        angle_of_marker = polar_exchange[1] #theta
+                
+                    def yunosu(k):
+                        if distance_of_marker <= closing_threshold:
+
+                            if -10 >= angle_of_marker >= 0: #ARマーカがやや左から正面にある場合
+                                motor1.go(-70)   #その場右回転
                                 motor2.go(70)
                                 time.sleep(0.05)
-                                print("---motor RIGHT---")
+                                print("そっぽ向きます")
                                 motor1.stop()
                                 motor2.stop()
-                        elif distance_of_marker >= closing_threshold - closing_range:
-                            if tvec[0] >= 0.03:
-                                print("---turn RIGHT---")
-                                motor1.go(45)
-                                motor2.back(45)
-                                time.sleep(0.03)
-                                motor1.stop()
-                                motor2.stop()
-                            elif tvec[0] <= -0.03:
-                                print("---turn LEFT---")
-                                motor1.back(45)
-                                motor2.go(45)
-                                time.sleep(0.04)
-                                motor1.stop()
-                                motor2.stop()
-                            else:
-                                print("'\033[32m'---perfect REACHED---'\033[0m'")
 
-                        else:
-                            motor1.back(60)
-                            motor2.back(60)
-                            time.sleep(0.03)
-                            motor1.stop()
-                            motor2.stop()
-                            print("need to go back!!")
-                        
+                            elif 0 <= angle_of_marker <= 10: #ARマーカがやや右から正面にある場合
+                                motor1.go(70)   #その場左回転
+                                motor2.go(-70)
+                                time.sleep(0.05)
+                                print("そっぽ向きます")
+                                motor1.stop()
+                                motor2.stop()
+
+                            while True:
+                                motor1.go(70)
+                                motor2.go(70)
+                                time.sleep(4 + k)
+                                motor1.stop()
+                                motor2.stop()
+                            
+                            
+                            
+
+
+
+                        yunosu(0)
+                        if distance_of_marker <= closing_threshold:
+                            yunosu(1)
+                        if distance_of_marker <= closing_threshold:  
+                            yunosu(2)
+                        if distance_of_marker <= closing_threshold:  
+                            yunosu(3)
+                
                     else: # detected AR marker is not reliable
                         print("state of marker is rejected")
                         print(ultra_count)
