@@ -148,6 +148,7 @@ while True:
                                 time.sleep(0.04)
                                 motor1.stop()
                                 motor2.stop()
+                                
                             else:
                                 print("'\033[32m'---perfect REACHED---'\033[0m'")
 

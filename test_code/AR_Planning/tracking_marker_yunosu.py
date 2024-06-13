@@ -6,7 +6,7 @@ from datetime import datetime
 from collections import deque
 from Ar_tools import Artools
 import motor
-import RPi.GPIO as GPIO
+# import RPi.GPIO as GPIO
 import time
 
 
@@ -15,14 +15,14 @@ import time
 dictionary = aruco.getPredefinedDictionary(aruco.DICT_ARUCO_ORIGINAL)
 # マーカーサイズの設定
 marker_length = 0.0215  # マーカーの1辺の長さ（メートル）
-camera_matrix = np.load("mtx.npy")
-distortion_coeff = np.load("dist.npy")
+camera_matrix = np.load("mtx_laptop.npy")
+distortion_coeff = np.load("dist_laptop.npy")
 
 # ==============================カメラの設定==============================
 
 camera = input("Which camera do you want to use? (laptop:1 or picamera:2): ")
 if int(camera) == 1:
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0)
 elif int(camera) == 2:
     from picamera2 import Picamera2 #laptopでは使わないため
     from libcamera import controls #laptopでは使わないため
@@ -38,7 +38,7 @@ elif int(camera) == 2:
     picam2.set_controls({"AfMode":0,"LensPosition":5.5})
     lens = 5.5
 # ==================================motor setting==================================
-GPIO.setwarnings(False)
+# GPIO.setwarnings(False)
 motor1 = motor.motor(6,5,13)
 motor2 = motor.motor(20,16,12)
 # ====================================定数の定義====================================
@@ -51,14 +51,25 @@ TorF = True
 # ====================================成功の定義====================================
 closing_threshold = 0.4
 closing_range = 0.02
+k = 0
 # ==============================クラスのインスタンス化==============================
 ar = Artools()
 
+def yunosu_2(): #ARマーカを認識するまでその場回転
+    if distance_of_marker is None: #ARマーカを認識するまでその場回転
+        motor1.go(70)   #その場左回転
+        motor2.go(-70)
+        time.sleep(0.05)
+        print("ARマーカー探してます")
+        motor1.stop()
+        motor2.stop()
 # =======================================================================
 # ==============================メインループ==============================
 # =======================================================================
+yunosu_pos = "Left"
+
 while True:
-    picam2.set_controls({"AfMode":0,"LensPosition":lens})
+    # picam2.set_controls({"AfMode":0,"LensPosition":lens})
     # カメラ画像の取得
     if int(camera) == 1:
         ret, frame = cap.read()
@@ -109,18 +120,58 @@ while True:
                         print(f"yunosu_function_{ids[i]}:",polar_exchange)
                         distance_of_marker = polar_exchange[0] #r
                         angle_of_marker = polar_exchange[1] #theta
-                
-                    def yunosu(k):
-                        if distance_of_marker <= closing_threshold:
+                        
+                        if distance_of_marker >= closing_threshold + closing_range:
+                            if tvec[0] >= 0.05:
+                                motor1.go(70)
+                                motor2.go(45)
+                                time.sleep(0.05)
+                                print(f"---motor LEFT {angle_of_marker}---")
+                                motor1.stop()
+                                motor2.stop()
+                            elif 0.05 > tvec[0] > -0.05:
+                                go_ahead_gain = (distance_of_marker-closing_threshold) / closing_threshold
+                                motor1.go(40+60*go_ahead_gain)
+                                motor2.go(40+60*go_ahead_gain)
+                                time.sleep(0.05)
+                                print("---motor GO AHEAD---")
+                                motor1.stop()
+                                motor2.stop()
+                            else:
+                                motor1.go(45)
+                                motor2.go(70)
+                                time.sleep(0.05)
+                                print("---motor RIGHT---")
+                                motor1.stop()
+                                motor2.stop()
+                        elif distance_of_marker >= closing_threshold:
+                            if tvec[0] >= 0.03:
+                                print("---turn RIGHT---")
+                                motor1.go(45)
+                                motor2.back(45)
+                                time.sleep(0.03)
+                                motor1.stop()
+                                motor2.stop()
+                            elif tvec[0] <= -0.03:
+                                print("---turn LEFT---")
+                                motor1.back(45)
+                                motor2.go(45)
+                                time.sleep(0.04)
+                                motor1.stop()
+                                motor2.stop()
+                                
+                            else:
+                                print("'\033[32m'---perfect REACHED---'\033[0m'")
 
-                            if -10 >= angle_of_marker >= 0: #ARマーカがやや左から正面にある場合
+                        if distance_of_marker <= closing_threshold - closing_range:
+                            if -10 <= angle_of_marker <= 0: #ARマーカがやや左から正面にある場合
                                 motor1.go(-70)   #その場右回転
                                 motor2.go(70)
                                 time.sleep(0.05)
                                 print("そっぽ向きます")
                                 motor1.stop()
                                 motor2.stop()
-
+                                yunosu_pos = "Left"
                             elif 0 <= angle_of_marker <= 10: #ARマーカがやや右から正面にある場合
                                 motor1.go(70)   #その場左回転
                                 motor2.go(-70)
@@ -128,35 +179,24 @@ while True:
                                 print("そっぽ向きます")
                                 motor1.stop()
                                 motor2.stop()
-
-                            while True:
+                                yunosu_pos = "Right"
+                            else: #4+k秒ただ直進(ARマーカから離れる)   
                                 motor1.go(70)
                                 motor2.go(70)
                                 time.sleep(4 + k)
+                                print("直進終了")
                                 motor1.stop()
                                 motor2.stop()
+                                k += 1
                             
-                            
-                            
-
-
-
-                        yunosu(0)
-                        if distance_of_marker <= closing_threshold:
-                            yunosu(1)
-                        if distance_of_marker <= closing_threshold:  
-                            yunosu(2)
-                        if distance_of_marker <= closing_threshold:  
-                            yunosu(3)
-                
-                    else: # detected AR marker is not reliable
-                        print("state of marker is rejected")
-                        print(ultra_count)
-                        reject_count += 1 # 拒否された回数をカウント
+                        else: # detected AR marker is not reliable
+                            print("state of marker is rejected")
+                            print(ultra_count)
+                            reject_count += 1 # 拒否された回数をカウント
                         if reject_count > 10: # 拒否され続けたらリセットしてARマーカーの基準を上書き（再計算）
                             ultra_count = 0
                             reject_count = 0 #あってもなくても良い
-                    
+       
 
                 # 発見したマーカーから1辺が30センチメートルの正方形を描画
                 color = (0,255,0)
@@ -175,7 +215,25 @@ while True:
                     lens = 10.5
                 else:
                     lens = change_lens
-                
+    
+    
+    else: #ARマーカを認識していない時，認識するまでその場回転
+        if yunosu_pos == "Left":
+            motor1.go(70)   #その場左回転
+            motor2.go(-70)
+            time.sleep(0.05)
+            print("ARマーカー探してます(LEFT)")
+            motor1.stop()
+            motor2.stop()
+        elif yunosu_pos == "Right":
+            motor1.go(-70)   #その場右回転
+            motor2.go(70)
+            time.sleep(0.05)
+            print("ARマーカー探してます(RIGHT)")
+            motor1.stop()
+            motor2.stop()
+        else:
+            print("認識していません")               
 
 
 
