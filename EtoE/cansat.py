@@ -10,6 +10,7 @@ from datetime import datetime
 from glob import glob
 import constant as ct
 from Wolvez2024_now.gps import GPS
+from Wolvez2024_now.bno055 import BNO055
 
 
 """
@@ -32,6 +33,7 @@ class Cansat():
 		print(ct.const.RIGHT_MOTOR_IN1_PIN)
 
 		self.gps = GPS()
+		self.bno055 = BNO055()
 	
 	def mkdir(self):
 		pass
@@ -44,8 +46,10 @@ class Cansat():
 		
 	def writeData(self):
 		log_data = {
-					"state":self.state,
-					"time":self.time
+					"state":str(self.state),
+					"time":str(self.gps.Time),
+					"Lat":str(self.gps.Lat),
+					"Lon":str(self.gps.Lon)
 					}
 		print(log_data)
 		
@@ -61,7 +65,8 @@ class Cansat():
 		# main.pyで毎周期実行される。
 		
 		if self.state == 0:
-			print("\033[32m",0,"\033[0m")
+#			print("\033[32m","","\033[0m")
+			pass
 		elif self.state == 1:
 			print("\033[32m",1,"\033[0m")
 		elif self.state == 2:
@@ -85,6 +90,18 @@ class Cansat():
 	def sensor(self):
 		# センサの値を取得
 		self.gps.gpsread()
+		self.bno055.bnoread()
+		self.ax=round(self.bno055.ax,3)
+		self.ay=round(self.bno055.ay,3)
+		self.az=round(self.bno055.az,3)
+		self.gx=round(self.bno055.gx,3)
+		self.gy=round(self.bno055.gy,3)
+		self.gz=round(self.bno055.gz,3)
+		self.ex=round(self.bno055.ex,3)
+		self.lat = round(float(self.gps.Lat),5)
+		self.lon = round(float(self.gps.Lon),5)
+		
+		self.writeData()
 		pass
 	
 	def preparing(self):

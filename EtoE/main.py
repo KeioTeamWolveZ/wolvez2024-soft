@@ -5,7 +5,6 @@ try:
 	cansat  = Cansat(0)
 	cansat.sensor_setup()
 	while True:
-		print("=")
 		cansat.sensor()
 		time.sleep(0.03)
 		cansat .sequence()
