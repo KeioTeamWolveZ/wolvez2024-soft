@@ -1,4 +1,6 @@
 import pigpio
+import RPi.GPIO as GPIO
+
 import sys
 import cv2
 import time
@@ -9,8 +11,11 @@ import math
 from datetime import datetime
 from glob import glob
 import constant as ct
+
+from Wolvez2024_now.led import led
 from Wolvez2024_now.gps import GPS
 from Wolvez2024_now.bno055 import BNO055
+from Wolvez2024_now.bmp import BMP
 
 
 """
@@ -27,14 +32,51 @@ from Wolvez2024_now.bno055 import BNO055
 """
 class Cansat():
 	def __init__(self,state):
+		# GPIO設定
+		GPIO.setwarnings(False)
+		GPIO.setmode(GPIO.BCM) #GPIOの設定
+		GPIO.setup(ct.const.FLIGHTPIN_PIN,GPIO.IN,pull_up_down=GPIO.PUD_UP) #フライトピン用。プルアップを有効化
+		
+		
 		self.timer = 0
 		self.state = state
+		self.last_state = 0
 		self.time = 0
 		print(ct.const.RIGHT_MOTOR_IN1_PIN)
+		self.RED_LED = led(ct.const.RED_LED_PIN)
+		self.BLUE_LED = led(ct.const.BLUE_LED_PIN)
+		self.GREEN_LED = led(ct.const.GREEN_LED_PIN)
 
 		self.gps = GPS()
 		self.bno055 = BNO055()
-	
+		self.bmp = BMP()
+		
+		
+		
+		
+		self.preparingTime = 0
+		self.flyingTime = 0
+		
+		self.gpscount = 0
+		self.countFlyLoop = 0
+		
+		self.startgps_lon = []
+		self.startgps_lat = []
+		
+		
+		self.temp = 0
+		self.pressure = 0
+		self.altitude = 0
+		self.ax= 0
+		self.ay= 0
+		self.az= 0
+		self.gx= 0
+		self.gy= 0
+		self.gz= 0
+		self.ex= 0
+		self.lat = 0
+		self.lon = 0
+		
 	def mkdir(self):
 		pass
 		
@@ -49,7 +91,17 @@ class Cansat():
 					"state":str(self.state),
 					"time":str(self.gps.Time),
 					"Lat":str(self.gps.Lat),
-					"Lon":str(self.gps.Lon)
+					"Lon":str(self.gps.Lon),
+					"ax":str(self.ax),
+					"ay":str(self.ay),
+					"az":str(self.az),
+					"gx":str(self.gx),
+					"gy":str(self.gy),
+					"gz":str(self.gz),
+					"temp":str(self.temp),
+					"pressure":str(self.pressure),
+					"altitude":str(self.altitude)
+					
 					}
 		print(log_data)
 		
@@ -66,9 +118,10 @@ class Cansat():
 		
 		if self.state == 0:
 #			print("\033[32m","","\033[0m")
-			pass
+			self.preparing()			
+			
 		elif self.state == 1:
-			print("\033[32m",1,"\033[0m")
+			self.flying()
 		elif self.state == 2:
 			print("\033[32m",2,"\033[0m")
 		elif self.state == 3:
@@ -85,12 +138,20 @@ class Cansat():
 	def sensor_setup(self):
 		# センサのセットアップを実行
 		self.gps.setupGps()
+		self.bno055.setupBno()
+		self.bno055.bnoInitial()
+		#self.lora.sendDevice.setup_lora()
+		#self.arm.setup()
+		if self.bno055.begin() is not True:
+			print("Error initializing device")
+			exit()
 		pass
 
 	def sensor(self):
 		# センサの値を取得
 		self.gps.gpsread()
 		self.bno055.bnoread()
+		self.temp,self.pressure,self.altitude = self.bmp.readBMP()
 		self.ax=round(self.bno055.ax,3)
 		self.ay=round(self.bno055.ay,3)
 		self.az=round(self.bno055.az,3)
@@ -104,10 +165,49 @@ class Cansat():
 		self.writeData()
 		pass
 	
-	def preparing(self):
-		pass
-	def flying(self):
-		pass
+	def preparing(self):	
+		self.RED_LED.led_on()
+		
+		if self.preparingTime == 0:
+            # self.pc2.set_controls({"AfMode": controls.AfModeEnum.Continuous})
+            # self.img = self.pc2.capture(0,self.results_img_dir+f'/{self.cameraCount}')
+			self.preparingTime = time.time()#時刻を取得
+			self.RED_LED.led_on()
+			self.BLUE_LED.led_off()
+			self.GREEN_LED.led_off()
+		if not self.preparingTime == 0:
+			if self.gpscount <= ct.const.PREPARING_GPS_COUNT_THRE:
+				self.startgps_lon.append(float(self.gps.Lon))
+				self.startgps_lat.append(float(self.gps.Lat))
+				self.gpscount+=1
+                
+			else:
+				print("GPS completed!!")
+				
+			if time.time() - self.preparingTime > ct.const.PREPARING_TIME_THRE:
+				self.startlon=np.mean(self.startgps_lon)
+				self.startlat=np.mean(self.startgps_lat)
+				self.state = 1
+				self.laststate = 1
+		time.sleep(0.1)
+		self.RED_LED.led_off()
+		
+		
+	def flying(self): #フライトピンが外れる➡︎ボイド缶から放出されたことを検出するステート
+		if self.flyingTime == 0:#時刻を取得してLEDをステートに合わせて光らせる
+			self.flyingTime = time.time()
+			self.RED_LED.led_off()
+			self.BLUE_LED.led_off()
+			self.GREEN_LED.led_off()
+
+		if GPIO.input(ct.const.FLIGHTPIN_PIN) == GPIO.HIGH: #highかどうか＝フライトピンが外れているかチェック
+			self.countFlyLoop+=1
+			if self.countFlyLoop > ct.const.FLYING_FLIGHTPIN_COUNT_THRE: #一定時間HIGHだったらステート移行
+				self.state = 2
+				self.laststate = 2       
+		else:
+			self.countFlyLoop = 0 #何故かLOWだったときカウントをリセット
+    
 	def landing(self):
 		pass
 	def para_escaping(self):
@@ -119,6 +219,11 @@ class Cansat():
 	def judgement(self):
 		pass
 	def finish(self):
+		pass
+	
+	
+	def keyboardinterrupt(self): #キーボードインタラプト入れた場合に発動する関数
+		self.RED_LED.led_clean()
 		pass
 	
 			
