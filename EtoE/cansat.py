@@ -9,6 +9,7 @@ import math
 from datetime import datetime
 from glob import glob
 import constant as ct
+from Wolvez2024_now.gps import GPS
 
 
 """
@@ -29,6 +30,8 @@ class Cansat():
 		self.state = state
 		self.time = 0
 		print(ct.const.RIGHT_MOTOR_IN1_PIN)
+
+		self.gps = GPS()
 	
 	def mkdir(self):
 		pass
@@ -76,6 +79,12 @@ class Cansat():
 	
 	def sensor_setup(self):
 		# センサのセットアップを実行
+		self.gps.setupGps()
+		pass
+
+	def sensor(self):
+		# センサの値を取得
+		self.gps.gpsread()
 		pass
 	
 	def preparing(self):
