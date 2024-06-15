@@ -194,19 +194,25 @@ class Cansat():
 		
 		
 	def flying(self): #フライトピンが外れる➡︎ボイド缶から放出されたことを検出するステート
+		self.BLUE_LED.led_on()
 		if self.flyingTime == 0:#時刻を取得してLEDをステートに合わせて光らせる
 			self.flyingTime = time.time()
 			self.RED_LED.led_off()
-			self.BLUE_LED.led_off()
+			self.BLUE_LED.led_on()
 			self.GREEN_LED.led_off()
 
-		if GPIO.input(ct.const.FLIGHTPIN_PIN) == GPIO.HIGH: #highかどうか＝フライトピンが外れているかチェック
-			self.countFlyLoop+=1
-			if self.countFlyLoop > ct.const.FLYING_FLIGHTPIN_COUNT_THRE: #一定時間HIGHだったらステート移行
-				self.state = 2
-				self.laststate = 2       
-		else:
-			self.countFlyLoop = 0 #何故かLOWだったときカウントをリセット
+		# ~ if GPIO.input(ct.const.FLIGHTPIN_PIN) == GPIO.HIGH: #highかどうか＝フライトピンが外れているかチェック
+			# ~ self.countFlyLoop+=1
+			# ~ if self.countFlyLoop > ct.const.FLYING_FLIGHTPIN_COUNT_THRE: #一定時間HIGHだったらステート移行
+				# ~ self.state = 2
+				# ~ self.laststate = 2       
+		# ~ else:
+			# ~ self.countFlyLoop = 0 #何故かLOWだったときカウントをリセット
+		
+		time.sleep(0.2)
+		self.BLUE_LED.led_off()
+		
+		print("\033[32m",1,"\033[0m")
     
 	def landing(self):
 		pass
