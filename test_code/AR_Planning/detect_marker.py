@@ -5,6 +5,7 @@ import cv2.aruco as aruco
 from datetime import datetime
 from collections import deque
 from Ar_tools import Artools
+from camera_rotation import camera_rotation
 
 
 # ==============================ARマーカーの設定==============================
@@ -112,7 +113,7 @@ while True:
                 cv2.line(frame, (width//2,0), (width//2,height),(255,255,0))
                 distance, angle = ar.Correct(tvec,VEC_GOAL)
                 polar_exchange = ar.polar_change(tvec)
-                kabukin = ar.translate_coordinates(tvec,[0,0,-0.06],np.deg2rad(25))
+                kabukin = camera_rotation(tvec, [0, 0, 0], [0, 0, 0], [0, 0, 0], 0, np.deg2rad(25), 0)
                 # print("kabuto_function:",distance,angle)
                 # print("yunosu_function:",polar_exchange)2
                 change_lens = -17.2*polar_exchange[0]+9.84
