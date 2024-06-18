@@ -1,27 +1,69 @@
 import numpy as np
 
-def translate_coordinates(cam_vec, body_vec, θ):
+def camera_rotation(AR_vec, rotx_vec, roty_vec, rotz_vec, θ, φ, ψ):
     '''
-    input:  カメラ座標系での任意の座標cam_vec(x, y, z), 
-            カメラ座標原点に対するカメラの回転軸中心座標body_vec(x_0, y_0, z_0)
-            カメラの回転角度θ(機体座標系y軸周りの回転) z軸をx軸に近づけるが正
-    const: 
-    output: カメラ座標系での任意の座標をカメラの回転角度θに基づいて変換した座標rot_vec(x_r, y_r, z_r)
+    input:  ARマーカの座標AR_vec(x_AR, y_AR, z_AR) [m]
+            x軸周りの回転の中心座標rotx_vec(x_rotx, y_rotx, z_rotx) [m]
+            y軸周りの回転の中心座標roty_vec(x_roty, y_roty, z_roty) [m]
+            z軸周りの回転の中心座標rotz_vec(x_rotz, y_rotz, z_rotz) [m]
+            x軸周りの回転角θ [rad] (y軸をz軸に近づける向きを正, 機体前側を上に向けると正)
+            y軸周りの回転角φ [rad] (z軸をx軸に近づける向きを正, 機体を時計回りに回すと正)
+            z軸周りの回転角ψ [rad] (x軸をy軸に近づける向きを正, 機体左側を上に向けると正)
+            
+    output: 任意の座標でx軸, y軸, z軸周りに回転した後のARマーカの座標AR_rot_vec(x_AR_rot, y_AR_rot, z_AR_rot)
     '''
-    x, y, z = cam_vec
-    x_0, y_0, z_0 = body_vec
+    # x軸周りの回転
+    def rotate_x(vec, center, θ):
+        θ = -θ
+        trans = np.array([[np.cos(θ), -np.sin(θ), center[1] - center[1] * np.cos(θ) + center[2] * np.sin(θ)],
+                          [np.sin(θ), np.cos(θ), center[2] - center[1] * np.sin(θ) - center[2] * np.cos(θ)],
+                          [0, 0, 1]])
+        y_AR_rotx, z_AR_rotx, k = np.dot(trans, np.array([vec[1], vec[2], 1]))
+        return y_AR_rotx, z_AR_rotx
 
-    #カメラ座標から機体座標（カメラの回転軸中心を原点とする直交座標）への変換（平行移動）
-    x2, y2, z2 = x - x_0, y - y_0, z - z_0
+    # y軸周りの回転
+    def rotate_y(vec, center, φ):
+        trans = np.array([[np.cos(φ), -np.sin(φ), center[0] - center[0] * np.cos(φ) + center[2] * np.sin(φ)],
+                          [np.sin(φ), np.cos(φ), center[2] - center[0] * np.sin(φ) - center[2] * np.cos(φ)],
+                          [0, 0, 1]])
+        x_AR_roty, z_AR_roty, k = np.dot(trans, np.array([vec[0], vec[2], 1]))
+        return x_AR_roty, z_AR_roty
 
-    #機体座標系の座標(x2, y2, z2)をy軸周りにθ回転（回転移動）
-    rot_y = np.array([[np.cos(θ), 0, -np.sin(θ)],[0, 1, 0],[np.sin(θ), 0, np.cos(θ)]]) #y軸周りの回転行列を定義
-    x3, y3, z3 = np.dot(rot_y, np.array([x2, y2, z2]))
+    # z軸周りの回転
+    def rotate_z(vec, center, ψ):
+        ψ = -ψ
+        trans = np.array([[np.cos(ψ), -np.sin(ψ), center[0] - center[0] * np.cos(ψ) + center[1] * np.sin(ψ)],
+                          [np.sin(ψ), np.cos(ψ), center[1] - center[0] * np.sin(ψ) - center[1] * np.cos(ψ)],
+                          [0, 0, 1]])
+        x_AR_rotz, y_AR_rotz, k = np.dot(trans, np.array([vec[0], vec[1], 1]))
+        return x_AR_rotz, y_AR_rotz
 
-    #カメラ座標から機体座標への変換（平行移動）
-    x_0, y_0, z_0 = np.dot(rot_y, np.array([x_0, y_0, z_0]))
-    rot_vec = x3 + x_0, y3 + y_0, z3 + z_0
+    # 初期のARマーカーの座標
+    x_AR, y_AR, z_AR = AR_vec
 
-    return rot_vec
+    # x軸周りの回転
+    y_AR, z_AR = rotate_x([x_AR, y_AR, z_AR], rotx_vec, θ)
+    AR_vec = [x_AR, y_AR, z_AR]
 
-print(translate_coordinates([1, 0, 1], [2, 0, 2], np.pi/4))
+    # y軸周りの回転
+    x_AR, z_AR = rotate_y([x_AR, y_AR, z_AR], roty_vec, φ)
+    AR_vec = [x_AR, y_AR, z_AR]
+
+    # z軸周りの回転
+    x_AR, y_AR, z_AR = AR_vec
+    x_AR, y_AR = rotate_z([x_AR, y_AR, z_AR], rotz_vec, ψ)
+    AR_vec = [x_AR, y_AR, z_AR]
+
+    return AR_vec
+
+# 使用例
+AR_vec = [1, 1, 1]  # ARマーカの座標
+rotx_vec = [0, -1, -1] # x軸周りの回転の中心座標
+roty_vec = [-1, 0, -1] # y軸周りの回転の中心座標
+rotz_vec = [-1, -1, 0] # z軸周りの回転の中心座標
+θ = np.pi / 4  # x軸周りの回転角
+φ = np.pi / 4  # y軸周りの回転角
+ψ = np.pi / 4  # z軸周りの回転角
+
+rotated_AR_vec = camera_rotation(AR_vec, rotx_vec, roty_vec, rotz_vec, θ, φ, ψ)
+print(rotated_AR_vec)

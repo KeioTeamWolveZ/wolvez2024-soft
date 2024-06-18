@@ -175,6 +175,8 @@ while True:
                 polar_exchange = ar.polar_change(tvec)
                 # print("kabuto_function:",distance,angle)
                 # print("yunosu_function:",polar_exchange)
+
+                # カメラレンズの回帰式
                 change_lens = -17.2*polar_exchange[0]+9.84
                 if change_lens < 3:
                     lens = 3
