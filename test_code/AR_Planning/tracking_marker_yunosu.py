@@ -6,7 +6,7 @@ from datetime import datetime
 from collections import deque
 from Ar_tools import Artools
 import motor
-# import RPi.GPIO as GPIO
+import RPi.GPIO as GPIO
 import time
 
 
@@ -34,11 +34,11 @@ elif int(camera) == 2:
     picam2.align_configuration(config)
     picam2.configure(config)
     picam2.start()
-    # picam2.set_controls({"AfMode": controls.AfModeEnum.Continuous})
+    #picam2.set_controls({"AfMode": controls.AfModeEnum.Continuous})
     picam2.set_controls({"AfMode":0,"LensPosition":5.5})
     lens = 5.5
 # ==================================motor setting==================================
-# GPIO.setwarnings(False)
+GPIO.setwarnings(False)
 motor1 = motor.motor(6,5,13)
 motor2 = motor.motor(20,16,12)
 # ====================================定数の定義====================================
@@ -225,6 +225,7 @@ while True:
             print("ARマーカー探してます(LEFT)")
             motor1.stop()
             motor2.stop()
+            time.sleep(0.5)
         elif yunosu_pos == "Right":
             motor1.go(-70)   #その場右回転
             motor2.go(70)
@@ -232,6 +233,7 @@ while True:
             print("ARマーカー探してます(RIGHT)")
             motor1.stop()
             motor2.stop()
+            time.sleep(0.5)
         else:
             print("認識していません")               
 
@@ -248,4 +250,4 @@ while True:
 # ==============================終了処理==============================
 cap.release()
 cv2.destroyAllWindows()
-# GPIO.cleanup()
+GPIO.cleanup()
