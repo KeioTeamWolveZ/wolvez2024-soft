@@ -52,6 +52,7 @@ TorF = True
 closing_threshold = 0.4
 closing_range = 0.02
 k = 0
+j = 0
 # ==============================クラスのインスタンス化==============================
 ar = Artools()
 
@@ -164,25 +165,25 @@ while True:
                                 print("'\033[32m'---perfect REACHED---'\033[0m'")
 
                         if distance_of_marker <= closing_threshold - closing_range:
-                            if -10 <= angle_of_marker <= 0: #ARマーカがやや左から正面にある場合
+                            if -20 <= angle_of_marker <= 0: #ARマーカがやや左から正面にある場合
                                 motor1.go(-70)   #その場右回転
                                 motor2.go(70)
-                                time.sleep(0.05)
+                                time.sleep(0.03)
                                 print("そっぽ向きます")
                                 motor1.stop()
                                 motor2.stop()
                                 yunosu_pos = "Left"
-                            elif 0 <= angle_of_marker <= 10: #ARマーカがやや右から正面にある場合
+                            elif 0 <= angle_of_marker <= 20: #ARマーカがやや右から正面にある場合
                                 motor1.go(70)   #その場左回転
                                 motor2.go(-70)
-                                time.sleep(0.05)
+                                time.sleep(0.03)
                                 print("そっぽ向きます")
                                 motor1.stop()
                                 motor2.stop()
                                 yunosu_pos = "Right"
                             else: #4+k秒ただ直進(ARマーカから離れる)   
-                                motor1.go(70)
-                                motor2.go(70)
+                                motor1.go(50)
+                                motor2.go(50)
                                 time.sleep(4 + k)
                                 print("直進終了")
                                 motor1.stop()
@@ -221,19 +222,26 @@ while True:
         if yunosu_pos == "Left":
             motor1.go(70)   #その場左回転
             motor2.go(-70)
-            time.sleep(0.05)
+            time.sleep(0.03)
             print("ARマーカー探してます(LEFT)")
             motor1.stop()
             motor2.stop()
             time.sleep(0.5)
+            if j < 30:
+                j += 1 
+                pass
         elif yunosu_pos == "Right":
             motor1.go(-70)   #その場右回転
             motor2.go(70)
-            time.sleep(0.05)
+            time.sleep(0.03)
             print("ARマーカー探してます(RIGHT)")
             motor1.stop()
             motor2.stop()
             time.sleep(0.5)
+            if j < 30:
+                j += 1 
+                pass
+
         else:
             print("認識していません")               
 
