@@ -9,7 +9,7 @@ class motor():
     except:
         print('Failed to open serial port')
 
-    def send(buf):
+    def send(self, buf):
         try:
             motor.uart.write(buf.encode('utf-8'))
         except:
