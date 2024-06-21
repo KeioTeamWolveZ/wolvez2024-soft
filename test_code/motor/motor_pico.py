@@ -19,7 +19,10 @@ class motor():
             motor.uart.write(buf.encode('utf-8'))
         except:
             print('Motor controller not coneected')
-
+            
+    def set_id(self, id):
+        self.id = id
+        
     def go(self, v):
         self.velocity = v 
         v = v * 360 / 100
