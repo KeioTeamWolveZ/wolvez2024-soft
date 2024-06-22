@@ -15,8 +15,8 @@ import time
 dictionary = aruco.getPredefinedDictionary(aruco.DICT_ARUCO_ORIGINAL)
 # マーカーサイズの設定
 marker_length = 0.0215  # マーカーの1辺の長さ（メートル）
-camera_matrix = np.load("mtx_laptop.npy")
-distortion_coeff = np.load("dist_laptop.npy")
+camera_matrix = np.load("mtx.npy")
+distortion_coeff = np.load("dist.npy")
 
 # ==============================カメラの設定==============================
 
@@ -56,19 +56,11 @@ j = 0
 # ==============================クラスのインスタンス化==============================
 ar = Artools()
 
-def yunosu_2(): #ARマーカを認識するまでその場回転
-    if distance_of_marker is None: #ARマーカを認識するまでその場回転
-        motor1.go(70)   #その場左回転
-        motor2.go(-70)
-        time.sleep(0.05)
-        print("ARマーカー探してます")
-        motor1.stop()
-        motor2.stop()
 # =======================================================================
 # ==============================メインループ==============================
 # =======================================================================
 yunosu_pos = "Left"
-count = []
+count = 0
 
 
 while True:
@@ -123,37 +115,38 @@ while True:
                         print(f"yunosu_function_{ids[i]}:",polar_exchange)
                         distance_of_marker = polar_exchange[0] #r
                         angle_of_marker = polar_exchange[1] #theta
+                        print("======",distance_of_marker)
                         
                         if distance_of_marker >= closing_threshold + closing_range:
                             if tvec[0] >= 0.05:
-                                motor1.go(70)
-                                motor2.go(45)
-                                print(f"---motor LEFT {angle_of_marker}---")
+                                motor1.stop()
+                                motor2.stop()
                                 count += 1
                                 if count == 30:
-                                    motor1.stop()
-                                    motor2.stop()
+                                    motor1.go(70)
+                                    motor2.go(45)
+                                    print(f"---motor LEFT {angle_of_marker}---")
                                     count = 0
                                     
                             elif 0.05 > tvec[0] > -0.05:
-                                go_ahead_gain = (distance_of_marker-closing_threshold) / closing_threshold
-                                motor1.go(40+60*go_ahead_gain)
-                                motor2.go(40+60*go_ahead_gain)
-                                print("---motor GO AHEAD---")
+                                motor1.stop()
+                                motor2.stop()
                                 count += 1
                                 if count == 30:
-                                    motor1.stop()
-                                    motor2.stop()
+                                    go_ahead_gain = (distance_of_marker-closing_threshold) / closing_threshold
+                                    motor1.go(40+60*go_ahead_gain)
+                                    motor2.go(40+60*go_ahead_gain)
+                                    print("---motor GO AHEAD---")
                                     count = 0
 
                             else:
-                                motor1.go(45)
-                                motor2.go(70)
-                                print("---motor RIGHT---")
+                                motor1.stop()
+                                motor2.stop()
                                 count += 1
                                 if count == 30:
-                                    motor1.stop()
-                                    motor2.stop()
+                                    motor1.go(45)
+                                    motor2.go(70)
+                                    print("---motor RIGHT---")
                                     count = 0
 
                         elif distance_of_marker >= closing_threshold:
@@ -167,53 +160,54 @@ while True:
                                     motor2.stop()
                                     count = 0
                             elif tvec[0] <= -0.03:
-                                print("---turn LEFT---")
-                                motor1.back(45)
-                                motor2.go(45)
+                                motor1.stop()
+                                motor2.stop()
                                 count += 1
                                 if count == 30:
-                                    motor1.stop()
-                                    motor2.stop()
+                                    motor1.back(45)
+                                    motor2.go(45)
+                                    print("---turn LEFT---")
                                     count = 0
                             else:
                                 print("'\033[32m'---perfect REACHED---'\033[0m'")
 
                         if distance_of_marker <= closing_threshold - closing_range:
-                            if -20 <= angle_of_marker <= 0: #ARマーカがやや左から正面にある場合
-                                motor1.go(-70)   #その場右回転
-                                motor2.go(70)
+                            if -10 <= angle_of_marker <= 0: #ARマーカがやや左から正面にある場合
+                                motor1.stop()
+                                motor2.stop()
+                                print("右回転")
                                 count += 1
-                                print("そっぽ向きます")
-                                if count == 30:
-                                    motor1.stop()
-                                    motor2.stop()
+                                if count == 10:
+                                    motor1.go(40)   #その場右回転
+                                    motor2.back(40)
                                     yunosu_pos = "Left"
                                     count = 0
-                            elif 0 <= angle_of_marker <= 20: #ARマーカがやや右から正面にある場合
-                                motor1.go(70)   #その場左回転
-                                motor2.go(-70)
+                            elif 0 <= angle_of_marker <= 10: #ARマーカがやや右から正面にある場合
+                                motor1.stop()
+                                motor2.stop()
                                 count += 1
-                                print("そっぽ向きます")
-                                if count == 30:
-                                    motor1.stop()
-                                    motor2.stop()
+                                print("左回転")
+                                if count == 10:
+                                    motor1.back(40)   #その場左回転
+                                    motor2.go(40)
                                     yunosu_pos = "Right"
                                     count = 0
                             else: #4+k秒ただ直進(ARマーカから離れる)   
-                                motor1.go(50)
-                                motor2.go(50)
+                                motor1.go(70)
+                                motor2.go(70)
+                                print("直進")
                                 count += 1
-                                if count == 30 + k*10:
+                                if count == 200 + k*50:
                                     motor1.stop()
                                     motor2.stop()
                                     print("直進終了")
                                     k += 1
                                     count = 0
                             
-                        else: # detected AR marker is not reliable
-                            print("state of marker is rejected")
-                            print(ultra_count)
-                            reject_count += 1 # 拒否された回数をカウント
+                    else: # detected AR marker is not reliable
+                        print("state of marker is rejected")
+                        print(ultra_count)
+                        reject_count += 1 # 拒否された回数をカウント
                         if reject_count > 10: # 拒否され続けたらリセットしてARマーカーの基準を上書き（再計算）
                             ultra_count = 0
                             reject_count = 0 #あってもなくても良い
@@ -240,24 +234,27 @@ while True:
     
     else: #ARマーカを認識していない時，認識するまでその場回転
         if yunosu_pos == "Left":
-            motor1.go(70)   #その場左回転
-            motor2.go(-70)
-            time.sleep(0.03)
-            print("ARマーカー探してます(LEFT)")
+            motor1.stop()
+            motor2.stop()
             count += 1
             if count == 30:
                 motor1.stop()
                 motor2.stop()
+                motor1.back(60)   #その場左回転
+                motor2.go(60)
+                print("ARマーカー探してます(LEFT)")
                 count = 0
                 
         elif yunosu_pos == "Right":
-            motor1.go(-70)   #その場右回転
-            motor2.go(70)
-            print("ARマーカー探してます(RIGHT)")
+            motor1.stop()
+            motor2.stop()
             count += 1
             if count == 30:
                 motor1.stop()
                 motor2.stop()
+                motor1.go(60)   #その場左回転
+                motor2.back(60)
+                print("ARマーカー探してます(RIGHT)")
                 count = 0
           
 
