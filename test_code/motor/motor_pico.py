@@ -5,7 +5,7 @@ import time
 class motor():
     id = 0
     try:
-        uart = serial.Serial('/dev/ttyACM1', 115200)
+        uart = serial.Serial('/dev/ttyACM0', 115200)
     except:
         print('Failed to open serial port')
 
