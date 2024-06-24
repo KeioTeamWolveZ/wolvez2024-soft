@@ -127,6 +127,7 @@ while True:
                                     motor2.go(45)
                                     print(f"---motor LEFT {angle_of_marker}---")
                                     count = 0
+                                    yunosu_pos = "Left"
                                     
                             elif 0.05 > tvec[0] > -0.05:
                                 motor1.stop()
@@ -148,6 +149,7 @@ while True:
                                     motor2.go(70)
                                     print("---motor RIGHT---")
                                     count = 0
+                                    yunosu_pos = "Left"
 
                         elif distance_of_marker >= closing_threshold:
                             if tvec[0] >= 0.03:
@@ -172,7 +174,7 @@ while True:
                                 print("'\033[32m'---perfect REACHED---'\033[0m'")
 
                         if distance_of_marker <= closing_threshold - closing_range:
-                            if -10 <= angle_of_marker <= 0: #ARマーカがやや左から正面にある場合
+                            if -20 <= angle_of_marker <= 0: #ARマーカがやや左から正面にある場合
                                 motor1.stop()
                                 motor2.stop()
                                 print("右回転")
@@ -180,9 +182,9 @@ while True:
                                 if count == 10:
                                     motor1.go(40)   #その場右回転
                                     motor2.back(40)
-                                    yunosu_pos = "Left"
                                     count = 0
-                            elif 0 <= angle_of_marker <= 10: #ARマーカがやや右から正面にある場合
+                                    unosu_pos = "Left"
+                            elif 0 <= angle_of_marker <= 20: #ARマーカがやや右から正面にある場合
                                 motor1.stop()
                                 motor2.stop()
                                 count += 1
@@ -190,8 +192,8 @@ while True:
                                 if count == 10:
                                     motor1.back(40)   #その場左回転
                                     motor2.go(40)
-                                    yunosu_pos = "Right"
                                     count = 0
+                                    yunosu_pos = "Right"
                             else: #4+k秒ただ直進(ARマーカから離れる)   
                                 motor1.go(70)
                                 motor2.go(70)
