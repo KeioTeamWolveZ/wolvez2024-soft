@@ -42,6 +42,8 @@ class Cansat():
 		self.state = state
 		self.last_state = 0
 		self.time = 0
+		self.startTime_time=time.time()
+		self.startTime = str(datetime.now())[:19].replace(" ","_").replace(":","-")
 		print(ct.const.RIGHT_MOTOR_IN1_PIN)
 		self.RED_LED = led(ct.const.RED_LED_PIN)
 		self.BLUE_LED = led(ct.const.BLUE_LED_PIN)
@@ -76,9 +78,14 @@ class Cansat():
 		self.ex= 0
 		self.lat = 0
 		self.lon = 0
+		self.mkdir()
 		
 	def mkdir(self):
-		pass
+		self.results_dir = f'results/{self.startTime}'
+		self.results_img_dir = self.results_dir + '/imgs'
+		os.mkdir(self.results_dir)
+		os.mkdir(self.results_img_dir)
+		return
 		
 	def mkfile(self):
 		pass
@@ -87,7 +94,7 @@ class Cansat():
 		pass
 		
 	def writeData(self):
-		log_data = {
+		datalog = {
 					"state":str(self.state),
 					"time":str(self.gps.Time),
 					"Lat":str(self.gps.Lat),
@@ -101,12 +108,21 @@ class Cansat():
 					"temp":str(self.temp),
 					"pressure":str(self.pressure),
 					"altitude":str(self.altitude)
-					
 					}
-		print(log_data)
-		
-		# ~ with open(f'results/{self.startTime}/control_result.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
-            # ~ test.write(datalog + '\n')
+        
+		datalog = str(self.timer) + ","\
+                  + "state:"+str(self.state) + ","\
+                  + "Time:"+str(self.gps.Time) + ","\
+                  + "Lat:"+str(self.gps.Lat).rjust(6) + ","\
+                  + "Lng:"+str(self.gps.Lon).rjust(6) + ","\
+                  + "ax:"+str(self.ax).rjust(6) + ","\
+                  + "ay:"+str(self.ay).rjust(6) + ","\
+                  + "az:"+str(self.az).rjust(6) + ","\
+                  + "q:"+str(self.ex).rjust(6)
+		print(datalog)
+
+		with open(f'results/{self.startTime}/control_result.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
+				test.write(datalog + '\n')
             
 	def writeMissionlog(self):
 		pass

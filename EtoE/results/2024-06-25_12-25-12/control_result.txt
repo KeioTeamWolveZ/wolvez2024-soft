@@ -1,0 +1,56 @@
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.003,az: 0.002,q:   0.0
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay: 0.002,az: 0.001,q:   0.0
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.003,az:   0.0,q:   0.0
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay: 0.006,az:   0.0,q:   0.0
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.002,az: 0.002,q:   0.0
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay: 0.001,az: 0.002,q:   0.0
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay: 0.003,az: 0.001,q:   0.0
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.003,az:   0.0,q:   0.0
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:   0.0,az:-0.001,q:   0.0
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.002,az: 0.001,q:   0.0
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.002,az:   0.0,q:   0.0
+0,state:0,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:   0.0,az:-0.001,q:   0.0
+0,state:0,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay: 0.002,az:   0.0,q:   0.0
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.001,az:   0.0,q:   0.0
+0,state:0,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay: 0.002,az: 0.001,q:   0.0
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.003,az: 0.002,q:   0.0
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.002,az:   0.0,q:   0.0
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:-0.003,ay: 0.002,az: 0.004,q:   0.0
+0,state:0,Time:0,Lat:     0,Lng:     0,ax: 0.002,ay: 0.001,az:-0.001,q:   0.0
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:   0.0,az:   0.0,q:   0.0
+0,state:0,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay: 0.002,az: 0.001,q:   0.0
+0,state:0,Time:0,Lat:     0,Lng:     0,ax: 0.002,ay:   0.0,az:   0.0,q:   0.0
+0,state:0,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:-0.003,az:   0.0,q:   0.0
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay: 0.002,az:-0.001,q:   0.0
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:   0.0,az: 0.002,q:   0.0
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.003,az:   0.0,q:   0.0
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:-0.154,ay:   0.2,az:-0.017,q: 0.125
+0,state:0,Time:0,Lat:     0,Lng:     0,ax: 0.104,ay:-0.036,az:-0.216,q:   1.5
+0,state:0,Time:0,Lat:     0,Lng:     0,ax: -0.33,ay: 0.052,az:-1.379,q:11.375
+0,state:0,Time:0,Lat:     0,Lng:     0,ax: 0.002,ay: 0.003,az:-0.017,q:15.438
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:-0.151,ay: -0.47,az: 0.696,q:13.438
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:-0.548,ay:-0.407,az:  0.33,q: 9.812
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:-0.297,ay:-0.631,az: 0.089,q:  7.75
+0,state:0,Time:0,Lat:     0,Lng:     0,ax: 0.141,ay:-0.716,az: 0.066,q: 6.875
+0,state:0,Time:0,Lat:     0,Lng:     0,ax: 0.251,ay:-0.437,az: 0.032,q: 6.062
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:-0.451,ay: 0.373,az: 0.006,q: 7.312
+0,state:0,Time:0,Lat:     0,Lng:     0,ax: 0.486,ay: 0.472,az: 0.067,q: 6.125
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:-0.316,ay: 0.887,az:-0.056,q:  6.75
+0,state:0,Time:0,Lat:     0,Lng:     0,ax: 0.149,ay: 0.796,az:-0.194,q: 6.938
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:-0.273,ay: 0.482,az:-0.203,q: 8.812
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:-0.164,ay: 0.159,az:-0.033,q:  10.5
+0,state:0,Time:0,Lat:     0,Lng:     0,ax: 0.241,ay:-0.577,az:  0.06,q: 10.25
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:-0.122,ay: 0.258,az:-0.018,q:  10.0
+0,state:0,Time:0,Lat:     0,Lng:     0,ax: 0.446,ay:-0.656,az: 0.137,q: 8.875
+0,state:0,Time:0,Lat:     0,Lng:     0,ax: 0.266,ay:-0.316,az: 0.066,q: 8.375
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.001,az:   0.0,q: 8.375
+0,state:0,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:-0.003,az:   0.0,q: 8.375
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:   0.0,az:   0.0,q: 8.375
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:   0.0,az:   0.0,q: 8.375
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay:   0.0,az: 0.002,q: 8.375
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.002,az: 0.001,q: 8.375
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:   0.0,az: 0.001,q: 8.375
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay: 0.001,az:   0.0,q: 8.375
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:   0.0,az:-0.002,q: 8.375
+0,state:0,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay: 0.007,az:   0.0,q: 8.375
+0,state:0,Time:0,Lat:     0,Lng:     0,ax: 0.002,ay:-0.003,az:-0.001,q: 8.375
