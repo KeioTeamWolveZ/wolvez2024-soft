@@ -8,7 +8,7 @@ import numpy as np
 camera  = input("Which camera do you want to use? (laptop:1 or picamera:2): ")
 
 if int(camera) == 1:
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0)
 elif int(camera) == 2:
     from picamera2 import Picamera2
     from libcamera import controls

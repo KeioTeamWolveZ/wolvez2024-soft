@@ -25,14 +25,14 @@ bno055.setupBno()
 dictionary = aruco.getPredefinedDictionary(aruco.DICT_ARUCO_ORIGINAL)
 # マーカーサイズの設定
 marker_length = 0.02  # マーカーの1辺の長さ（メートル）
-camera_matrix = np.load("mtx.npy")
-distortion_coeff = np.load("dist.npy")
+camera_matrix = np.load("mtx_laptop.npy")
+distortion_coeff = np.load("dist_laptop.npy")
 
 # ==============================カメラの設定==============================
 
 camera = input("Which camera do you want to use? (laptop:1 or picamera:2): ")
 if int(camera) == 1:
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0)
 elif int(camera) == 2:
     from picamera2 import Picamera2 #laptopでは使わないため
     from libcamera import controls #laptopでは使わないため
