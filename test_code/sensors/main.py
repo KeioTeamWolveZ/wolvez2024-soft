@@ -32,7 +32,7 @@ def logging(states):
                   + "q:" + str(ex).rjust(6) + ","\
                   + "rV:" + str(round(MotorR.velocity,2)).rjust(4) + ","\
                   + "lV:" + str(round(MotorL.velocity,2)).rjust(4) + ","\
-                  + "pressure" +str(round(pres))
+                  + "pressure:" +str(round(pres))
     print(datalog)
 
 if __name__ == '__main__':
@@ -42,7 +42,7 @@ if __name__ == '__main__':
     MotorR = motor.motor(6,5,13)
     MotorL = motor.motor(20,16,12)
     MotorR.go(80)
-    MotorL.go(80)
+    MotorL.back(80)
     
     lora_device = "/dev/ttyAMA1"  # ES920LRデバイス名 (UART2) 
     channel = 15
