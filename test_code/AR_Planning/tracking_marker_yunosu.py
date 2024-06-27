@@ -60,6 +60,7 @@ ar = Artools()
 # ==============================メインループ==============================
 # =======================================================================
 yunosu_pos = "Left"
+last_pos = "Plan_A"
 count = 0
 
 
@@ -199,12 +200,13 @@ while True:
                                 motor2.go(70)
                                 print("直進")
                                 count += 1
-                                if count == 200 + k*50:
+                                if count == 30:
                                     motor1.stop()
                                     motor2.stop()
-                                    print("直進終了")
-                                    k += 1
+                                    print("直進前半終了")
                                     count = 0
+                                    k += 1
+                                    last_pos = "Plan_B"
                             
                     else: # detected AR marker is not reliable
                         print("state of marker is rejected")
@@ -234,7 +236,7 @@ while True:
                     lens = change_lens
     
     
-    else: #ARマーカを認識していない時，認識するまでその場回転
+    if last_pos == "Plan_A": #ARマーカを認識していない時，認識するまでその場回転
         if yunosu_pos == "Left":
             motor1.stop()
             motor2.stop()
@@ -258,10 +260,21 @@ while True:
                 motor2.back(60)
                 print("ARマーカー探してます(RIGHT)")
                 count = 0
-          
+        
+    elif last_pos == "Plan_B":
+        motor1.go(70)
+        motor2.go(70)
+        count += 1
+        if count == 300 + 50*k:
+            motor1.stop()
+            motor2.stop()
+            print("直進後半終了")
+            last_pos = "Plan_A"
+            count = 0
 
-        else:
-            print("認識していません")               
+
+        # else:
+        #     print("認識していません")               
 
 
 
