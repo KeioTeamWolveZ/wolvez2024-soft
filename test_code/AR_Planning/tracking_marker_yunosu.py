@@ -5,7 +5,7 @@ import cv2.aruco as aruco
 from datetime import datetime
 from collections import deque
 from Ar_tools import Artools
-import motor
+import motor_pico as motor
 import RPi.GPIO as GPIO
 import time
 
