@@ -1,176 +1,137 @@
+import cv2
+import numpy as np
+import cv2.aruco as aruco
+from datetime import datetime
+from collections import deque
+from Ar_tools import Artools
+# import motor_pico as motor 
+# import RPi.GPIO as GPIO
+import time
+import tkinter as tk
+from tkinter import Scale
 
-#########################
-### ColorPowerPlanner ###
-#########################
-class ColorPowerPlanner():
-    """
-    指定した範囲の色の物体の座標を取得する関数
-    frame: 画像
-    AREA_RATIO_THRESHOLD: area_ratio未満の塊は無視する
-    LOW_COLOR: 抽出する色の下限(h,s,v)
-    HIGH_COLOR: 抽出する色の上限(h,s,v)
-    
-    色の設定
-    0 <= h <= 179 (色相)　OpenCVではmax=179なのでR:0(180),G:60,B:120となる
-    0 <= s <= 255 (彩度)　黒や白の値が抽出されるときはこの閾値を大きくする
-    0 <= v <= 255 (明度)　これが大きいと明るく，小さいと暗い
-    """
-    
-    # Coefficient between ewbsite and numpy
-    hsv_coef = np.array([1/2, 2.55, 2.55])
-    
-    # 速度の設定
-    STANDARD_POWER = 65
-    POWER_RANGE = 15
+# ==============================ARマーカーの設定==============================
+dictionary = aruco.getPredefinedDictionary(aruco.DICT_ARUCO_ORIGINAL)
+marker_length = 0.0215  # マーカーの1辺の長さ（メートル）
+camera_matrix = np.load("mtx.npy")
+distortion_coeff = np.load("dist.npy")
 
-    #{1:red,0:blue,99:orange}
-    # h:0~360, s:0~100, v:0~100
-    
-    ##orange
-    LOW_COLOR_EDIT = {1:np.array([300, 59, 45]),0:np.array([200, 40, 70]),99:np.array([41, 60, 60])}
-    HIGH_COLOR_EDIT = {1:np.array([360, 100, 100]),0:np.array([250, 100, 100]),99:np.array([43, 90, 100])}
-    
-    ##purple
-    #LOW_COLOR_EDIT = {1:np.array([300, 59, 45]),0:np.array([200, 40, 70]),99:np.array([,,])}
-    #HIGH_COLOR_EDIT = {1:np.array([360, 100, 100]),0:np.array([250, 100, 100]),99:np.array([,,)}
-    
+# ==============================カメラの設定==============================
+camera = input("Which camera do you want to use? (laptop:1 or picamera:2): ")
+if int(camera) == 1:
+    cap = cv2.VideoCapture(1)
+elif int(camera) == 2:
+    from picamera2 import Picamera2 #laptopでは使わないため
+    from libcamera import controls #laptopでは使わないため
+    picam2 = Picamera2()
+    size = (1800, 1000)
+    config = picam2.create_preview_configuration(
+                main={"format": 'XRGB8888', "size": size})
 
-    # 抽出する色の塊のしきい値
-    AREA_RATIO_THRESHOLD = 0.00003
-    def __init__(self):
-        self.pos = []
-        ## DO NOT TOUCH HERE
-        # h:1~179, s:1~255, v:1~255
-        self.LOW_COLOR = {k:np.round(self.LOW_COLOR_EDIT[k]*self.hsv_coef) for k in self.LOW_COLOR_EDIT.keys()}
-        self.HIGH_COLOR = {k:np.round(self.HIGH_COLOR_EDIT[k]*self.hsv_coef) for k in self.HIGH_COLOR_EDIT.keys()}
+    picam2.align_configuration(config)
+    picam2.configure(config)
+    picam2.start()
+    picam2.set_controls({"AfMode":0,"LensPosition":5.5})
+    lens = 5.5
+
+# ==================================motor setting==================================
+# GPIO.setwarnings(False)
+# motor1 = motor.motor(6,5,13)
+# motor2 = motor.motor(20,16,12)
+
+# ====================================定数の定義====================================
+VEC_GOAL = [0.0,0.1968730025228114,0.3]
+ultra_count = 0
+reject_count = 0  # 拒否された回数をカウントするための変数
+prev = np.array([])
+TorF = True
+
+# ==============================クラスのインスタンス化==============================
+ar = Artools()
+
+# ==============================オレンジ色検出のためのHSV値の設定==============================
+lower_orange = np.array([0, 86, 75])
+upper_orange = np.array([13, 255, 255])
+
+# ==============================Tkinter GUIの設定==============================
+def update_values():
+    global lower_orange, upper_orange
+    lower_orange = np.array([hue_lower.get(), sat_lower.get(), val_lower.get()])
+    upper_orange = np.array([hue_upper.get(), sat_upper.get(), val_upper.get()])
+
+root = tk.Tk()
+root.title("HSV Range Adjuster")
+
+hue_lower = Scale(root, from_=0, to=179, label="Hue Lower", orient=tk.HORIZONTAL)
+hue_lower.set(0)
+hue_lower.pack()
+
+sat_lower = Scale(root, from_=0, to=255, label="Saturation Lower", orient=tk.HORIZONTAL)
+sat_lower.set(86)
+sat_lower.pack()
+
+val_lower = Scale(root, from_=0, to=255, label="Value Lower", orient=tk.HORIZONTAL)
+val_lower.set(75)
+val_lower.pack()
+
+hue_upper = Scale(root, from_=0, to=179, label="Hue Upper", orient=tk.HORIZONTAL)
+hue_upper.set(13)
+hue_upper.pack()
+
+sat_upper = Scale(root, from_=0, to=255, label="Saturation Upper", orient=tk.HORIZONTAL)
+sat_upper.set(255)
+sat_upper.pack()
+
+val_upper = Scale(root, from_=0, to=255, label="Value Upper", orient=tk.HORIZONTAL)
+val_upper.set(255)
+val_upper.pack()
+
+# =======================================================================
+# ==============================メインループ==============================
+# =======================================================================
+def main_loop():
+    update_values()
+    if int(camera) == 1:
+        ret, frame = cap.read()
+    elif int(camera) == 2:
+        frame = picam2.capture_array()
     
+    if frame is not None:
+        # オレンジ色の検出
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        mask_orange = cv2.inRange(hsv, lower_orange, upper_orange)
+        orange_detected = cv2.countNonZero(mask_orange) > 0
 
-    def find_specific_color(self,frame,AREA_RATIO_THRESHOLD,LOW_COLOR,HIGH_COLOR,connecting_state):
-        # 高さ，幅，チャンネル数
-        h,w,c = frame.shape
-
-        # hsv色空間に変換
-        hsv = cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)
-        
-        # 色を抽出する
-        ex_img = cv2.inRange(hsv,LOW_COLOR[connecting_state],HIGH_COLOR[connecting_state])
-
-        # 輪郭抽出
-        # 変更点 < opencvのバージョンの違いにより？引数を少なく設定>
-        #_,contours,hierarchy = cv2.findContours(ex_img,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-        contours,hierarchy = cv2.findContours(ex_img,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-        # 面積を計算
-        areas = np.array(list(map(cv2.contourArea,contours)))
-        
-        if len(areas) == 0 or np.max(areas) / (h*w) < AREA_RATIO_THRESHOLD:
-            # 見つからなかったらNoneを返す
-            try:
-                print(np.max(areas) / (h*w) )
-            except:
-                print("no color")
-            return None
+        # オレンジ色が検出された場合、適切な処理を実行
+        if orange_detected:
+            # motor1.go(70)
+            # motor2.go(0)
+            print("Orange detected! Avoiding...")
+            # motor1.stop()
+            # motor2.stop()
+            time.sleep(0.01)  # 避けるために一時停止
         else:
-            #print("@powerplanner\ncolor area = ",np.max(areas) / (h*w))
-            # 面積が最大の塊の重心を計算し返す
-            max_idx = np.argmax(areas)
-            max_area = areas[max_idx]
-            max_a = areas[max_idx]
-            result = cv2.moments(contours[max_idx])
-            x = int(result["m10"]/result["m00"])
-            y = int(result["m01"]/result["m00"])
-            return (x,y,max_area)
+            # motor1.go(70)
+            # motor2.go(70)
+            time.sleep(0.01)
+            print("---motor go---")
+            # motor1.stop()
+            # motor2.stop()
 
-    def power_calculation(self,pos,h,w,flag):
-        if not flag:
-            xn = 2*(pos[0]+300-w/2) / w + 0.00000001 ### + 300 ireru no kottijanai??
-            power_R = int(self.STANDARD_POWER - self.POWER_RANGE * xn)
-            power_L = int(self.STANDARD_POWER + self.POWER_RANGE * xn+5)
-        else:
-            xn = 2*(pos[0]-w/2) / w + 0.00000001
-            power_R = -int(xn/abs(xn)*(self.STANDARD_POWER*1.15 + self.POWER_RANGE * abs(xn))) ### +- ga umareru youni
-            power_L = -power_R+int(xn/abs(xn))*7
-        w_rate = abs(xn) ### sleep zikan keisan you
-        return power_R,power_L,w_rate
+        # 結果の表示
+        mask_orange = cv2.resize(mask_orange, None, fx=0.5, fy=0.5)
+        cv2.imshow('masked', mask_orange)
+        cv2.imshow('ARmarker', frame)
+    
+    key = cv2.waitKey(1)  # キー入力の受付
+    if key == 27:  # ESCキーで終了
+        if int(camera) == 1:
+            cap.release()
+        cv2.destroyAllWindows()
+        root.destroy()
+        return
+    
+    root.after(10, main_loop)
 
-    def power_planner(self,frame,connecting_state,ar_count=0):
-        """
-        arg:
-            frame
-        return:
-            {"R":power_R,"L":power_L,"Clear":bool} 
-        """
-        move = 'stop'
-        height, width = frame.shape[:2]
-
-        aprc_clear = False #これは目標に到達できたかのbool値
-
-        self.pos = self.find_specific_color(
-                frame,
-                self.AREA_RATIO_THRESHOLD,
-                self.LOW_COLOR,
-                self.HIGH_COLOR,
-                connecting_state
-            )
-        
-        if self.pos is not None:
-            detected = True
-            print(self.pos[2])
-            if connecting_state == 0:
-                if self.pos[2] > 7500:   #2000 datta yo
-                    aprc_clear = True #これは目標に到達できたかのbool値
-            else:
-                #print(self.pos[2])
-                if self.pos[2] > 12000:
-                # arm temae : 28000
-                # arm red : 25000
-                    aprc_clear = True #これは目標に到達できたかのbool値
-            if ar_count > 0:
-                aprc_clear = True
-            print("aprc_clear : ",aprc_clear)
-            power_R, power_L, w_rate = self.power_calculation(self.pos,height,width,aprc_clear)
-            
-        else:
-            self.pos = ["none","none","none"]
-            move = 'stop'
-            power_R, power_L = 0,0
-            w_rate = None ### mienai toki ni None ni naruyouni
-            detected = False
-        return {"R":power_R,"L":power_L,"Clear":aprc_clear,"Detected_tf":detected,"w_rate":w_rate,"move":move} ### sleep zikan keisan ni motiiru node w_rate wo dasu
-
-    def para_detection(self,frame):
-        height, width = frame.shape[:2]
-
-        self.pos = self.find_specific_color(
-                frame,
-                self.AREA_RATIO_THRESHOLD,
-                self.LOW_COLOR,
-                self.HIGH_COLOR,
-                99
-            )
-        
-        aprc_clear = True
-        move = 'stop'
-        
-        if self.pos is not None:
-            if self.pos[2] > 6000:
-                detected = True
-                power_L, power_R, w_rate = self.power_calculation(self.pos,height,width,aprc_clear)
-                if power_L > power_R:
-                    move = 'stay-right'
-                else:
-                    move = 'stay-left'
-            else:
-                move = 'stop'
-                power_R, power_L = 0,0
-                w_rate = None ### mienai toki ni None ni naruyouni
-                detected = False
-        else:
-            self.pos = ["none","none","none"]
-            move = 'stop'
-            print("here")
-            power_R, power_L = 0,0
-            w_rate = None ### mienai toki ni None ni naruyouni
-            detected = False
-
-        return {"R":power_R,"L":power_L,"Clear":aprc_clear,"Detected_tf":detected,"w_rate":w_rate,"move":move} ### sleep zikan keisan ni motiiru node w_rate wo dasu
-
+root.after(10, main_loop)
+root.mainloop()
