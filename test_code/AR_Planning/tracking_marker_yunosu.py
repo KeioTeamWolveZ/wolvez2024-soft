@@ -41,6 +41,8 @@ elif int(camera) == 2:
 GPIO.setwarnings(False)
 motor1 = motor.motor(6,5,13)
 motor2 = motor.motor(20,16,12)
+motor1.set_id(2)
+motor2.set_id(2)
 # ====================================定数の定義====================================
 VEC_GOAL = [0.0,0.1968730025228114,0.3]
 ultra_count = 0
