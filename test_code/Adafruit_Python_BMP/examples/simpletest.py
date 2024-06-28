@@ -48,12 +48,12 @@ sensor = BMP085.BMP085()
 #sensor = BMP085.BMP085(mode=BMP085.BMP085_ULTRAHIGHRES)
 i=0
 bmp_list = []
-while i<18:
+while True:
 	print('Temp = {0:0.2f} *C'.format(sensor.read_temperature()))
 	print('Pressure = {0:0.2f} Pa'.format(sensor.read_pressure()))
 	print('Altitude = {0:0.2f} m'.format(sensor.read_altitude()))
 	print('Sealevel Pressure = {0:0.2f} Pa'.format(sensor.read_sealevel_pressure()))
 	i+=1
 	bmp_list.append([sensor.read_temperature(),sensor.read_pressure(),sensor.read_altitude()])
-	time.sleep(10)
+	time.sleep(1)
 np.savetxt("/home/wolvez2024/wolvez2024-soft/test_code/record_bmp.csv",bmp_list)

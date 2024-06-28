@@ -1,5 +1,6 @@
 # 2023年機体で使用すること
 
+
 import motor_pico as motor
 import RPi.GPIO as GPIO
 import time 
@@ -12,14 +13,14 @@ Motor2 = motor.motor(20,16,12,-1)
 try:
     print("motor run") 
     Motor1.go(80)
-    Motor2.back(80)
+    Motor2.go(80)
 #     Motor1.back(80)
 #     Motor2.go(80)
 #     time.sleep(0.5)
  #   Motor2.back(80)
     #Motor2.back(90)
 #     time.sleep(1.08)
-    time.sleep(0.02)
+    time.sleep(0.3)
 
     #Motor.back(100)
     #time.sleep(3)

@@ -124,9 +124,11 @@ while True:
                                 motor1.stop()
                                 motor2.stop()
                                 count += 1
+                                print(f"---motor LEFT {angle_of_marker}---")
                                 if count == 30:
                                     motor1.go(70)
                                     motor2.go(45)
+                                    time.sleep(0.5)
                                     print(f"---motor LEFT {angle_of_marker}---")
                                     count = 0
                                     yunosu_pos = "Left"
@@ -135,10 +137,12 @@ while True:
                                 motor1.stop()
                                 motor2.stop()
                                 count += 1
+                                print("---motor GO AHEAD---")
                                 if count == 30:
                                     go_ahead_gain = (distance_of_marker-closing_threshold) / closing_threshold
                                     motor1.go(40+60*go_ahead_gain)
                                     motor2.go(40+60*go_ahead_gain)
+                                    time.sleep(0.5)
                                     print("---motor GO AHEAD---")
                                     count = 0
 
@@ -146,9 +150,11 @@ while True:
                                 motor1.stop()
                                 motor2.stop()
                                 count += 1
+                                rint("---motor RIGHT---")
                                 if count == 30:
                                     motor1.go(45)
                                     motor2.go(70)
+                                    time.sleep(0.5)
                                     print("---motor RIGHT---")
                                     count = 0
                                     yunosu_pos = "Left"
