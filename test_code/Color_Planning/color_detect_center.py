@@ -3,7 +3,6 @@ import numpy as np
 import cv2.aruco as aruco
 from datetime import datetime
 from collections import deque
-from Ar_tools import Artools
 import motor_pico as motor 
 import RPi.GPIO as GPIO
 import time
@@ -45,7 +44,7 @@ prev = np.array([])
 TorF = True
 
 # ==============================クラスのインスタンス化==============================
-ar = Artools()
+# ar = Artools()
 
 # ==============================オレンジ色検出のためのHSV値の設定==============================
 lower_orange = np.array([0, 255, 158])
