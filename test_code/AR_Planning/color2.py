@@ -100,6 +100,12 @@ def main_loop():
         # オレンジ色の検出
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         mask_orange = cv2.inRange(hsv, lower_orange, upper_orange)
+        
+        # 形態学的処理（膨張と収縮）を追加
+        kernel = np.ones((8,8), np.uint8)
+        mask_orange = cv2.morphologyEx(mask_orange, cv2.MORPH_OPEN, kernel)
+        mask_orange = cv2.morphologyEx(mask_orange, cv2.MORPH_CLOSE, kernel)
+
         orange_detected = cv2.countNonZero(mask_orange) > 0
 
         # 輪郭を抽出して最大の面積を算出し、線で囲む
@@ -112,18 +118,15 @@ def main_loop():
                 if M["m00"] != 0:
                     cX = int(M["m10"] / M["m00"])
                     cY = int(M["m01"] / M["m00"])
-                    cv2.circle(frame, (cX, cY), 12, (255, 0, 0), -1)
+                    cv2.circle(frame, (cX, cY), 7, (255, 0, 0), -1)
                     # cv2.putText(frame, "centroid", (cX - 25, cY - 25),
                     #             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
-                print(f"Orange detected! Avoiding... : ({cX}, {cY}), {cv2.contourArea(max_contour)}")
-            else:
-                print("---motor go---")
-                time.sleep(0.01)
+                print(f"Centroid: ({cX}, {cY})")
 
         # オレンジ色が検出された場合、適切な処理を実行
-        # if orange_detected:
-        #     print("Orange detected! Avoiding... :")
-        #     time.sleep(0.01)  # 避けるために一時停止
+        if orange_detected:
+            print("Orange detected! Avoiding... :")
+            time.sleep(0.01)  # 避けるために一時停止
         else:
             print("---motor go---")
             time.sleep(0.01)
