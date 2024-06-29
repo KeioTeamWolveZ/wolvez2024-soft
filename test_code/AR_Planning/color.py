@@ -24,7 +24,7 @@ elif int(camera) == 2:
     from picamera2 import Picamera2 #laptopでは使わないため
     from libcamera import controls #laptopでは使わないため
     picam2 = Picamera2()
-    size = (1800, 1000)
+    size = (1200, 1800)
     config = picam2.create_preview_configuration(
                 main={"format": 'XRGB8888', "size": size})
 
@@ -95,10 +95,11 @@ def main_loop():
         ret, frame = cap.read()
     elif int(camera) == 2:
         frame = picam2.capture_array()
+    frame2 = cv2.rotate(frame,cv2.ROTATE_90_CLOCKWISE)
     
     if frame is not None:
         # オレンジ色の検出
-        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+        hsv = cv2.cvtColor(frame2, cv2.COLOR_BGR2HSV)
         mask_orange = cv2.inRange(hsv, lower_orange, upper_orange)
         orange_detected = cv2.countNonZero(mask_orange) > 0
 
@@ -129,9 +130,10 @@ def main_loop():
             time.sleep(0.01)
 
         # 結果の表示
+        frame2 = cv2.resize(frame2, None, fx=0.5, fy=0.5)
         mask_orange = cv2.resize(mask_orange, None, fx=0.5, fy=0.5)
         cv2.imshow('masked', mask_orange)
-        cv2.imshow('ARmarker', frame)
+        cv2.imshow('ARmarker', frame2)
     
     key = cv2.waitKey(1)  # キー入力の受付
     if key == 27:  # ESCキーで終了

@@ -4,8 +4,8 @@ import cv2.aruco as aruco
 from datetime import datetime
 from collections import deque
 from Ar_tools import Artools
-# import motor_pico as motor 
-# import RPi.GPIO as GPIO
+import motor_pico as motor 
+import RPi.GPIO as GPIO
 import time
 
 # ==============================ARマーカーの設定==============================
@@ -21,7 +21,7 @@ elif int(camera) == 2:
     from picamera2 import Picamera2 #laptopでは使わないため
     from libcamera import controls #laptopでは使わないため
     picam2 = Picamera2()
-    size = (1800, 1000)
+    size = (1200, 1800)
     config = picam2.create_preview_configuration(
                 main={"format": 'XRGB8888', "size": size})
 
@@ -33,9 +33,9 @@ elif int(camera) == 2:
     lens = 5.5
 
 # ==================================motor setting==================================
-# GPIO.setwarnings(False)
-# motor1 = motor.motor(6,5,13)
-# motor2 = motor.motor(20,16,12)
+GPIO.setwarnings(False)
+motor1 = motor.motor(6,5,13)
+motor2 = motor.motor(20,16,12,-1)
 
 # ====================================定数の定義====================================
 VEC_GOAL = [0.0,0.1968730025228114,0.3]
@@ -48,8 +48,8 @@ TorF = True
 ar = Artools()
 
 # ==============================オレンジ色検出のためのHSV値の設定==============================
-lower_orange = np.array([0, 135, 75])
-upper_orange = np.array([13, 255, 255])
+lower_orange = np.array([0, 255, 158])
+upper_orange = np.array([55, 255, 255])
 
 # =======================================================================
 # ==============================メインループ==============================
@@ -68,9 +68,10 @@ while True:
         distortion_coeff = np.load("dist.npy")
     height = frame.shape[0]
     width = frame.shape[1]
+    frame2 = cv2.rotate(frame,cv2.ROTATE_90_CLOCKWISE)
     
     # オレンジ色の検出
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    hsv = cv2.cvtColor(frame2, cv2.COLOR_BGR2HSV)
     mask_orange = cv2.inRange(hsv, lower_orange, upper_orange)
     orange_detected = cv2.countNonZero(mask_orange) > 0
     
@@ -85,36 +86,37 @@ while True:
             mask_orange = cv2.cvtColor(mask_orange,cv2.COLOR_GRAY2RGB)
             cv2.circle(mask_orange, (cx, cy), 5, (0, 0, 255), -1)
         print("cx, cy:",cx, cy)
-        time.sleep(0.01)  # 避けるために一時停止
+        #time.sleep(0.01)  # 避けるために一時停止
         if cx > width/2:
-            # motor1.go(70)
-            # motor2.go(0)
+            motor1.go(70)
+            motor2.go(0)
             print("right")
             time.sleep(0.5)
-            # motor1.stop()
-            # motor2.stop()
+            motor1.stop()
+            motor2.stop()
 
         if cx < width/2:
-            # motor1.go(0)
-            # motor2.go(70)
+            motor1.go(0)
+            motor2.go(70)
             print("left")
             time.sleep(0.5)
-            # motor1.stop()
-            # motor2.stop()
+            motor1.stop()
+            motor2.stop()
             
     else:
-        # motor1.go(70)
-        # motor2.go(70)
+        motor1.go(70)
+        motor2.go(70)
         time.sleep(0.5)
-        # motor1.stop()
-        # motor2.stop()
+        motor1.stop()
+        motor2.stop()
         print("---motor go---")
 
     # ====================================結果の表示===================================
     # 画像のリサイズを行う
-    mask_orange = cv2.resize(mask_orange, None, fx=0.5, fy=0.5)
-    cv2.imshow('masked', mask_orange)
-    cv2.imshow('ARmarker', frame)
+        frame2 = cv2.resize(frame2, None, fx=0.5, fy=0.5)
+        mask_orange = cv2.resize(mask_orange, None, fx=0.5, fy=0.5)
+    # ~ cv2.imshow('masked', mask_orange)
+    # ~ cv2.imshow('ARmarker', frame2)
     key = cv2.waitKey(1)  # キー入力の受付
     if key == 27:  # ESCキーで終了
         break
@@ -123,4 +125,4 @@ while True:
 if int(camera) == 1:
     cap.release()
 cv2.destroyAllWindows()
-# GPIO.cleanup()
+GPIO.cleanup()
