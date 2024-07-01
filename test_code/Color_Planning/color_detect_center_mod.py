@@ -3,8 +3,8 @@ import numpy as np
 import cv2.aruco as aruco
 from datetime import datetime
 from collections import deque
-# import motor_pico as motor 
-# import RPi.GPIO as GPIO
+import motor_pico as motor 
+import RPi.GPIO as GPIO
 import time
 
 # ==============================ARマーカーの設定==============================
@@ -22,7 +22,7 @@ elif int(camera) == 2:
     from picamera2 import Picamera2 #laptopでは使わないため
     from libcamera import controls #laptopでは使わないため
     picam2 = Picamera2()
-    size = (1800, 1000)
+    size = (1200, 1800)
     config = picam2.create_preview_configuration(
                 main={"format": 'XRGB8888', "size": size})
 
@@ -34,9 +34,9 @@ elif int(camera) == 2:
     lens = 5.5
 
 # ==================================motor setting==================================
-# GPIO.setwarnings(False)
-# motor1 = motor.motor(6,5,13)
-# motor2 = motor.motor(20,16,12)
+GPIO.setwarnings(False)
+motor1 = motor.motor(6,5,13)
+motor2 = motor.motor(20,16,12,-1)
 
 # ====================================定数の定義====================================
 VEC_GOAL = [0.0,0.1968730025228114,0.3]
@@ -51,8 +51,8 @@ TorF = True
 # ==============================オレンジ色検出のためのHSV値の設定==============================
 lower_orange = np.array([0, 135, 75])
 upper_orange = np.array([13, 255, 255])
-lower_orange = np.array([26, 15, 10])
-upper_orange = np.array([63, 255, 175])
+lower_orange = np.array([0, 220, 158])
+upper_orange = np.array([55, 255, 255])
 
 # =======================================================================
 # ==============================メインループ==============================
@@ -69,13 +69,15 @@ while True:
         frame = picam2.capture_array()        
         camera_matrix = np.load("mtx.npy")
         distortion_coeff = np.load("dist.npy")
-    height = frame.shape[0]
-    width = frame.shape[1]
     
+    
+    frame2 = cv2.rotate(frame,cv2.ROTATE_90_CLOCKWISE)
+    height = frame2.shape[0]
+    width = frame2.shape[1]
     # オレンジ色の検出
-    # オレンジ色の検出
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    hsv = cv2.cvtColor(frame2, cv2.COLOR_BGR2HSV)
     mask_orange = cv2.inRange(hsv, lower_orange, upper_orange)
+    
     
     # 形態学的処理（膨張と収縮）を追加
     kernel = np.ones((8,8), np.uint8)
@@ -100,32 +102,32 @@ while True:
                 # print(f"Centroid: ({cX}, {cY})")
                 if cX > width/2:
                     print("---motor right---")
-                    # motor1.go(70)
-                    # motor2.go(0)
-                    time.sleep(0.1)
-                    # motor1.stop()
-                    # motor2.stop()
+                    motor1.go(0)
+                    motor2.go(70)
+                    time.sleep(0.7)
+                    motor1.stop()
+                    motor2.stop()
                 else:
                     print("---motor left---")
-                    # motor1.go(0)
-                    # motor2.go(70)
-                    time.sleep(0.1)
-                    # motor1.stop()
-                    # motor2.stop()
+                    motor1.go(70)
+                    motor2.go(0)
+                    time.sleep(0.7)
+                    motor1.stop()
+                    motor2.stop()
             
     else:
-        # motor1.go(70)
-        # motor2.go(70)
-        time.sleep(0.1)
-        # motor1.stop()
-        # motor2.stop()
+        motor1.go(70)
+        motor2.go(70)
+        time.sleep(1)
+        motor1.stop()
+        motor2.stop()
         print("---motor go---")
 
     # ====================================結果の表示===================================
     # 画像のリサイズを行う
     mask_orange = cv2.resize(mask_orange, None, fx=0.5, fy=0.5)
     cv2.imshow('masked', mask_orange)
-    cv2.imshow('ARmarker', frame)
+    cv2.imshow('ARmarker', frame2)
     key = cv2.waitKey(1)  # キー入力の受付
     if key == 27:  # ESCキーで終了
         break

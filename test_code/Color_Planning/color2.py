@@ -49,8 +49,8 @@ TorF = True
 # ar = Artools()
 
 # ==============================オレンジ色検出のためのHSV値の設定==============================
-lower_orange = np.array([26, 15, 10])
-upper_orange = np.array([63, 255, 175])
+lower_orange = np.array([0, 220, 158])
+upper_orange = np.array([55, 255, 255])
 
 # ==============================Tkinter GUIの設定==============================
 def update_values():
@@ -132,6 +132,7 @@ def main_loop():
 
         # 結果の表示
         mask_orange = cv2.resize(mask_orange, None, fx=0.5, fy=0.5)
+        frame = cv2.resize(frame, None, fx=0.5, fy=0.5)
         cv2.imshow('masked', mask_orange)
         cv2.imshow('ARmarker', frame)
     
