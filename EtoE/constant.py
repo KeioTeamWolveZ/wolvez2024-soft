@@ -50,6 +50,8 @@ const.FLYING_FLIGHTPIN_COUNT_THRE = 10
 const.DROPPING_ACC_COUNT_THRE = 30
 const.DROPPING_ACC_THRE = 1 #加速度の値
 
+const.DROPPING_PRESS_COUNT_THRE = 30 # 気圧センサのカウンタ
+
 const.SEPARATION_TIME_THRE = 10 #焼き切り時間
 # const.ARM_CARIBRATION_THRE = 5 #アームのマーカーが認識できるまで繰り返す時間
 const.LANDING_MOTOR_TIME_THRE = 10 #分離シートから離れるためにモータを回転させる時間
