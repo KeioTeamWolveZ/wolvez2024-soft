@@ -10,12 +10,15 @@ import re
 import math
 from datetime import datetime
 from glob import glob
-import constant as ct
+from picamera2 import Picamera2 
+from libcamera import controls 
 
+import constant as ct
 from Wolvez2024_now.led import led
 from Wolvez2024_now.gps import GPS
 from Wolvez2024_now.bno055 import BNO055
 from Wolvez2024_now.bmp import BMP
+from Wolvez2024_now.motor_pico import motor_pico as motor
 
 
 """
@@ -32,55 +35,98 @@ from Wolvez2024_now.bmp import BMP
 """
 class Cansat():
 	def __init__(self,state):
-		# GPIO設定
+		
+		# ================================================ GPIO ================================================ 
 		GPIO.setwarnings(False)
 		GPIO.setmode(GPIO.BCM) #GPIOの設定
 		GPIO.setup(ct.const.FLIGHTPIN_PIN,GPIO.IN,pull_up_down=GPIO.PUD_UP) #フライトピン用。プルアップを有効化
-		
-		
-		self.timer = 0
-		self.state = state
-		self.last_state = 0
-		self.time = 0
-		self.startTime_time=time.time()
-		self.startTime = str(datetime.now())[:19].replace(" ","_").replace(":","-")
-		print(ct.const.RIGHT_MOTOR_IN1_PIN)
-		self.RED_LED = led(ct.const.RED_LED_PIN)
-		self.BLUE_LED = led(ct.const.BLUE_LED_PIN)
-		self.GREEN_LED = led(ct.const.GREEN_LED_PIN)
 
-		self.gps = GPS()
-		self.bno055 = BNO055()
-		self.bmp = BMP()
+		
+		# ============================================== constant ============================================== 
+		
+	        self.TIME_THRESHOLD = 3 # ct.const.
+	        self.DROPPING_ACC_THRE = 0.0005 # ct.const.
+	        self.DROPPING_PRESS_THRE = 100000 # ct.const.
+	        self.DROPPING_ACC_COUNT_THRE = 30 # ct.const.
+	        self.DROPPING_PRESS_COUNT_THRE = 30 # ct.const.
+		
+		# =============================================== モータ =============================================== 
+		GPIO.setwarnings(False)
+	        self.MotorL = motor.motor(ct.const.RIGHT_MOTOR_IN1_PIN,ct.const.RIGHT_MOTOR_IN2_PIN,ct.const.RIGHT_MOTOR_VREF_PIN)
+	        self.MotorR = motor.motor(ct.const.LEFT_MOTOR_IN1_PIN,ct.const.LEFT_MOTOR_IN2_PIN, ct.const.LEFT_MOTOR_VREF_PIN)
+		
+		# =============================================== カメラ =============================================== 
+		picam2 = Picamera2()
+	    	size = (1100, 1800)
+	    	config = picam2.create_preview_configuration(
+			main={"format": 'XRGB8888', "size": size})
+	    	picam2.align_configuration(config)
+	    	picam2.configure(config)
+	    	picam2.start()
+	    	# picam2.set_controls({"AfMode": controls.AfModeEnum.Continuous})
+	    	picam2.set_controls({"AfMode":0,"LensPosition":5.5})
+		
+		# ================================================= LED ================================================= 
+		self.RED_LED = led(ct.const.RED_LED_PIN) # 
+		self.BLUE_LED = led(ct.const.BLUE_LED_PIN) # 
+		self.GREEN_LED = led(ct.const.GREEN_LED_PIN) # 
+
+		# =============================================== センサ =============================================== 
+		self.gps = GPS() #
+		self.bno055 = BNO055() #
+		self.bmp = BMP() #
+		
+		# ============================================ ステート管理 ============================================ 
+		self.timer = 0 # 
+		self.state = state # 
+		self.last_state = 0 #
+		self.time = 0 #
+		self.startTime_time=time.time() #
+		self.startTime = str(datetime.now())[:19].replace(" ","_").replace(":","-") #
+
+		
+
+		
+		# =============================================== 時間記録 =============================================== 
+		self.preparingTime = 0 #
+		self.flyingTime = 0 #
+		self.landtime = 0
+		
+		# =============================================== カウンタ =============================================== 
+		# センサ用
+		self.gpscount = 0 #
+		self.countFlyLoop = 0 #
+		self.startgps_lon = [] #
+		self.startgps_lat = [] #
+		# 着陸判定用
+	        self.countAccDropLoop = 0
+	        self.countPressDropLoop = 0
+		
+		# =============================================== bool =============================================== 
+	        self.time_tf = False
+	        self.acc_tf = False
+	        self.press_tf = False
 		
 		
-		
-		
-		self.preparingTime = 0
-		self.flyingTime = 0
-		
-		self.gpscount = 0
-		self.countFlyLoop = 0
-		
-		self.startgps_lon = []
-		self.startgps_lat = []
-		
-		
-		self.temp = 0
-		self.pressure = 0
-		self.altitude = 0
-		self.ax= 0
-		self.ay= 0
-		self.az= 0
-		self.gx= 0
-		self.gy= 0
-		self.gz= 0
-		self.ex= 0
-		self.lat = 0
-		self.lon = 0
+		# ============================================= 変数の初期化 ============================================= 
+		self.temp = 0 #
+		self.pressure = 0 #
+		self.altitude = 0 #
+		self.ax= 0 #
+		self.ay= 0 #
+		self.az= 0 #
+		self.gx= 0 #
+		self.gy= 0 #
+		self.gz= 0 #
+		self.ex= 0 #
+		self.lat = 0 #
+		self.lon = 0 #
 		self.mkdir()
 		
 	def mkdir(self):
+		"""
+  			フォルダの作成
+  		"""
 		self.results_dir = f'results/{self.startTime}'
 		self.results_img_dir = self.results_dir + '/imgs'
 		os.mkdir(self.results_dir)
@@ -94,21 +140,9 @@ class Cansat():
 		pass
 		
 	def writeData(self):
-		datalog = {
-					"state":str(self.state),
-					"time":str(self.gps.Time),
-					"Lat":str(self.gps.Lat),
-					"Lon":str(self.gps.Lon),
-					"ax":str(self.ax),
-					"ay":str(self.ay),
-					"az":str(self.az),
-					"gx":str(self.gx),
-					"gy":str(self.gy),
-					"gz":str(self.gz),
-					"temp":str(self.temp),
-					"pressure":str(self.pressure),
-					"altitude":str(self.altitude)
-					}
+		"""
+  			データの記録
+  		"""
         
 		datalog = str(self.timer) + ","\
                   + "state:"+str(self.state) + ","\
@@ -129,8 +163,11 @@ class Cansat():
 		
 	# =================== mission sequence ===================
 	def sequence(self):
-		# ミッションシーケンスを管理する
-		# main.pyで毎周期実行される。
+		"""
+  			ミッションシーケンスを管理する
+			main.pyで毎周期実行される。
+  		"""
+		
 		
 		if self.state == 0:
 #			print("\033[32m","","\033[0m")
@@ -217,13 +254,13 @@ class Cansat():
 			self.BLUE_LED.led_on()
 			self.GREEN_LED.led_off()
 
-		# ~ if GPIO.input(ct.const.FLIGHTPIN_PIN) == GPIO.HIGH: #highかどうか＝フライトピンが外れているかチェック
-			# ~ self.countFlyLoop+=1
-			# ~ if self.countFlyLoop > ct.const.FLYING_FLIGHTPIN_COUNT_THRE: #一定時間HIGHだったらステート移行
-				# ~ self.state = 2
-				# ~ self.laststate = 2       
-		# ~ else:
-			# ~ self.countFlyLoop = 0 #何故かLOWだったときカウントをリセット
+		# if GPIO.input(ct.const.FLIGHTPIN_PIN) == GPIO.HIGH: #highかどうか＝フライトピンが外れているかチェック
+		# 	self.countFlyLoop+=1
+		# 	if self.countFlyLoop > ct.const.FLYING_FLIGHTPIN_COUNT_THRE: #一定時間HIGHだったらステート移行
+		# 		self.state = 2
+		# 		self.laststate = 2       
+		# else:
+		# 	self.countFlyLoop = 0 #何故かLOWだったときカウントをリセット
 		
 		time.sleep(0.2)
 		self.BLUE_LED.led_off()
@@ -231,12 +268,68 @@ class Cansat():
 		print("\033[32m",1,"\033[0m")
     
 	def landing(self):
+		# landstate = 0: 着陸判定 -> 分離シート焼き切り
+		trigger = self.judge_arrival(self.landtime,t, self.ax, self.ay, self.az, self.pressure)
 		pass
+		
+	def judge_arrival(self, t, ax, ay, az, press):
+	        """
+	        引数：time:ステート以降後の経過時間、加速度の値(できればベクトル)、気圧(or高度)の値
+	        戻り値：着陸判定（着地：True,未着陸：False）
+	        """
+	        # 時間の判定
+	        if time.time() - t > self.TIME_THRESHOLD:
+	            self.time_tf =True
+	        else:
+	            self.time_tf = False
+	        # 加速度の判定
+	        if (ax**2 + ay**2 + az**2) < self.DROPPING_ACC_THRE**2: #加速度が閾値以下で着地判定
+	            self.countAccDropLoop+=1            
+	            if self.countAccDropLoop > self.DROPPING_ACC_COUNT_THRE: #加速度判定の複数回連続成功が必要
+	                self.acc_tf = True
+	        else:
+	            self.countAccDropLoop = 0 #初期化の必要あり
+	            self.acc_tf = False
+	
+	        # 気圧の判定
+	        if press > self.DROPPING_PRESS_THRE: #気圧が閾値以上で着地判定
+	            self.countPressDropLoop+=1            
+	            if self.countPressDropLoop > self.DROPPING_PRESS_COUNT_THRE: #気圧判定の複数回連続成功が必要
+	                self.press_tf = True
+	        else:
+	            self.countPressDropLoop = 0 #初期化の必要あり
+	            self.press_tf = False
+	
+	        if self.time_tf and self.acc_tf and self.press_tf:
+			print("\033[32m","--<Successful landing>--","\033[0m")
+			return True
+	        else:
+			print(f"\033[32m","time:{self.time_tf} ; acc:{self.acc_tf} ; pressure:{self.press_tf}","\033[0m")
+			return False
+		
 	def para_escaping(self):
+		# landstate = 1: カメラ台回転, オレンジ検出 -> パラ脱出
+		# 撮影
+		# 左向く-> 記録
+		# 正面向く-> 記録
+		# 右向く-> 記録
+		# 回避しながらmotor.go()
+		# stuck検知
 		pass
+		
 	def first_releasing(self):
+		# 焼き切り放出
 		pass
 	def moving_release_position(self):
+		# releasing_state = 1: 接近
+		## 作戦１：放出モジュールが十分に遠いとき
+		## 作戦２：放出モジュールが遠いとき
+		
+		# releasing_state = 2: 判定
+		## 加速度センサによる姿勢推定と投射角度の確認
+		
+		# releasing_state = 3: 微調整
+		## 回転機構による投射角変更
 		pass
 	def judgement(self):
 		pass
@@ -245,7 +338,6 @@ class Cansat():
 	
 	
 	def keyboardinterrupt(self): #キーボードインタラプト入れた場合に発動する関数
-		self.RED_LED.led_clean()
 		pass
 	
 			
