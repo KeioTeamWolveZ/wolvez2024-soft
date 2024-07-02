@@ -83,6 +83,7 @@ class Cansat():
 		self.time = 0 #
 		self.startTime_time=time.time() #
 		self.startTime = str(datetime.now())[:19].replace(" ","_").replace(":","-") #
+		self.stuckTime = 0
 
 		
 
@@ -101,6 +102,8 @@ class Cansat():
 		# 着陸判定用
 	        self.countAccDropLoop = 0
 	        self.countPressDropLoop = 0
+		# スタック検知
+		self.countstuckLoop = 0	
 		
 		# =============================================== bool =============================================== 
 	        self.time_tf = False
@@ -335,6 +338,30 @@ class Cansat():
 		pass
 	def finish(self):
 		pass
+
+	def stuck_detection(self):
+	        if (self.ax**2+self.ay**2) <= ct.const.STUCK_ACC_THRE**2:
+	            if self.stuckTime == 0:
+	                self.stuckTime = time.time()
+	            
+	            if self.countstuckLoop > ct.const.STUCK_COUNT_THRE or self.landstate == 1 or self.state >= 6: #加速度が閾値以下になるケースがある程度続いたらスタックと判定
+	                #トルネード実施
+	                print("stuck")
+	                self.MotorR.go(ct.const.STUCK_MOTOR_VREF)
+	                self.MotorL.back(ct.const.STUCK_MOTOR_VREF)
+	                time.sleep(2)
+	                self.MotorR.stop()
+	                self.MotorL.stop()
+	                # self.rv = ct.const.STUCK_MOTOR_VREF
+	                # self.lv = -ct.const.STUCK_MOTOR_VREF
+	                self.countstuckLoop = 0
+	                self.stuckTime = 0
+	
+	            self.countstuckLoop+= 1
+	
+	        else:
+	            self.countstuckLoop = 0
+	            self.stuckTime = 0
 	
 	
 	def keyboardinterrupt(self): #キーボードインタラプト入れた場合に発動する関数
