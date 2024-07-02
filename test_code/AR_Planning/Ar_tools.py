@@ -34,23 +34,11 @@ class Artools:
     tvec = [-1,1,1]
 
     def polar_change(self,tvec):
-        vector_1 = np.array([0, 1]) #基準となるベクトル
-        vector_2 = np.array([tvec[0],tvec[2]])
-        vector_3 = np.array([tvec[1],math.sqrt(tvec[0]**2 + tvec[2]**2)])
-        r = math.sqrt(tvec[0]**2 + tvec[1]**2 + tvec[2]**2)
-        theta = self.theta_angle(vector_1, vector_2)
-        phi = self.phi_angle(vector_1, vector_3)
-        
-        #x座標が左側(負の値)のとき、thetaを負にする
-        if tvec[0] > 0: 
-            theta = theta
-        else:
-            theta = -theta
-        #y座標を下向きに取る時、y座標が正の時、phiを負にする
-        if tvec[1] > 0: 
-            phi = -phi
-        else:
-            theta = phi
+        r = math.sqrt(tvec[0] **2 + tvec[1] **2 + tvec[2] **2)
+        theta_rad = math.atan2(tvec[0] , tvec[2] )
+        theta = math.degrees(theta_rad)
+        phi_rad = math.atan2(tvec[1] , math.sqrt(tvec[0]**2 + tvec[2]**2))
+        phi = math.degrees(phi_rad)
         pvec = [r,theta,phi]
         return pvec
     
