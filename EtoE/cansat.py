@@ -156,7 +156,7 @@ class Cansat():
                   + "ay:"+str(self.ay).rjust(6) + ","\
                   + "az:"+str(self.az).rjust(6) + ","\
                   + "q:"+str(self.ex).rjust(6) + ","\
-                  + "pressure:"+ str(self.sensor.read_pressure())
+                  + "pressure:"+ str(self.pressure)
 		print(datalog)
 
 		with open(f'results/{self.startTime}/control_result.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
