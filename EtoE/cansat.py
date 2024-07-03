@@ -18,7 +18,7 @@ from Wolvez2024_now.led import led
 from Wolvez2024_now.gps import GPS
 from Wolvez2024_now.bno055 import BNO055
 from Wolvez2024_now.bmp import BMP
-from Wolvez2024_now.motor_pico import motor_pico as motor
+from Wolvez2024_now.motor_pico import motor as motor
 
 
 """
@@ -44,27 +44,27 @@ class Cansat():
 		
 		# ============================================== constant ============================================== 
 		
-	        self.TIME_THRESHOLD = 3 # ct.const.
-	        self.DROPPING_ACC_THRE = 0.0005 # ct.const.
-	        self.DROPPING_PRESS_THRE = 100000 # ct.const.
-	        self.DROPPING_ACC_COUNT_THRE = 30 # ct.const.
-	        self.DROPPING_PRESS_COUNT_THRE = 30 # ct.const.
+		self.TIME_THRESHOLD = 3 # ct.const.
+		self.DROPPING_ACC_THRE = 0.0005 # ct.const.
+		self.DROPPING_PRESS_THRE = 100000 # ct.const.
+		self.DROPPING_ACC_COUNT_THRE = 30 # ct.const.
+		self.DROPPING_PRESS_COUNT_THRE = 30 # ct.const.
 		
 		# =============================================== モータ =============================================== 
 		GPIO.setwarnings(False)
-	        self.MotorL = motor.motor(ct.const.RIGHT_MOTOR_IN1_PIN,ct.const.RIGHT_MOTOR_IN2_PIN,ct.const.RIGHT_MOTOR_VREF_PIN)
-	        self.MotorR = motor.motor(ct.const.LEFT_MOTOR_IN1_PIN,ct.const.LEFT_MOTOR_IN2_PIN, ct.const.LEFT_MOTOR_VREF_PIN)
+		self.MotorL = motor(ct.const.RIGHT_MOTOR_IN1_PIN,ct.const.RIGHT_MOTOR_IN2_PIN,ct.const.RIGHT_MOTOR_VREF_PIN)
+		self.MotorR = motor(ct.const.LEFT_MOTOR_IN1_PIN,ct.const.LEFT_MOTOR_IN2_PIN, ct.const.LEFT_MOTOR_VREF_PIN)
 		
 		# =============================================== カメラ =============================================== 
 		picam2 = Picamera2()
-	    	size = (1100, 1800)
-	    	config = picam2.create_preview_configuration(
-			main={"format": 'XRGB8888', "size": size})
-	    	picam2.align_configuration(config)
-	    	picam2.configure(config)
-	    	picam2.start()
-	    	# picam2.set_controls({"AfMode": controls.AfModeEnum.Continuous})
-	    	picam2.set_controls({"AfMode":0,"LensPosition":5.5})
+		size = (1100, 1800)
+		config = picam2.create_preview_configuration(
+		main={"format": 'XRGB8888', "size": size})
+		picam2.align_configuration(config)
+		picam2.configure(config)
+		picam2.start()
+		# picam2.set_controls({"AfMode": controls.AfModeEnum.Continuous})
+		picam2.set_controls({"AfMode":0,"LensPosition":5.5})
 		
 		# ================================================= LED ================================================= 
 		self.RED_LED = led(ct.const.RED_LED_PIN) # 
@@ -100,16 +100,16 @@ class Cansat():
 		self.startgps_lon = [] #
 		self.startgps_lat = [] #
 		# 着陸判定用
-	        self.countAccDropLoop = 0
-	        self.countPressDropLoop = 0
+		self.countAccDropLoop = 0
+		self.countPressDropLoop = 0
 		# スタック検知
 		self.countstuckLoop = 0	
 		
 		# =============================================== bool =============================================== 
-	        self.time_tf = False
-	        self.acc_tf = False
-	        self.press_tf = False
-		
+		self.time_tf = False
+		self.acc_tf = False
+		self.press_tf = False
+	
 		
 		# ============================================= 変数の初期化 ============================================= 
 		self.temp = 0 #
@@ -155,7 +155,8 @@ class Cansat():
                   + "ax:"+str(self.ax).rjust(6) + ","\
                   + "ay:"+str(self.ay).rjust(6) + ","\
                   + "az:"+str(self.az).rjust(6) + ","\
-                  + "q:"+str(self.ex).rjust(6)
+                  + "q:"+str(self.ex).rjust(6) + ","\
+                  + "pressure:"+ str(self.pressure)
 		print(datalog)
 
 		with open(f'results/{self.startTime}/control_result.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
@@ -243,7 +244,7 @@ class Cansat():
 			if time.time() - self.preparingTime > ct.const.PREPARING_TIME_THRE:
 				self.startlon=np.mean(self.startgps_lon)
 				self.startlat=np.mean(self.startgps_lat)
-				self.state = 1
+				# self.state = 1
 				self.laststate = 1
 		time.sleep(0.1)
 		self.RED_LED.led_off()
@@ -276,37 +277,37 @@ class Cansat():
 		pass
 		
 	def judge_arrival(self, t, ax, ay, az, press):
-	        """
-	        引数：time:ステート以降後の経過時間、加速度の値(できればベクトル)、気圧(or高度)の値
-	        戻り値：着陸判定（着地：True,未着陸：False）
-	        """
-	        # 時間の判定
-	        if time.time() - t > self.TIME_THRESHOLD:
-	            self.time_tf =True
-	        else:
-	            self.time_tf = False
-	        # 加速度の判定
-	        if (ax**2 + ay**2 + az**2) < self.DROPPING_ACC_THRE**2: #加速度が閾値以下で着地判定
-	            self.countAccDropLoop+=1            
-	            if self.countAccDropLoop > self.DROPPING_ACC_COUNT_THRE: #加速度判定の複数回連続成功が必要
-	                self.acc_tf = True
-	        else:
-	            self.countAccDropLoop = 0 #初期化の必要あり
-	            self.acc_tf = False
-	
-	        # 気圧の判定
-	        if press > self.DROPPING_PRESS_THRE: #気圧が閾値以上で着地判定
-	            self.countPressDropLoop+=1            
-	            if self.countPressDropLoop > self.DROPPING_PRESS_COUNT_THRE: #気圧判定の複数回連続成功が必要
-	                self.press_tf = True
-	        else:
-	            self.countPressDropLoop = 0 #初期化の必要あり
-	            self.press_tf = False
-	
-	        if self.time_tf and self.acc_tf and self.press_tf:
+		"""
+		引数：time:ステート以降後の経過時間、加速度の値(できればベクトル)、気圧(or高度)の値
+		戻り値：着陸判定（着地：True,未着陸：False）
+		"""
+		# 時間の判定
+		if time.time() - t > self.TIME_THRESHOLD:
+			self.time_tf =True
+		else:
+			self.time_tf = False
+		# 加速度の判定
+		if (ax**2 + ay**2 + az**2) < self.DROPPING_ACC_THRE**2: #加速度が閾値以下で着地判定
+			self.countAccDropLoop+=1            
+			if self.countAccDropLoop > self.DROPPING_ACC_COUNT_THRE: #加速度判定の複数回連続成功が必要
+				self.acc_tf = True
+		else:
+			self.countAccDropLoop = 0 #初期化の必要あり
+			self.acc_tf = False
+
+		# 気圧の判定
+		if press > self.DROPPING_PRESS_THRE: #気圧が閾値以上で着地判定
+			self.countPressDropLoop+=1            
+			if self.countPressDropLoop > self.DROPPING_PRESS_COUNT_THRE: #気圧判定の複数回連続成功が必要
+				self.press_tf = True
+		else:
+			self.countPressDropLoop = 0 #初期化の必要あり
+			self.press_tf = False
+
+		if self.time_tf and self.acc_tf and self.press_tf:
 			print("\033[32m","--<Successful landing>--","\033[0m")
 			return True
-	        else:
+		else:
 			print(f"\033[32m","time:{self.time_tf} ; acc:{self.acc_tf} ; pressure:{self.press_tf}","\033[0m")
 			return False
 		
