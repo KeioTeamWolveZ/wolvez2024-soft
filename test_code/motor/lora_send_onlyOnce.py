@@ -22,10 +22,10 @@ class LoraSendClass:
         # LoRa(ES920LR)データ送信
         try:
             # 送るデータ
-            data = f'00010002-{time.time():.1f} {msg}'
+            data = f'{time.time():.1f} {msg}'
             print(f'<-- SEND -- [{data}]')
             self.sendDevice.cmd_lora(data)
-            time .sleep(1)
+            time.sleep(1)
             
         except KeyboardInterrupt:
             self.sendDevice.close()
