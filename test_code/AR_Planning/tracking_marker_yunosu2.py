@@ -17,17 +17,19 @@ dictionary = aruco.getPredefinedDictionary(aruco.DICT_ARUCO_ORIGINAL)
 marker_length = 0.0215  # マーカーの1辺の長さ（メートル）
 camera_matrix = np.load("mtx.npy")
 distortion_coeff = np.load("dist.npy")
+find_marker = False
 
 # ==============================カメラの設定==============================
 
-camera = input("Which camera do you want to use? (laptop:1 or picamera:2): ")
+# ~ camera = input("Which camera do you want to use? (laptop:1 or picamera:2): ")
+camera = 2
 if int(camera) == 1:
     cap = cv2.VideoCapture(0)
 elif int(camera) == 2:
     from picamera2 import Picamera2 #laptopでは使わないため
     from libcamera import controls #laptopでは使わないため
     picam2 = Picamera2()
-    size = (1000, 1800)
+    size = (1200, 1800)
     config = picam2.create_preview_configuration(
                 main={"format": 'XRGB8888', "size": size})
 
@@ -81,7 +83,7 @@ while True:
     corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, dictionary) # ARマーカーの検出    
 
     if ids is not None:
-        # aruco.drawDetectedMarkers(frame, corners, ids)
+        # aruco.DetectedMarkers(frame, corners, ids)
         for i in range(len(ids)):
             if ids[i] in [0,1,2,3,4,5]:
                 image_points_2d = np.array(corners[i],dtype='double')
@@ -102,6 +104,7 @@ while True:
                     prev.append(tvec)
                     print("ARマーカーの位置を算出中")
                     ultra_count += 1 #最初（位置リセット後も）は20回取得して平均取得
+                    find_marker = True
                 else:
                     # print("prev_length: ",len(prev))
                     TorF = ar.outlier(tvec, prev, ultra_count, 0.3) # true:correct, false:outlier
@@ -129,15 +132,18 @@ while True:
                                 time.sleep(0.5)
                                 motor1.stop()
                                 motor2.stop()
+                                time.sleep(0.5)
                                 yunosu_pos = "Left"
                                     
                             elif 0.05 > tvec[0] > -0.05:
+                                go_ahead_gain = (distance_of_marker-closing_threshold) / closing_threshold
                                 print("---motor GO AHEAD---")
                                 motor1.go(40+60*go_ahead_gain)
                                 motor2.go(40+60*go_ahead_gain)
                                 time.sleep(0.5)
                                 motor1.stop()
-                                motor2.stop()
+                                motor2.stop
+                                time.sleep(0.5)
                                 
                               
                             else:
@@ -147,6 +153,7 @@ while True:
                                 time.sleep(0.5)
                                 motor1.stop()
                                 motor2.stop()
+                                time.sleep(0.5)
                                 yunosu_pos = "Right"
                             
 
@@ -158,6 +165,7 @@ while True:
                                 time.sleep(0.5)
                                 motor1.stop()
                                 motor2.stop()
+                                time.sleep(0.5)
                         
                             elif tvec[0] <= -0.03:
                                 print("---turn LEFT---")
@@ -166,6 +174,7 @@ while True:
                                 time.sleep(0.5)
                                 motor1.stop()
                                 motor2.stop()
+                                time.sleep(0.5)
                                
                             else:
                                 print("'\033[32m'---perfect REACHED---'\033[0m'")
@@ -173,21 +182,23 @@ while True:
                         if distance_of_marker <= closing_threshold - closing_range:
                             if -20 <= angle_of_marker <= 0: #ARマーカがやや左から正面にある場合
                                 print("右回転")
-                                motor1.go(40)   #その場右回転
-                                motor2.back(40)
-                                time.sleep(0.5)
+                                motor1.go(70)   #その場右回転
+                                motor2.back(70)
+                                time.sleep(0.3)
                                 motor1.stop()
                                 motor2.stop()
+                                time.sleep(0.5)
                                 yunosu_pos = "Left"
                               
                                
                             elif 0 <= angle_of_marker <= 20: #ARマーカがやや右から正面にある場合
                                 print("左回転")
-                                motor1.back(40)   #その場左回転
-                                motor2.go(40)
-                                time.sleep(0.5)
+                                motor1.back(70)   #その場左回転
+                                motor2.go(70)
+                                time.sleep(0.3)
                                 motor1.stop()
                                 motor2.stop()
+                                time.sleep(0.5)
                                 yunosu_pos = "Right"
                                
                             else: #4+k秒ただ直進(ARマーカから離れる)   
@@ -195,9 +206,14 @@ while True:
                                 last_pos = "Plan_B"
                                 motor1.go(70)
                                 motor2.go(70)
+                                time.sleep(2.5)
+                                motor1.stop()
+                                motor2.stop()
+                                time.sleep(0.5)
                             
                     else: # detected AR marker is not reliable
                         print("state of marker is rejected")
+                        find_marker = False
                         print(ultra_count)
                         reject_count += 1 # 拒否された回数をカウント
                         if reject_count > 10: # 拒否され続けたらリセットしてARマーカーの基準を上書き（再計算）
@@ -224,7 +240,7 @@ while True:
                     lens = change_lens
     
     
-    if last_pos == "Plan_A": #ARマーカを認識していない時，認識するまでその場回転
+    if last_pos == "Plan_A" and not find_marker: #ARマーカを認識していない時，認識するまでその場回転
         if yunosu_pos == "Left":
             print("ARマーカー探してます(LEFT)")
             motor1.back(60)   #その場左回転
@@ -232,6 +248,7 @@ while True:
             time.sleep(0.5)
             motor1.stop()
             motor2.stop()
+            time.sleep(0.5)
            
                 
         elif yunosu_pos == "Right":
@@ -241,6 +258,7 @@ while True:
             time.sleep(0.5)
             motor1.stop()
             motor2.stop()
+            time.sleep(0.5)
            
         
     elif last_pos == "Plan_B":
@@ -250,6 +268,7 @@ while True:
         time.sleep(0.5)
         motor1.stop()
         motor2.stop()
+        time.sleep(0.5)
         last_pos = "Plan_A"
 
 
@@ -260,7 +279,7 @@ while True:
 
     # ====================================結果の表示===================================
     # #　画像のリサイズを行う
-    frame = cv2.resize(frame,None,fx=0.5,fy=0.5)
+    frame = cv2.resize(frame2,None,fx=0.5,fy=0.5)
     cv2.imshow('ARmarker', frame)
     key = cv2.waitKey(1)# キー入力の受付
     if key == 27:  # ESCキーで終了
