@@ -8,7 +8,7 @@ import motor_pico as motor
 import gps
 import micropyGPS
 import bno055
-# import lora_send
+import lora_send
 
 import Adafruit_BMP.BMP085 as BMP085
 
@@ -16,9 +16,15 @@ from libcam_module import Picam
 
 
 # def lora_data(states=1,gps_data=[1,1]): #通信モジュールの送信を行う関数
-#     send_data = "Lat:" + str(gps_data[0]) + "," \
-#             "Lon:" + str(gps_data[1])
-#     return send_data
+    # send_data = "Lat:" + str(gps_data[0]) + "," \
+            # "Lon:" + str(gps_data[1])
+    # return send_data
+    
+def lora_data(states=1,bno_data=[1,1,1]): #通信モジュールの送信を行う関数
+    send_data = "ax:" + str(bno_data[0]) + "," \
+            "ay:" + str(bno_data[1]) + "," \
+            "az:" + str(bno_data[2])
+    return send_data
 
 def logging(states):
     datalog = str(int(1000*(time.time() - startTime_time))) + ","\
@@ -30,8 +36,6 @@ def logging(states):
                   + "ay:"+str(round(ay,6)).rjust(6) + ","\
                   + "az:"+str(round(az,6)).rjust(6) + ","\
                   + "q:" + str(ex).rjust(6) + ","\
-                  + "rV:" + str(round(MotorR.velocity,2)).rjust(4) + ","\
-                  + "lV:" + str(round(MotorL.velocity,2)).rjust(4) + ","\
                   + "pressure:" +str(round(pres))
     print(datalog)
 
@@ -44,9 +48,9 @@ if __name__ == '__main__':
     # MotorR.go(80)
     # MotorL.back(80)
     
-    # lora_device = "/dev/ttyAMA1"  # ES920LRデバイス名 (UART2) 
+    lora_device = "/dev/ttyAMA1"  # ES920LRデバイス名 (UART2) 
     channel = 15
-    # lr_send = lora_send.LoraSendClass(lora_device, channel)
+    lr_send = lora_send.LoraSendClass(lora_device, channel)
     bno = bno055.BNO055()
     bno.setupBno()
     gps = gps.GPS()
@@ -74,12 +78,12 @@ if __name__ == '__main__':
             pc2.show(img)
             
             # データを結合して送信
-            # logging(state)
-            # lr_data = lora_data(gps_data=gps_data)
+            logging(state)
+            lr_data = lora_data(bno_data=bno_data)
             # all_data = lora_data(bno_data=bno_data,gps_data=gps_data)
             # all_data = lora_data()
-            # print(lr_data)
-            # lr_send.lora_send(lr_data)
+            print(lr_data)
+            lr_send.lora_send(lr_data)
             
             # 画像を表示している場合はescキーで終了できる
             key = cv2.waitKey(1)
@@ -89,7 +93,8 @@ if __name__ == '__main__':
                 # MotorL.stop()
                 GPIO.cleanup()
                 pc2.stop()
-                # lr_send.sendDevice.close()
+                
+                lr_send.sendDevice.close()
                 sys.exit()
                 # cv2.imwrite("test_cv2.jpg", im)
                 break
@@ -101,5 +106,5 @@ if __name__ == '__main__':
             # MotorL.stop()
             GPIO.cleanup()
             pc2.stop()
-            # lr_send.sendDevice.close()
+            lr_send.sendDevice.close()
             sys.exit()
