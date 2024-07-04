@@ -48,6 +48,9 @@ reject_count = 0 # 拒否された回数をカウントするための変数
 prev = np.array([])
 TorF = True
 
+# ====================================成功の定義====================================
+closing_threshold = 0.4
+closing_range = 0.02
 # ==============================クラスのインスタンス化==============================
 ar = Artools()
 
@@ -107,7 +110,7 @@ while True:
                         
                         distance_of_marker = polar_exchange[0]
                         angle_of_marker = polar_exchange[1]
-                        if distance_of_marker >= 0.41:
+                        if distance_of_marker >= closing_threshold:
                             if tvec[0] >= 0.05:
                                 motor1.go(70)
                                 motor2.go(45)
@@ -116,7 +119,7 @@ while True:
                                 motor1.stop()
                                 motor2.stop()
                             elif 0.05 > tvec[0] > -0.05:
-                                go_ahead_gain = (distance_of_marker-0.41) / 0.41
+                                go_ahead_gain = (distance_of_marker-closing_threshold) / closing_threshold
                                 motor1.go(40+60*go_ahead_gain)
                                 motor2.go(40+60*go_ahead_gain)
                                 time.sleep(0.05)
@@ -130,7 +133,7 @@ while True:
                                 print("---motor RIGHT---")
                                 motor1.stop()
                                 motor2.stop()
-                        elif distance_of_marker >= 0.39:
+                        elif distance_of_marker >= closing_threshold - closing_range:
                             if tvec[0] >= 0.03:
                                 print("---turn RIGHT---")
                                 motor1.go(45)
@@ -145,6 +148,7 @@ while True:
                                 time.sleep(0.04)
                                 motor1.stop()
                                 motor2.stop()
+                                
                             else:
                                 print("'\033[32m'---perfect REACHED---'\033[0m'")
 

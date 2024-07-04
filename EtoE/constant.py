@@ -1,4 +1,4 @@
-#Last Update 2024/05/04
+#Last Update 2024/07/02
 #Author : Yuma Suzuki
 
 import const
@@ -36,10 +36,10 @@ const.GPS_GOAL_LON = 139.987489 # 西経は負の値で与える
 const.GOAL_DISTANCE_THRE = 0.0005 # [km] (50 [cm])
 
 # # Motor VREF
-# const.LANDING_MOTOR_VREF = 90
-# const.RELEASING_MOTOR_VREF = 50
-# const.RUNNING_MOTOR_VREF = 100
-# const.STUCK_MOTOR_VREF = 100
+const.LANDING_MOTOR_VREF = 90
+const.RELEASING_MOTOR_VREF = 50
+const.RUNNING_MOTOR_VREF = 100
+const.STUCK_MOTOR_VREF = 100
 
 # # State Threshold
 const.PREPARING_GPS_COUNT_THRE= 30
@@ -47,26 +47,28 @@ const.PREPARING_TIME_THRE = 10
 
 const.FLYING_FLIGHTPIN_COUNT_THRE = 10
 
-# const.DROPPING_ACC_COUNT_THRE = 30
-# const.DROPPING_ACC_THRE = 1 #加速度の値
+const.DROPPING_ACC_COUNT_THRE = 30
+const.DROPPING_ACC_THRE = 1 #加速度の値
 
-# const.SEPARATION_TIME_THRE = 10 #焼き切り時間
+const.DROPPING_PRESS_COUNT_THRE = 30 # 気圧センサのカウンタ
+
+const.SEPARATION_TIME_THRE = 10 #焼き切り時間
 # const.ARM_CARIBRATION_THRE = 5 #アームのマーカーが認識できるまで繰り返す時間
-# const.LANDING_MOTOR_TIME_THRE = 10 #分離シートから離れるためにモータを回転させる時間
+const.LANDING_MOTOR_TIME_THRE = 10 #分離シートから離れるためにモータを回転させる時間
 # const.RELEASING_MOTOR_TIME_THRE = 0.7 #放出と放出の間にモータを回転させる時間
 # const.TURNING_MOTOR_TIME_THRE = 1.5 #turning time after the end of second-releasing
 # const.MODULE_SEPARATION_TIME_THRE = 30 # モジュール同士の接続の際の焼き切り時間
 
 # const.ARM_CALIB_POSITION = 0
 
-# const.AVOID_COLOR_THRE = 20 #色認識されなかった合計回数の閾値
+const.AVOID_COLOR_THRE = 20 #色認識されなかった合計回数の閾値
 
 # const.CONNECTED_HEIGHT_THRE = 700 #アームを上げた場合に接続できていることを確認する時の色の高さの閾値
 
 const.EARTH_RADIUS = 6378.137 # [km]
 
 # # Stack
-# const.STUCK_ACC_THRE = 0.5
-# const.STUCK_COUNT_THRE = 30
-# const.MIRRER_COUNT_THRE = 10
-# const.VANISH_BY_STUCK_THRE = 240 # ステート6で長時間何も見えなかった場合
+const.STUCK_ACC_THRE = 0.5
+const.STUCK_COUNT_THRE = 30
+const.MIRRER_COUNT_THRE = 10
+const.VANISH_BY_STUCK_THRE = 240 # ステート6で長時間何も見えなかった場合
