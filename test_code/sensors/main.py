@@ -94,7 +94,7 @@ if __name__ == '__main__':
                 # cv2.imwrite("test_cv2.jpg", im)
                 break
 
-            time.sleep(0.5)
+            time.sleep(0.1)
             
         except KeyboardInterrupt:
             MotorR.stop()

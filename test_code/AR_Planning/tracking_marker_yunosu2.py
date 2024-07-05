@@ -153,7 +153,6 @@ while True:
                                 time.sleep(0.5)
                                 motor1.stop()
                                 motor2.stop()
-                                time.sleep(0.5)
                                 
                                     
                             elif 0.05 > tvec[0] > -0.05:
@@ -164,7 +163,6 @@ while True:
                                 time.sleep(0.5)
                                 motor1.stop()
                                 motor2.stop()
-                                time.sleep(0.5)
                                 
                               
                             else:
@@ -174,7 +172,6 @@ while True:
                                 time.sleep(0.5)
                                 motor1.stop()
                                 motor2.stop()
-                                time.sleep(0.5)
                             
                             
 
@@ -195,7 +192,6 @@ while True:
                                 time.sleep(0.5)
                                 motor1.stop()
                                 motor2.stop()
-                                time.sleep(0.5)
                                
                             else:
                                 print("'\033[32m'---perfect REACHED---'\033[0m'")
@@ -218,7 +214,6 @@ while True:
                                 time.sleep(0.5)
                                 motor1.stop()
                                 motor2.stop()
-                                time.sleep(0.5)
                         
                         elif distance_of_marker <= closing_threshold - closing_range:
                             if -50 <= angle_of_marker <= 0: #ARマーカがやや左から正面にある場合
@@ -228,7 +223,6 @@ while True:
                                 time.sleep(0.3)
                                 motor1.stop()
                                 motor2.stop()
-                                time.sleep(0.5)
                                 yunosu_pos = "Left"
                                 last_pos = "Plan_B"
                               
@@ -240,7 +234,6 @@ while True:
                                 time.sleep(0.3)
                                 motor1.stop()
                                 motor2.stop()
-                                time.sleep(0.5)
                                 yunosu_pos = "Right"
                                 last_pos = "Plan_B"
                                
@@ -312,7 +305,6 @@ while True:
                         time.sleep(0.5)
                         motor1.stop()
                         motor2.stop()
-                        time.sleep(0.4)
                     elif x > width/2+100:
                         print(f"color:ARマーカー探してます(RIGHT) (x={x})")
                         motor1.go(60)   #その場左回転
@@ -320,7 +312,6 @@ while True:
                         time.sleep(0.5)
                         motor1.stop()
                         motor2.stop()
-                        time.sleep(0.4)
                     else:
                         print(f"color:ARマーカー探してます(GO) (x={x})")
                         motor1.go(50)   #その場左回転
@@ -328,7 +319,6 @@ while True:
                         time.sleep(0.5)
                         motor1.stop()
                         motor2.stop()
-                        time.sleep(0.5)
                 
                                 
             elif yunosu_pos == "Left":
@@ -338,7 +328,6 @@ while True:
                 time.sleep(0.5)
                 motor1.stop()
                 motor2.stop()
-                time.sleep(0.5)
                     
             elif yunosu_pos == "Right":
                 print("ARマーカー探してます(RIGHT)")
@@ -347,7 +336,6 @@ while True:
                 time.sleep(0.5)
                 motor1.stop()
                 motor2.stop()
-                time.sleep(0.5)
            
         
     elif last_pos == "Plan_B":
@@ -367,10 +355,10 @@ while True:
             time.sleep(2.5 + k)
             motor1.stop()
             motor2.stop()
-            time.sleep(0.5)
             last_pos = "Plan_A"
             k += 1
             print(k)
+            
     
     #elif cX:
     #    print("=============")
@@ -380,7 +368,7 @@ while True:
         #     print("認識していません")               
 
 
-
+    time.sleep(0.05)
     # ====================================結果の表示===================================
     # #　画像のリサイズを行う
     print("find_marker",find_marker)
