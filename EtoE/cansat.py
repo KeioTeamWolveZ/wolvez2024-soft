@@ -45,7 +45,7 @@ class Cansat():
 		# ============================================== constant ============================================== 
 		
 		self.TIME_THRESHOLD = 3 # ct.const.
-		self.DROPPING_ACC_THRE = 0.0005 # ct.const.
+		self.DROPPING_ACC_THRE = 0.005 # ct.const.
 		self.DROPPING_PRESS_THRE = 100000 # ct.const.
 		self.DROPPING_ACC_COUNT_THRE = 30 # ct.const.
 		self.DROPPING_PRESS_COUNT_THRE = 30 # ct.const.
@@ -109,7 +109,7 @@ class Cansat():
 		self.time_tf = False
 		self.acc_tf = False
 		self.press_tf = False
-	
+		
 		
 		# ============================================= 変数の初期化 ============================================= 
 		self.temp = 0 #
@@ -156,7 +156,7 @@ class Cansat():
                   + "ay:"+str(self.ay).rjust(6) + ","\
                   + "az:"+str(self.az).rjust(6) + ","\
                   + "q:"+str(self.ex).rjust(6) + ","\
-                  + "pressure:"+ str(self.pressure)
+                  + "pressure:"+str(self.pressure).rjust(6)
 		print(datalog)
 
 		with open(f'results/{self.startTime}/control_result.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
@@ -180,11 +180,9 @@ class Cansat():
 		elif self.state == 1:
 			self.flying()
 		elif self.state == 2:
-			print("\033[32m",2,"\033[0m")
+			self.landing()
 		elif self.state == 3:
-			print("\033[32m",3,"\033[0m")
 		elif self.state == 4:
-			print("\033[32m",4,"\033[0m")
 		elif self.state == 5:
 			print("\033[32m",5,"\033[0m")
 		elif self.state == 6:
@@ -222,7 +220,8 @@ class Cansat():
 		self.writeData()
 		pass
 	
-	def preparing(self):	
+	def preparing(self):
+		print("'\033[44m'","0.preparing",'\033[0m')
 		self.RED_LED.led_on()
 		
 		if self.preparingTime == 0:
@@ -244,13 +243,14 @@ class Cansat():
 			if time.time() - self.preparingTime > ct.const.PREPARING_TIME_THRE:
 				self.startlon=np.mean(self.startgps_lon)
 				self.startlat=np.mean(self.startgps_lat)
-				# self.state = 1
+				self.state = 1
 				self.laststate = 1
 		time.sleep(0.1)
 		self.RED_LED.led_off()
 		
 		
 	def flying(self): #フライトピンが外れる➡︎ボイド缶から放出されたことを検出するステート
+		print("'\033[44m'","1.flying",'\033[0m')
 		self.BLUE_LED.led_on()
 		if self.flyingTime == 0:#時刻を取得してLEDをステートに合わせて光らせる
 			self.flyingTime = time.time()
@@ -265,7 +265,9 @@ class Cansat():
 		# 		self.laststate = 2       
 		# else:
 		# 	self.countFlyLoop = 0 #何故かLOWだったときカウントをリセット
-		
+		time.sleep(3)
+		self.state = 2
+		self.landtime = time.time()
 		time.sleep(0.2)
 		self.BLUE_LED.led_off()
 		
@@ -273,43 +275,44 @@ class Cansat():
     
 	def landing(self):
 		# landstate = 0: 着陸判定 -> 分離シート焼き切り
-		trigger = self.judge_arrival(self.landtime,t, self.ax, self.ay, self.az, self.pressure)
+		print("'\033[44m'","2.landing",'\033[0m')
+		trigger = self.judge_arrival(self.landtime, self.ax, self.ay, self.az, self.pressure)
 		pass
 		
 	def judge_arrival(self, t, ax, ay, az, press):
-		"""
-		引数：time:ステート以降後の経過時間、加速度の値(できればベクトル)、気圧(or高度)の値
-		戻り値：着陸判定（着地：True,未着陸：False）
-		"""
-		# 時間の判定
-		if time.time() - t > self.TIME_THRESHOLD:
-			self.time_tf =True
-		else:
-			self.time_tf = False
-		# 加速度の判定
-		if (ax**2 + ay**2 + az**2) < self.DROPPING_ACC_THRE**2: #加速度が閾値以下で着地判定
-			self.countAccDropLoop+=1            
-			if self.countAccDropLoop > self.DROPPING_ACC_COUNT_THRE: #加速度判定の複数回連続成功が必要
-				self.acc_tf = True
-		else:
-			self.countAccDropLoop = 0 #初期化の必要あり
-			self.acc_tf = False
-
-		# 気圧の判定
-		if press > self.DROPPING_PRESS_THRE: #気圧が閾値以上で着地判定
-			self.countPressDropLoop+=1            
-			if self.countPressDropLoop > self.DROPPING_PRESS_COUNT_THRE: #気圧判定の複数回連続成功が必要
-				self.press_tf = True
-		else:
-			self.countPressDropLoop = 0 #初期化の必要あり
-			self.press_tf = False
-
-		if self.time_tf and self.acc_tf and self.press_tf:
-			print("\033[32m","--<Successful landing>--","\033[0m")
-			return True
-		else:
-			print(f"\033[32m","time:{self.time_tf} ; acc:{self.acc_tf} ; pressure:{self.press_tf}","\033[0m")
-			return False
+	        """
+	        引数：time:ステート以降時間、加速度の値(できればベクトル)、気圧(or高度)の値
+	        戻り値：着陸判定（着地：True,未着陸：False）
+	        """
+	        # 時間の判定
+	        if time.time() - t > self.TIME_THRESHOLD:
+	            self.time_tf =True
+	        else:
+	            self.time_tf = False
+	        # 加速度の判定
+	        if (ax**2 + ay**2 + az**2) < self.DROPPING_ACC_THRE**2: #加速度が閾値以下で着地判定
+	            self.countAccDropLoop+=1            
+	            if self.countAccDropLoop > self.DROPPING_ACC_COUNT_THRE: #加速度判定の複数回連続成功が必要
+	                self.acc_tf = True
+	        else:
+	            self.countAccDropLoop = 0 #初期化の必要あり
+	            self.acc_tf = False
+	
+	        # 気圧の判定
+	        if press > self.DROPPING_PRESS_THRE: #気圧が閾値以上で着地判定
+	            self.countPressDropLoop+=1            
+	            if self.countPressDropLoop > self.DROPPING_PRESS_COUNT_THRE: #気圧判定の複数回連続成功が必要
+	                self.press_tf = True
+	        else:
+	            self.countPressDropLoop = 0 #初期化の必要あり
+	            self.press_tf = False
+	
+	        if self.time_tf and self.acc_tf and self.press_tf:
+	            print("\033[32m","--<Successful landing>--","\033[0m")
+	            return True
+	        else:
+	            print("\033[32m",f"time:{self.time_tf} ; acc:{self.acc_tf} ; pressure:{self.press_tf}\n{(ax**2 + ay**2 + az**2)} < {self.DROPPING_ACC_THRE**2}","\033[0m")
+	            return False
 		
 	def para_escaping(self):
 		# landstate = 1: カメラ台回転, オレンジ検出 -> パラ脱出
