@@ -44,11 +44,11 @@ class Cansat():
 		
 		# ============================================== constant ============================================== 
 		
-		self.TIME_THRESHOLD = 3 # ct.const.
-		self.DROPPING_ACC_THRE = 0.005 # ct.const.
-		self.DROPPING_PRESS_THRE = 100000 # ct.const.
-		self.DROPPING_ACC_COUNT_THRE = 30 # ct.const.
-		self.DROPPING_PRESS_COUNT_THRE = 30 # ct.const.
+		self.TIME_THRESHOLD = 3 # ct.const.DROPPING_TIME_THRE
+		self.DROPPING_ACC_THRE = 0.005 # ct.const.DROPPING_ACC_THRE
+		self.DROPPING_PRESS_THRE = 100000 # ct.const.DROPPING_PRESS_THRE
+		self.DROPPING_ACC_COUNT_THRE = 30 # ct.const.DROPPING_ACC_COUNT_THRE
+		self.DROPPING_PRESS_COUNT_THRE = 30 # ct.const.DROPPING_PRESS_COUNT_THRE
 		
 		# =============================================== モータ =============================================== 
 		GPIO.setwarnings(False)
@@ -56,15 +56,15 @@ class Cansat():
 		self.MotorR = motor(ct.const.LEFT_MOTOR_IN1_PIN,ct.const.LEFT_MOTOR_IN2_PIN, ct.const.LEFT_MOTOR_VREF_PIN)
 		
 		# =============================================== カメラ =============================================== 
-		picam2 = Picamera2()
-		size = (1100, 1800)
-		config = picam2.create_preview_configuration(
-		main={"format": 'XRGB8888', "size": size})
-		picam2.align_configuration(config)
-		picam2.configure(config)
-		picam2.start()
-		# picam2.set_controls({"AfMode": controls.AfModeEnum.Continuous})
-		picam2.set_controls({"AfMode":0,"LensPosition":5.5})
+		# ~ picam2 = Picamera2()
+		# ~ size = (1100, 1800)
+		# ~ config = picam2.create_preview_configuration(
+		# ~ main={"format": 'XRGB8888', "size": size})
+		# ~ picam2.align_configuration(config)
+		# ~ picam2.configure(config)
+		# ~ picam2.start()
+		# ~ # picam2.set_controls({"AfMode": controls.AfModeEnum.Continuous})
+		# ~ picam2.set_controls({"AfMode":0,"LensPosition":5.5})
 		
 		# ================================================= LED ================================================= 
 		self.RED_LED = led(ct.const.RED_LED_PIN) # 
@@ -104,11 +104,13 @@ class Cansat():
 		self.countPressDropLoop = 0
 		# スタック検知
 		self.countstuckLoop = 0	
-		
+		# flight
+		self.countFlyLoop = 0
 		# =============================================== bool =============================================== 
 		self.time_tf = False
 		self.acc_tf = False
 		self.press_tf = False
+		self.flight = True
 		
 		
 		# ============================================= 変数の初期化 ============================================= 
@@ -254,22 +256,17 @@ class Cansat():
 	def flying(self): #フライトピンが外れる➡︎ボイド缶から放出されたことを検出するステート
 		print("'\033[44m'","1.flying",'\033[0m')
 		self.BLUE_LED.led_on()
-		if self.flyingTime == 0:#時刻を取得してLEDをステートに合わせて光らせる
-			self.flyingTime = time.time()
-			self.RED_LED.led_off()
-			self.BLUE_LED.led_on()
-			self.GREEN_LED.led_off()
-
-		# if GPIO.input(ct.const.FLIGHTPIN_PIN) == GPIO.HIGH: #highかどうか＝フライトピンが外れているかチェック
-		# 	self.countFlyLoop+=1
-		# 	if self.countFlyLoop > ct.const.FLYING_FLIGHTPIN_COUNT_THRE: #一定時間HIGHだったらステート移行
-		# 		self.state = 2
-		# 		self.laststate = 2       
-		# else:
-		# 	self.countFlyLoop = 0 #何故かLOWだったときカウントをリセット
-		time.sleep(3)
+		self.flyingTime = time.time()
+		while self.flight:
+			if GPIO.input(ct.const.FLIGHTPIN_PIN) == GPIO.HIGH: #highかどうか＝フライトピンが外れているかチェック
+				self.countFlyLoop+=1
+				if self.countFlyLoop > ct.const.FLYING_FLIGHTPIN_COUNT_THRE: #一定時間HIGHだったらステート移行
+					self.flight = False	
+			else:
+				self.countFlyLoop = 0 #何故かLOWだったときカウントをリセット
+				time.sleep(3)
+			print("=====flying=====")
 		self.state = 2
-		self.landtime = time.time()
 		time.sleep(0.2)
 		self.BLUE_LED.led_off()
 		
@@ -368,7 +365,14 @@ class Cansat():
 	        else:
 	            self.countstuckLoop = 0
 	            self.stuckTime = 0
-	
+	def separation(self,pin):
+		GPIO.setup(pin,GPIO.OUT) #焼き切り用のピンの設定tv 
+		GPIO.output(pin,0) #焼き切りが危ないのでlowにしておく
+		GPIO.output(pin,1) #電圧をHIGHにして焼き切りを行う
+		time.sleep(10) #継続時間を指定
+		GPIO.output(pin,0) #電圧をLOWにして焼き切りを終了する
+		print("Separation done")
+
 	
 	def keyboardinterrupt(self): #キーボードインタラプト入れた場合に発動する関数
 		pass

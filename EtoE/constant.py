@@ -24,7 +24,7 @@ const.GREEN_LED_PIN = 11
 # Separation Pin
 const.SEPARATION_PARA = 24
 const.SEPARATION_MOD1 = 25
-const.SEPARATION_MOD2 = 17
+const.SEPARATION_MOD2 = 8
 
 # Flight Pin
 const.FLIGHTPIN_PIN = 4
@@ -47,12 +47,13 @@ const.PREPARING_TIME_THRE = 10
 
 const.FLYING_FLIGHTPIN_COUNT_THRE = 10
 
+const.DROPPING_TIME_THRE = 30
 const.DROPPING_ACC_COUNT_THRE = 30
-const.DROPPING_ACC_THRE = 1 #加速度の値
-
+const.DROPPING_ACC_THRE = 0.005 #加速度の値
+const.DROPPING_PRESS_THRE = 100000 # 気圧センサのカウンタ
 const.DROPPING_PRESS_COUNT_THRE = 30 # 気圧センサのカウンタ
 
-const.SEPARATION_TIME_THRE = 10 #焼き切り時間
+const.SEPARATION_TIME_THRE = 5 #焼き切り時間
 # const.ARM_CARIBRATION_THRE = 5 #アームのマーカーが認識できるまで繰り返す時間
 const.LANDING_MOTOR_TIME_THRE = 10 #分離シートから離れるためにモータを回転させる時間
 # const.RELEASING_MOTOR_TIME_THRE = 0.7 #放出と放出の間にモータを回転させる時間
