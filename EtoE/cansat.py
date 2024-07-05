@@ -182,7 +182,9 @@ class Cansat():
 		elif self.state == 2:
 			self.landing()
 		elif self.state == 3:
+			pass
 		elif self.state == 4:
+			pass
 		elif self.state == 5:
 			print("\033[32m",5,"\033[0m")
 		elif self.state == 6:
