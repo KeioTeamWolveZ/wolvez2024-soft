@@ -126,14 +126,14 @@ while True:
                         
                         if distance_of_marker >= closing_threshold + closing_range:
                             if tvec[0] >= 0.05:
-                                print("---motor LEFT---")
+                                print("---右に曲がります---")
                                 motor2.go(45)
                                 motor1.go(70)
                                 time.sleep(0.5)
                                 motor1.stop()
                                 motor2.stop()
                                 time.sleep(0.5)
-                                yunosu_pos = "Left"
+                                
                                     
                             elif 0.05 > tvec[0] > -0.05:
                                 go_ahead_gain = (distance_of_marker-closing_threshold) / closing_threshold
@@ -147,19 +147,19 @@ while True:
                                 
                               
                             else:
-                                print("---motor RIGHT---")
+                                print("---左に曲がります---")
                                 motor1.go(45)
                                 motor2.go(70)
                                 time.sleep(0.5)
                                 motor1.stop()
                                 motor2.stop()
                                 time.sleep(0.5)
-                                yunosu_pos = "Right"
+                            
                             
 
                         elif distance_of_marker >= closing_threshold:
                             if tvec[0] >= 0.03:
-                                print("---turn RIGHT---")
+                                print("---時計周り---")
                                 motor1.go(45)
                                 motor2.back(45)
                                 time.sleep(0.5)
@@ -168,7 +168,7 @@ while True:
                                 time.sleep(0.5)
                         
                             elif tvec[0] <= -0.03:
-                                print("---turn LEFT---")
+                                print("---反時計周り---")
                                 motor1.back(45)
                                 motor2.go(45)
                                 time.sleep(0.5)
