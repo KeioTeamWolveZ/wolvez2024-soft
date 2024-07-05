@@ -45,7 +45,7 @@ class Cansat():
 		# ============================================== constant ============================================== 
 		
 		self.TIME_THRESHOLD = 3 # ct.const.
-		self.DROPPING_ACC_THRE = 0.0005 # ct.const.
+		self.DROPPING_ACC_THRE = 0.005 # ct.const.
 		self.DROPPING_PRESS_THRE = 100000 # ct.const.
 		self.DROPPING_ACC_COUNT_THRE = 30 # ct.const.
 		self.DROPPING_PRESS_COUNT_THRE = 30 # ct.const.
@@ -180,12 +180,11 @@ class Cansat():
 		elif self.state == 1:
 			self.flying()
 		elif self.state == 2:
-			print("\033[32m",2,"\033[0m")
 			self.landing()
 		elif self.state == 3:
-			print("\033[32m",3,"\033[0m")
+			pass
 		elif self.state == 4:
-			print("\033[32m",4,"\033[0m")
+			pass
 		elif self.state == 5:
 			print("\033[32m",5,"\033[0m")
 		elif self.state == 6:
@@ -293,7 +292,7 @@ class Cansat():
 	        else:
 	            self.time_tf = False
 	        # 加速度の判定
-	        if (ax**2 + ay**2 + az**2) < self.DROPPING_ACC_THRE: #加速度が閾値以下で着地判定
+	        if (ax**2 + ay**2 + az**2) < self.DROPPING_ACC_THRE**2: #加速度が閾値以下で着地判定
 	            self.countAccDropLoop+=1            
 	            if self.countAccDropLoop > self.DROPPING_ACC_COUNT_THRE: #加速度判定の複数回連続成功が必要
 	                self.acc_tf = True
