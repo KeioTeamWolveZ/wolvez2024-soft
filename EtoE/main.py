@@ -4,7 +4,7 @@ import time
 import RPi.GPIO as GPIO
 
 
-start_state = 0
+start_state = 1
 
 end_state = 8
 
@@ -17,6 +17,7 @@ try:
 		cansat .sequence()
 		if cansat.state > end_state:
 			print("Finished")
+		time.sleep(0.2)
 		
 except KeyboardInterrupt:
     print("Finished")
