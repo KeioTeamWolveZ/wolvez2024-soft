@@ -52,20 +52,22 @@ class Cansat():
 		self.DROPPING_PRESS_COUNT_THRE = 30 # ct.const.DROPPING_PRESS_COUNT_THRE
 		
 		# =============================================== モータ =============================================== 
+		# ~ GPIO.setwarnings(False)
+		# ~ self.MotorL = motor(ct.const.RIGHT_MOTOR_IN1_PIN,ct.const.RIGHT_MOTOR_IN2_PIN,ct.const.RIGHT_MOTOR_VREF_PIN)
+		# ~ self.MotorR = motor(ct.const.LEFT_MOTOR_IN1_PIN,ct.const.LEFT_MOTOR_IN2_PIN, ct.const.LEFT_MOTOR_VREF_PIN)
 		GPIO.setwarnings(False)
-		self.MotorL = motor(ct.const.RIGHT_MOTOR_IN1_PIN,ct.const.RIGHT_MOTOR_IN2_PIN,ct.const.RIGHT_MOTOR_VREF_PIN)
-		self.MotorR = motor(ct.const.LEFT_MOTOR_IN1_PIN,ct.const.LEFT_MOTOR_IN2_PIN, ct.const.LEFT_MOTOR_VREF_PIN)
-		
+		self.motor1 = motor(6,5,13)
+		self.motor2 = motor(20,16,12,-1)
 		# =============================================== カメラ =============================================== 
-		picam2 = Picamera2()
+		self.picam2 = Picamera2()
 		size = (1100, 1800)
-		config = picam2.create_preview_configuration(
+		config = self.picam2.create_preview_configuration(
 		main={"format": 'XRGB8888', "size": size})
-		picam2.align_configuration(config)
-		picam2.configure(config)
-		picam2.start()
+		self.picam2.align_configuration(config)
+		self.picam2.configure(config)
+		self.picam2.start()
 		# picam2.set_controls({"AfMode": controls.AfModeEnum.Continuous})
-		picam2.set_controls({"AfMode":0,"LensPosition":5.5})
+		self.picam2.set_controls({"AfMode":0,"LensPosition":5.5})
 		
 		# ================================================= LED ================================================= 
 		self.RED_LED = led(ct.const.RED_LED_PIN) # 
@@ -76,6 +78,7 @@ class Cansat():
 		self.gps = GPS() #
 		self.bno055 = BNO055() #
 		self.bmp = BMP() #
+		self.color = Color_tools(ct.const.LOWER_ORANGE,ct.const.LOWER_ORANGE)
 		
 		# ============================================ ステート管理 ============================================ 
 		self.timer = 0 # 
@@ -100,7 +103,7 @@ class Cansat():
 		self.countFlyLoop = 0 #
 		self.startgps_lon = [] #
 		self.startgps_lat = [] #
-    self.cameraCount = 0 # camera
+		self.cameraCount = 0 # camera
 		# 着陸判定用
 		self.countAccDropLoop = 0
 		self.countPressDropLoop = 0
@@ -167,33 +170,32 @@ class Cansat():
 				test.write(datalog + '\n')
             
 	def writeMissionlog(self):
-    mission_log = str(self.timer) + ","\
-            + "state:"+str(self.state) 
-    if self.state == 1:
-        mission_log = mission_log + ","\
-            + "Flight_PIN:" + "True" # フライトピン
-    if self.state == 2:
-        mission_log = mission_log + ","\
-            + "Casat_Landing:" + str(self.trigger) # 着地判定
-    if self.state == 3:
-        mission_log = mission_log + ","\
-            + "Para_distancing:" + str(self.distancing_finish) # パラから距離を取る
-    # if self.state == 4:
-    #     mission_log = mission_log + ","\
-    #         + "Releasing_01:"  + str(self.releasing_01) # 電池モジュール焼き切り
-    #         + ","　+ "Releasing_01:"  + str(self.releasing_01) # 電池モジュール焼き切り
-    # if self.state == 5:
-    #     mission_log = mission_log + ","\
-    #         + "Releasing_02:"  + str(self.releasing_02) # 電力消費モジュール焼き切り
-    # if self.state == 6:
-    #     mission_log = mission_log + ","\
-    #         + "ConnectingState:" + str(self.connecting_state) + ","\
-    #         + "Done-Approach:" + str(self.done_approach) + ","\
-    #         + "Done-Connect:" + str(self.connected)
+	    mission_log = str(self.timer) + ","\
+		    + "state:"+str(self.state) 
+	    if self.state == 1:
+		    mission_log = mission_log + "," + "Flight_PIN:" + "True" # フライトピン
+	    if self.state == 2:
+		    mission_log = mission_log + ","\
+		    + "Casat_Landing:" + str(self.trigger) # 着地判定
+	    if self.state == 3:
+		    mission_log = mission_log + ","\
+		    + "Para_distancing:" + str(self.distancing_finish) # パラから距離を取る
+	    # if self.state == 4:
+	    #     mission_log = mission_log + ","\
+	    #         + "Releasing_01:"  + str(self.releasing_01) # 電池モジュール焼き切り
+	    #         + ","　+ "Releasing_01:"  + str(self.releasing_01) # 電池モジュール焼き切り
+	    # if self.state == 5:
+	    #     mission_log = mission_log + ","\
+	    #         + "Releasing_02:"  + str(self.releasing_02) # 電力消費モジュール焼き切り
+	    # if self.state == 6:
+	    #     mission_log = mission_log + ","\
+	    #         + "ConnectingState:" + str(self.connecting_state) + ","\
+	    #         + "Done-Approach:" + str(self.done_approach) + ","\
+	    #         + "Done-Connect:" + str(self.connected)
 
-    with open(f'results/{self.startTime}/mission_log.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
-        test.write(mission_log + '\n')
-		pass
+	    with open(f'results/{self.startTime}/mission_log.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
+		    test.write(mission_log + '\n')
+		    pass
 		
 	# =================== mission sequence ===================
 	def sequence(self):
@@ -212,6 +214,7 @@ class Cansat():
 		elif self.state == 2:
 			self.landing()
 		elif self.state == 3:
+			self.para_escaping()
 			pass
 		elif self.state == 4:
 			pass
@@ -253,13 +256,13 @@ class Cansat():
 		pass
 	
 	def preparing(self): # state = 0
-    self.img = self.pc2.capture(0,self.results_img_dir+f'/{self.cameraCount}')
+		self.img = self.picam2.capture_array()#0,self.results_img_dir+f'/{self.cameraCount}')
 		print("'\033[44m'","0.preparing",'\033[0m')
 		self.RED_LED.led_on()
 		
 		if self.preparingTime == 0:
-            # self.pc2.set_controls({"AfMode": controls.AfModeEnum.Continuous})
-            # self.img = self.pc2.capture(0,self.results_img_dir+f'/{self.cameraCount}')
+			# self.pc2.set_controls({"AfMode": controls.AfModeEnum.Continuous})
+			# self.img = self.pc2.capture(0,self.results_img_dir+f'/{self.cameraCount}')
 			self.preparingTime = time.time()#時刻を取得
 			self.RED_LED.led_on()
 			self.BLUE_LED.led_off()
@@ -306,42 +309,43 @@ class Cansat():
 		# landstate = 0: 着陸判定 -> 分離シート焼き切り
 		print("'\033[44m'","2.landing",'\033[0m')
 		trigger = self.judge_arrival(self.landtime, self.ax, self.ay, self.az, self.pressure)
-    if trigger:
-      cX_right = []
-      cX_left = []
-      # 右を向くコード
-      # ??????????????
-      for i in range(5):
-        self.cameraCount += 1
-        self.frame = self.pc2.capture(0,self.results_img_dir+f'/{self.cameraCount}')
-        # 指定色のマスクを作成
-        mask_orange = self.mask_color(self.frame,ct.const.LOWER_ORANGE,ct.const.UPPER_ORANGE)
-        # 輪郭を抽出して最大の面積を算出し、線で囲む
-        mask_orange,cX,cY,max_contour_area = self.detect_color(mask_orange,ct.const.MAX_CONTOUR_THRESHOLD)
-        cX_right.append(cX)
-      # 左を向く
-      # ??????????????
-      for i in range(5):
-        self.cameraCount += 1
-        self.frame = self.pc2.capture(0,self.results_img_dir+f'/{self.cameraCount}')
-        # 指定色のマスクを作成
-        mask_orange = self.mask_color(self.frame,ct.const.LOWER_ORANGE,ct.const.UPPER_ORANGE)
-        # 輪郭を抽出して最大の面積を算出し、線で囲む
-        mask_orange,cX,cY,max_contour_area = self.detect_color(mask_orange,ct.const.MAX_CONTOUR_THRESHOLD)
-        cX_left.append(cX)
-        
-      # カメラ回転機構の正常動作の判定        
-      if abs(cX_right.mean() - cX_right.mean()) < ct.const.CAMERA_ROTATION_THRE:
-        print("\033[33m","MISSION : ","\033[33m", "camera rotation success!")
-        # mission log
-        # ?????????????????
-      else:
-        print("\033[33m","MISSION : ","\033[33m", "camera rotation failure")
-        # mission log
-        # ?????????????????
-      self.state = 3
-		pass
-		
+		if trigger:
+			cX_right = []
+			cX_left = []
+			# 右を向くコード
+			# ??????????????
+			for i in range(5):
+				self.cameraCount += 1
+				self.frame = self.picam2.capture_array()#0,self.results_img_dir+f'/{self.cameraCount}')
+				# 指定色のマスクを作成
+				mask_orange = self.color.mask_color(self.frame,ct.const.LOWER_ORANGE,ct.const.UPPER_ORANGE)
+				# 輪郭を抽出して最大の面積を算出し、線で囲む
+				mask_orange,cX,cY,max_contour_area = self.color.detect_color(mask_orange,ct.const.MAX_CONTOUR_THRESHOLD)
+				cX_right.append(cX)
+			# 左を向く
+			# ??????????????
+			for i in range(5):
+				self.cameraCount += 1
+				self.frame = self.picam2.capture_array()#0,self.results_img_dir+f'/{self.cameraCount}')
+				# 指定色のマスクを作成
+				mask_orange = self.color.mask_color(self.frame,ct.const.LOWER_ORANGE,ct.const.UPPER_ORANGE)
+				# 輪郭を抽出して最大の面積を算出し、線で囲む
+				mask_orange,cX,cY,max_contour_area = self.color.detect_color(mask_orange,ct.const.MAX_CONTOUR_THRESHOLD)
+				cX_left.append(cX)
+			# カメラ回転機構の正常動作の判定
+			try :         
+				if abs(np.array(cX_right).mean() - np.array(cX_right).mean()) < ct.const.CAMERA_ROTATION_THRE:
+					print("\033[33m","MISSION : ","\033[33m", "camera rotation success!")
+					# mission log
+					# ?????????????????
+				else:
+					print("\033[33m","MISSION : ","\033[33m", "camera rotation failure")
+					# mission log
+					# ?????????????????
+			except:
+				print("failure")
+			
+			self.state = 3
 	def judge_arrival(self, t, ax, ay, az, press):
 	        """
 	        引数：time:ステート以降時間、加速度の値(できればベクトル)、気圧(or高度)の値
@@ -381,44 +385,44 @@ class Cansat():
 		print("'\033[44m'","3.para_escaping",'\033[0m')
 		# landstate = 3: カメラ台回転, オレンジ検出 -> パラ脱出
 		# 撮影
-    self.cameraCount += 1
-    self.frame = self.pc2.capture(0,self.results_img_dir+f'/{self.cameraCount}')
-    # オレンジ色のマスクを作成
-    mask_orange = self.mask_color(self.frame,ct.const.LOWER_ORANGE,ct.const.UPPER_ORANGE)
-    # 輪郭を抽出して最大の面積を算出し、線で囲む
-    mask_orange,cX,cY,max_contour_area = self.detect_color(mask_orange,ct.const.MAX_CONTOUR_THRESHOLD)
-    print("\033[33m","COLOR : ","\033[0m","cX:",cX,"cY:",cY,"max_contour_area:",max_contour_area)
-    
-    if cX: # パラシュートが見えていない時 -> 直進
-      motor1.go(70)
-      motor2.go(70)
-      time.sleep(10)
-      motor1.stop()
-      motor2.stop()
-      print("---motor go---")
-      self.state = 5
-    else: # パラシュートが見えているとき -> 回避
-      if cX > width/2:
-          print("---motor right---")
-          motor1.go(0)
-          motor2.go(100)
-          time.sleep(0.7)
-          motor1.stop()
-          motor2.stop()
-      else:
-          print("---motor left---")
-          motor1.go(100)
-          motor2.go(0)
-          time.sleep(0.7)
-          motor1.stop()
-          motor2.stop()
-		# 回避しながらmotor.go()
-		# stuck検知
+		self.cameraCount += 1
+		self.frame = self.picam2.capture_array()#0,self.results_img_dir+f'/{self.cameraCount}')
+		# オレンジ色のマスクを作成
+		mask_orange = self.color.mask_color(self.frame,ct.const.LOWER_ORANGE,ct.const.UPPER_ORANGE)
+		# 輪郭を抽出して最大の面積を算出し、線で囲む
+		mask_orange,cX,cY,max_contour_area = self.color.detect_color(mask_orange,ct.const.MAX_CONTOUR_THRESHOLD)
+		print("\033[33m","COLOR : ","\033[0m","cX:",cX,"cY:",cY,"max_contour_area:",max_contour_area)
+	    
+		if not cX : # パラシュートが見えていない時 -> 直進
+			self.motor1.go(70)
+			self.motor2.go(70)
+			time.sleep(3)
+			self.motor1.stop()
+			self.motor2.stop()
+			print("---motor go---")
+			self.state = 5
+		else: # パラシュートが見えているとき -> 回避
+			if cX > width/2:
+				print("---motor right---")
+				self.motor1.go(0)
+				self.motor2.go(100)
+				time.sleep(0.7)
+				self.motor1.stop()
+				self.motor2.stop()
+			else:
+				print("---motor left---")
+				self.motor1.go(100)
+				self.motor2.go(0)
+				time.sleep(0.7)
+				self.motor1.stop()
+				self.motor2.stop()
+				# 回避しながらmotor.go()
+				# stuck検知
 		pass
 		
 	def first_releasing(self): # state = 4
 		print("'\033[44m'","4.first_releasing",'\033[0m')
-    # self.separation()
+		# self.separation()
 		# 焼き切り放出
 		pass
 	def moving_release_position(self): # state = 5
