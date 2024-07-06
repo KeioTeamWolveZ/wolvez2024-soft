@@ -9,7 +9,7 @@ import os
 import re
 import math
 from datetime import datetime
-from glob import glob
+from glob import escape, glob
 from picamera2 import Picamera2 
 from libcamera import controls 
 
@@ -96,6 +96,7 @@ class Cansat():
 		self.preparingTime = 0 #
 		self.flyingTime = 0 #
 		self.landtime = 0
+		self.escapeTime = 0
 		
 		# =============================================== カウンタ =============================================== 
 		# センサ用
@@ -400,7 +401,8 @@ class Cansat():
 			# 逆さなら曲がる向きが反対になる
 			cX = -cX
 			width = -width
-
+		if self.escapeTime == 0:
+			self.escapeTime = time.time()
 		if not cX : # パラシュートが見えていない時 -> 直進
 			self.motor1.go(70)
 			self.motor2.go(70)
@@ -408,7 +410,16 @@ class Cansat():
 			self.motor1.stop()
 			self.motor2.stop()
 			print("---motor go---")
-			self.state = 5
+			# 一定時間経過した後に次のステートに移行
+			if time.time() - self.escapeTime > ct.const.PARA_ESCAPE_TIME_THRE:
+				if self.mirrer:
+					self.stuck_detection() # 止まっているときにやることで強制的にぐるぐるさせる
+					# self.pre_motorTime = time.time() # 去年はこの変数を色んなステートで再利用していた？
+					# 反転を解決するために頑張る
+					self.MotorR.go(ct.const.LANDING_MOTOR_VREF)
+					self.MotorL.go(ct.const.LANDING_MOTOR_VREF)
+					# time.sleep()がいるかも？
+				self.state = 5
 		else: # パラシュートが見えているとき -> 回避
 			if cX > width/2:
 				print("---motor right---")
@@ -417,6 +428,7 @@ class Cansat():
 				time.sleep(0.7)
 				self.motor1.stop()
 				self.motor2.stop()
+				# self.stuck_detection()
 			else:
 				print("---motor left---")
 				self.motor1.go(100)
@@ -426,19 +438,8 @@ class Cansat():
 				self.motor2.stop()
 				# 回避しながらmotor.go()
 				# stuck検知
+				# self.stuck_detection()
 			
-
-		# 一定時間経過した後に次のステートに移行
-		if time.time() - self.landingTime > ct.const.PARA_ESCAPE_TIME_THRE:
-			if self.mirrer:
-				self.stuck_detection() # 止まっているときにやることで強制的にぐるぐるさせる
-				# self.pre_motorTime = time.time() # 去年はこの変数を色んなステートで再利用していた？
-				# 反転を解決するために頑張る
-				self.MotorR.go(ct.const.LANDING_MOTOR_VREF)
-				self.MotorL.go(ct.const.LANDING_MOTOR_VREF)
-				# time.sleep()がいるかも？
-			self.state += 1
-		pass
 		
 	def first_releasing(self): # state = 4
 		print("'\033[44m'","4.first_releasing",'\033[0m')
