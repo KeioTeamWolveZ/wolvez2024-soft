@@ -31,6 +31,6 @@ class LoraSendClass:
                 # 送るデータ
         if data == "":
             data = f'00010002-{time.time():.1f}'
-        print(f'<-- SEND -- [{data}]')
+#        print(f'<-- SEND -- [{data}]')
         self.sendDevice.cmd_lora(data)
             # 5秒待機
