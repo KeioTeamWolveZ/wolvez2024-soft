@@ -2,6 +2,7 @@
 #Author : Yuma Suzuki
 
 import const
+import numpy as np
 
 ## Pin Number
 # Motor
@@ -52,6 +53,10 @@ const.DROPPING_ACC_COUNT_THRE = 30
 const.DROPPING_ACC_THRE = 0.005 #加速度の値
 const.DROPPING_PRESS_THRE = 100000 # 気圧センサのカウンタ
 const.DROPPING_PRESS_COUNT_THRE = 30 # 気圧センサのカウンタ
+
+const.LOWER_ORANGE = np.array([0, 220, 158])
+const.UPPER_ORANGE = np.array([55, 255, 255])
+const.MAX_CONTOUR_THRESHOLD = 1000
 
 const.SEPARATION_TIME_THRE = 5 #焼き切り時間
 # const.ARM_CARIBRATION_THRE = 5 #アームのマーカーが認識できるまで繰り返す時間
