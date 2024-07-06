@@ -484,6 +484,7 @@ class Cansat():
 	        else:
 	            self.countstuckLoop = 0
 	            self.stuckTime = 0
+				
 	def upsidedown_checker(self):
 		# 逆さまの検知（着地時に実施を想定）
 		if self.gz < 5: # gz?が閾値以下で逆さまと判定
@@ -499,24 +500,6 @@ class Cansat():
 		else:
 			print("please change to the next state")
 		return self.mirrer
-
-	def upsidedown(self):
-		self.upsidedown_checker()
-		if self.mirrer_count > ct.const.MIRRER_COUNT_THRE:
-			self.mirrer_count = 0
-			self.stuck_detection() # 止まっているときにやることで強制的にぐるぐるさせる
-			# self.pre_motorTime = time.time() # 去年はこの変数を色んなステートで再利用していた？
-			# 反転を解決するために頑張る
-			self.MotorR.go(ct.const.LANDING_MOTOR_VREF)
-			self.MotorL.go(ct.const.LANDING_MOTOR_VREF)
-			# time.sleep()がいるかも？
-
-		elif self.mirrer:
-			# 反転を検知しているけど、一定時間以上は反転していない
-			pass
-		else:
-			print("please change to the next state")
-		return self.mirror
 
 	def separation(self,pin):
 		GPIO.setup(pin,GPIO.OUT) #焼き切り用のピンの設定tv 
