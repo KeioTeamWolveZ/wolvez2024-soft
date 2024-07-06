@@ -109,6 +109,8 @@ class Cansat():
 		self.countPressDropLoop = 0
 		# スタック検知
 		self.countstuckLoop = 0	
+		# 逆さま検知
+		self.mirrer_count = 0
 		# flight
 		self.countFlyLoop = 0
 		# =============================================== bool =============================================== 
@@ -116,6 +118,7 @@ class Cansat():
 		self.acc_tf = False
 		self.press_tf = False
 		self.flight = True
+		self.mirrer = False
 		
 		
 		# ============================================= 変数の初期化 ============================================= 
@@ -392,7 +395,12 @@ class Cansat():
 		# 輪郭を抽出して最大の面積を算出し、線で囲む
 		mask_orange,cX,cY,max_contour_area = self.color.detect_color(mask_orange,ct.const.MAX_CONTOUR_THRESHOLD)
 		print("\033[33m","COLOR : ","\033[0m","cX:",cX,"cY:",cY,"max_contour_area:",max_contour_area)
-	    
+	    # 反転しているかの検知
+		if self.upsidedown_checker(self):
+			# 逆さなら曲がる向きが反対になる
+			cX = -cX
+			width = -width
+
 		if not cX : # パラシュートが見えていない時 -> 直進
 			self.motor1.go(70)
 			self.motor2.go(70)
@@ -418,6 +426,18 @@ class Cansat():
 				self.motor2.stop()
 				# 回避しながらmotor.go()
 				# stuck検知
+			
+
+		# 一定時間経過した後に次のステートに移行
+		if time.time() - self.landingTime > ct.const.PARA_ESCAPE_TIME_THRE:
+			if self.mirrer:
+				self.stuck_detection() # 止まっているときにやることで強制的にぐるぐるさせる
+				# self.pre_motorTime = time.time() # 去年はこの変数を色んなステートで再利用していた？
+				# 反転を解決するために頑張る
+				self.MotorR.go(ct.const.LANDING_MOTOR_VREF)
+				self.MotorL.go(ct.const.LANDING_MOTOR_VREF)
+				# time.sleep()がいるかも？
+			self.state += 1
 		pass
 		
 	def first_releasing(self): # state = 4
@@ -464,6 +484,40 @@ class Cansat():
 	        else:
 	            self.countstuckLoop = 0
 	            self.stuckTime = 0
+	def upsidedown_checker(self):
+		# 逆さまの検知（着地時に実施を想定）
+		if self.gz < 5: # gz?が閾値以下で逆さまと判定
+            self.mirrer_count += 1
+            self.mirrer = True
+        else:
+            self.mirrer_count = 0
+            self.mirrer = False
+		if self.mirrer_count > ct.const.MIRRER_COUNT_THRE:
+			self.mirrer_count = 0
+		elif self.mirrer:
+			pass
+		else:
+			print("please change to the next state")
+		return self.mirrer
+
+	def upsidedown(self):
+		self.upsidedown_checker()
+		if self.mirrer_count > ct.const.MIRRER_COUNT_THRE:
+			self.mirrer_count = 0
+			self.stuck_detection() # 止まっているときにやることで強制的にぐるぐるさせる
+			# self.pre_motorTime = time.time() # 去年はこの変数を色んなステートで再利用していた？
+			# 反転を解決するために頑張る
+			self.MotorR.go(ct.const.LANDING_MOTOR_VREF)
+			self.MotorL.go(ct.const.LANDING_MOTOR_VREF)
+			# time.sleep()がいるかも？
+
+		elif self.mirrer:
+			# 反転を検知しているけど、一定時間以上は反転していない
+			pass
+		else:
+			print("please change to the next state")
+		return self.mirror
+
 	def separation(self,pin):
 		GPIO.setup(pin,GPIO.OUT) #焼き切り用のピンの設定tv 
 		GPIO.output(pin,0) #焼き切りが危ないのでlowにしておく
