@@ -1,4 +1,4 @@
-import motor
+import motor_pico as motor
 import RPi.GPIO as GPIO
 import time 
 import numpy as np
@@ -13,7 +13,7 @@ GPIO.setup(4,GPIO.IN)
 lr_send = lora_send_onlyOnce.LoraSendClass(lora_device, channel)
 
 Motor1 = motor.motor(6,5,13)
-Motor2 = motor.motor(20,16,12)
+Motor2 = motor.motor(20,16,12,-1)
 
 for i in np.arange(0,30*60):
     lr_send.lora_send()
