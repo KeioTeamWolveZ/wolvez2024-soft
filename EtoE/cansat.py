@@ -388,6 +388,8 @@ class Cansat():
 	def para_escaping(self): # state = 3
 		print("'\033[44m'","3.para_escaping",'\033[0m')
 		# landstate = 3: カメラ台回転, オレンジ検出 -> パラ脱出
+		if self.escapeTime == 0:
+			self.escapeTime = time.time()
 		# 撮影
 		self.cameraCount += 1
 		self.frame = self.picam2.capture_array()#0,self.results_img_dir+f'/{self.cameraCount}')
@@ -397,27 +399,26 @@ class Cansat():
 		mask_orange,cX,cY,max_contour_area = self.color.detect_color(mask_orange,ct.const.MAX_CONTOUR_THRESHOLD)
 		print("\033[33m","COLOR : ","\033[0m","cX:",cX,"cY:",cY,"max_contour_area:",max_contour_area)
 	    # 反転しているかの検知
-		if self.upsidedown_checker(self):
+		self.upsidedown_checker(self)
+		if self.mirror:
 			# 逆さなら曲がる向きが反対になる
 			cX = -cX
 			width = -width
-		if self.escapeTime == 0:
-			self.escapeTime = time.time()
+
 		if not cX : # パラシュートが見えていない時 -> 直進
 			self.motor1.go(70)
 			self.motor2.go(70)
-			time.sleep(3)
-			self.motor1.stop()
-			self.motor2.stop()
+			self.stuck_detection()
 			print("---motor go---")
 			# 一定時間経過した後に次のステートに移行
 			if time.time() - self.escapeTime > ct.const.PARA_ESCAPE_TIME_THRE:
-				if self.mirrer:
+				if self.mirror_count > ct.const.MIRRER_COUNT_THRE:
+					self.mirror_count = 0
 					self.stuck_detection() # 止まっているときにやることで強制的にぐるぐるさせる
 					# self.pre_motorTime = time.time() # 去年はこの変数を色んなステートで再利用していた？
 					# 反転を解決するために頑張る
-					self.MotorR.go(ct.const.LANDING_MOTOR_VREF)
-					self.MotorL.go(ct.const.LANDING_MOTOR_VREF)
+					self.motor1.go(ct.const.LANDING_MOTOR_VREF)
+					self.motor2.go(ct.const.LANDING_MOTOR_VREF)
 					# time.sleep()がいるかも？
 				self.state = 5
 		else: # パラシュートが見えているとき -> 回避
@@ -425,20 +426,20 @@ class Cansat():
 				print("---motor right---")
 				self.motor1.go(0)
 				self.motor2.go(100)
-				time.sleep(0.7)
-				self.motor1.stop()
-				self.motor2.stop()
-				# self.stuck_detection()
+				# time.sleep(0.7)
+				# self.motor1.stop()
+				# self.motor2.stop()
+				self.stuck_detection()
 			else:
 				print("---motor left---")
 				self.motor1.go(100)
 				self.motor2.go(0)
-				time.sleep(0.7)
-				self.motor1.stop()
-				self.motor2.stop()
+				# time.sleep(0.7)
+				# self.motor1.stop()
+				# self.motor2.stop()
 				# 回避しながらmotor.go()
 				# stuck検知
-				# self.stuck_detection()
+				self.stuck_detection()
 			
 		
 	def first_releasing(self): # state = 4
@@ -489,18 +490,11 @@ class Cansat():
 	def upsidedown_checker(self):
 		# 逆さまの検知（着地時に実施を想定）
 		if self.gz < 5: # gz?が閾値以下で逆さまと判定
-            self.mirrer_count += 1
-            self.mirrer = True
-        else:
-            self.mirrer_count = 0
-            self.mirrer = False
-		if self.mirrer_count > ct.const.MIRRER_COUNT_THRE:
-			self.mirrer_count = 0
-		elif self.mirrer:
-			pass
+			self.mirror_count += 1
+			self.mirror = True
 		else:
-			print("please change to the next state")
-		return self.mirrer
+			self.mirror_count = 0
+			self.mirror = False
 
 	def separation(self,pin):
 		GPIO.setup(pin,GPIO.OUT) #焼き切り用のピンの設定tv 
