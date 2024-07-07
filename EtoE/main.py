@@ -1,15 +1,15 @@
 import pigpio
-from cansat2 import Cansat 
+from cansat import Cansat 
 import time 
 import RPi.GPIO as GPIO
 
 
-start_state = 0
+start_state = 1
 
 end_state = 8
 
 try:
-	cansat  = Cansat(0)
+	cansat  = Cansat(start_state)
 	cansat.sensor_setup()
 	while True:
 		cansat.sensor()

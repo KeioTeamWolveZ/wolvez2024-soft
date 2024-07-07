@@ -45,11 +45,11 @@ class Cansat():
 		
 		# ============================================== constant ============================================== 
 		
-		self.TIME_THRESHOLD = 3 # ct.const.DROPPING_TIME_THRE
+		self.TIME_THRESHOLD = 60 # ct.const.DROPPING_TIME_THRE
 		self.DROPPING_ACC_THRE = 0.005 # ct.const.DROPPING_ACC_THRE
-		self.DROPPING_PRESS_THRE = 100000 # ct.const.DROPPING_PRESS_THRE
-		self.DROPPING_ACC_COUNT_THRE = 30 # ct.const.DROPPING_ACC_COUNT_THRE
-		self.DROPPING_PRESS_COUNT_THRE = 30 # ct.const.DROPPING_PRESS_COUNT_THRE
+		self.DROPPING_PRESS_THRE = 99887 # ct.const.DROPPING_PRESS_THRE
+		self.DROPPING_ACC_COUNT_THRE = 20 # ct.const.DROPPING_ACC_COUNT_THRE
+		self.DROPPING_PRESS_COUNT_THRE = 20 # ct.const.DROPPING_PRESS_COUNT_THRE
 		
 		# =============================================== モータ =============================================== 
 		# ~ GPIO.setwarnings(False)
@@ -111,7 +111,7 @@ class Cansat():
 		# スタック検知
 		self.countstuckLoop = 0	
 		# 逆さま検知
-		self.mirrer_count = 0
+		self.mirror_count = 0
 		# flight
 		self.countFlyLoop = 0
 		# =============================================== bool =============================================== 
@@ -304,6 +304,7 @@ class Cansat():
 				time.sleep(3)
 			print("=====flying=====")
 		self.state = 2
+		self.landtime = time.time()
 		time.sleep(0.2)
 		self.BLUE_LED.led_off()
 		
@@ -319,7 +320,7 @@ class Cansat():
 			# 右を向くコード
 			# ??????????????
 			for i in range(5):
-				self.cameraCount += 1
+				# ~ self.cameraCount += 1
 				self.frame = self.picam2.capture_array()#0,self.results_img_dir+f'/{self.cameraCount}')
 				# 指定色のマスクを作成
 				mask_orange = self.color.mask_color(self.frame,ct.const.LOWER_ORANGE,ct.const.UPPER_ORANGE)
@@ -329,7 +330,7 @@ class Cansat():
 			# 左を向く
 			# ??????????????
 			for i in range(5):
-				self.cameraCount += 1
+				# ~ self.cameraCount += 1
 				self.frame = self.picam2.capture_array()#0,self.results_img_dir+f'/{self.cameraCount}')
 				# 指定色のマスクを作成
 				mask_orange = self.color.mask_color(self.frame,ct.const.LOWER_ORANGE,ct.const.UPPER_ORANGE)
@@ -356,7 +357,7 @@ class Cansat():
 	        戻り値：着陸判定（着地：True,未着陸：False）
 	        """
 	        # 時間の判定
-	        if time.time() - t > self.TIME_THRESHOLD:
+	        if time.time() - t > 60: # TIME_THRESHOLD
 	            self.time_tf =True
 	        else:
 	            self.time_tf = False
@@ -370,16 +371,17 @@ class Cansat():
 	            self.acc_tf = False
 	
 	        # 気圧の判定
+	        print(f"{press} > {self.DROPPING_PRESS_THRE}")
 	        if press > self.DROPPING_PRESS_THRE: #気圧が閾値以上で着地判定
-	            self.countPressDropLoop+=1            
+	            self.countPressDropLoop+=1      
 	            if self.countPressDropLoop > self.DROPPING_PRESS_COUNT_THRE: #気圧判定の複数回連続成功が必要
 	                self.press_tf = True
 	        else:
 	            self.countPressDropLoop = 0 #初期化の必要あり
 	            self.press_tf = False
-	
 	        if self.time_tf and self.acc_tf and self.press_tf:
 	            print("\033[32m","--<Successful landing>--","\033[0m")
+	            time.sleep(100)
 	            return True
 	        else:
 	            print("\033[32m",f"time:{self.time_tf} ; acc:{self.acc_tf} ; pressure:{self.press_tf}\n{(ax**2 + ay**2 + az**2)} < {self.DROPPING_ACC_THRE**2}","\033[0m")
@@ -388,51 +390,67 @@ class Cansat():
 	def para_escaping(self): # state = 3
 		print("'\033[44m'","3.para_escaping",'\033[0m')
 		# landstate = 3: カメラ台回転, オレンジ検出 -> パラ脱出
-		if self.escapeTime == 0:
-			self.escapeTime = time.time()
 		# 撮影
 		self.cameraCount += 1
 		self.frame = self.picam2.capture_array()#0,self.results_img_dir+f'/{self.cameraCount}')
+		self.frame2 = cv2.rotate(self.frame,cv2.ROTATE_90_CLOCKWISE)
+		height = self.frame2.shape[0]
+		width = self.frame2.shape[1]
 		# オレンジ色のマスクを作成
-		mask_orange = self.color.mask_color(self.frame,ct.const.LOWER_ORANGE,ct.const.UPPER_ORANGE)
+		mask_orange = self.color.mask_color(self.frame2,ct.const.LOWER_ORANGE,ct.const.UPPER_ORANGE)
 		# 輪郭を抽出して最大の面積を算出し、線で囲む
 		mask_orange,cX,cY,max_contour_area = self.color.detect_color(mask_orange,ct.const.MAX_CONTOUR_THRESHOLD)
 		print("\033[33m","COLOR : ","\033[0m","cX:",cX,"cY:",cY,"max_contour_area:",max_contour_area)
-	    # 反転しているかの検知
-		self.upsidedown_checker(self)
+		self.upsidedown_checker()
+		print("mirror:",self.mirror)
+		motor_st_vref = 70
+		motor_tr_vref = 100
 		if self.mirror:
 			# 逆さなら曲がる向きが反対になる
-			cX = -cX
-			width = -width
+			# print("cX:",cX)
+			motor_st_vref = - motor_st_vref
+			motor_tr_vref = - motor_tr_vref
 
 		if not cX : # パラシュートが見えていない時 -> 直進
-			self.motor1.go(70)
-			self.motor2.go(70)
+			self.motor1.go(motor_st_vref)
+			self.motor2.go(motor_st_vref)
 			self.stuck_detection()
 			print("---motor go---")
 			# 一定時間経過した後に次のステートに移行
-			if time.time() - self.escapeTime > ct.const.PARA_ESCAPE_TIME_THRE:
-				if self.mirror_count > ct.const.MIRRER_COUNT_THRE:
-					self.mirror_count = 0
+			print(self.mirror_count)
+			if self.escapeTime == 0:
+				self.escapeTime = time.time()
+			elif time.time() - self.escapeTime > ct.const.PARA_ESCAPE_TIME_THRE:
+				self.motor1.stop()
+				self.motor2.stop()
+				if self.mirror_count > 10:
+					print("here")
 					self.stuck_detection() # 止まっているときにやることで強制的にぐるぐるさせる
+					self.mirror_count = 0
 					# self.pre_motorTime = time.time() # 去年はこの変数を色んなステートで再利用していた？
 					# 反転を解決するために頑張る
 					self.motor1.go(ct.const.LANDING_MOTOR_VREF)
 					self.motor2.go(ct.const.LANDING_MOTOR_VREF)
+					time.sleep(3)
+					self.motor1.stop()
+					self.motor2.stop()
 					# time.sleep()がいるかも？
-				self.state = 5
+				self.state += 1
+				print("==============finish================")
 		else: # パラシュートが見えているとき -> 回避
+			self.escapeTime = 0
+			print(cX > width/2)
 			if cX > width/2:
 				print("---motor right---")
 				self.motor1.go(0)
-				self.motor2.go(100)
+				self.motor2.go(motor_tr_vref)
 				# time.sleep(0.7)
 				# self.motor1.stop()
 				# self.motor2.stop()
 				self.stuck_detection()
 			else:
 				print("---motor left---")
-				self.motor1.go(100)
+				self.motor1.go(motor_tr_vref)
 				self.motor2.go(0)
 				# time.sleep(0.7)
 				# self.motor1.stop()
@@ -464,28 +482,35 @@ class Cansat():
 		pass
 
 	def stuck_detection(self):
-	        if (self.ax**2+self.ay**2) <= ct.const.STUCK_ACC_THRE**2:
-	            if self.stuckTime == 0:
-	                self.stuckTime = time.time()
-	            
-	            if self.countstuckLoop > ct.const.STUCK_COUNT_THRE or self.landstate == 1 or self.state >= 6: #加速度が閾値以下になるケースがある程度続いたらスタックと判定
-	                #トルネード実施
-	                print("stuck")
-	                self.MotorR.go(ct.const.STUCK_MOTOR_VREF)
-	                self.MotorL.back(ct.const.STUCK_MOTOR_VREF)
-	                time.sleep(2)
-	                self.MotorR.stop()
-	                self.MotorL.stop()
-	                # self.rv = ct.const.STUCK_MOTOR_VREF
-	                # self.lv = -ct.const.STUCK_MOTOR_VREF
-	                self.countstuckLoop = 0
-	                self.stuckTime = 0
-	
-	            self.countstuckLoop+= 1
-	
-	        else:
-	            self.countstuckLoop = 0
-	            self.stuckTime = 0
+		print(self.ax**2+self.ay**2)
+		if (self.ax**2+self.ay**2) <= ct.const.STUCK_ACC_THRE**2 or (self.ax**2+self.ay**2) > 8:
+			print("stack??")
+			if self.stuckTime == 0:
+				self.stuckTime = time.time()
+			
+			if self.countstuckLoop > ct.const.STUCK_COUNT_THRE or self.state == 1 or self.state >= 6 or self.mirror_count > 10: #加速度が閾値以下になるケースがある程度続いたらスタックと判定
+				#トルネード実施
+				print("===================stuck====================")
+				self.motor1.back(ct.const.STUCK_MOTOR_VREF)
+				self.motor2.back(ct.const.STUCK_MOTOR_VREF)
+				time.sleep(1)
+				self.motor1.stop()
+				self.motor2.stop()
+				self.motor1.go(ct.const.STUCK_MOTOR_VREF)
+				self.motor2.back(ct.const.STUCK_MOTOR_VREF)
+				time.sleep(2)
+				self.motor1.stop()
+				self.motor2.stop()
+				# self.rv = ct.const.STUCK_MOTOR_VREF
+				# self.lv = -ct.const.STUCK_MOTOR_VREF
+				self.countstuckLoop = 0
+				self.stuckTime = 0
+
+			self.countstuckLoop+= 1
+
+		else:
+			# ~ self.countstuckLoop = 0 # change 0 when state chenge
+			self.stuckTime = 0
 				
 	def upsidedown_checker(self):
 		# 逆さまの検知（着地時に実施を想定）
@@ -506,6 +531,8 @@ class Cansat():
 
 	
 	def keyboardinterrupt(self): #キーボードインタラプト入れた場合に発動する関数
+		motor1.stop()
+		motor2.stop()
 		pass
 	
 			
