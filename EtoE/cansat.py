@@ -528,6 +528,71 @@ class Cansat():
 		time.sleep(10) #継続時間を指定
 		GPIO.output(pin,0) #電圧をLOWにして焼き切りを終了する
 		print("Separation done")
+	
+	def running(self):
+		dlon = self.goallon - self.lon
+		# distance to the goal
+		self.goaldis = ct.const.EARTH_RADIUS * arccos(sin(deg2rad(self.lat))*sin(deg2rad(self.goallat)) + cos(deg2rad(self.lat))*cos(deg2rad(self.goallat))*cos(deg2rad(dlon)))
+		print(f"Distance to goal: {round(self.goaldis,4)} [km]")
+
+		# angular to the goal (North: 0, South: 180)
+		self.goalphi = 90 - rad2deg(arctan2(cos(deg2rad(self.lat))*tan(deg2rad(self.goallat)) - sin(deg2rad(self.lat))*cos(deg2rad(dlon)), sin(deg2rad(dlon))))
+		if self.goalphi < 0:
+		    self.goalphi += 360
+		print(self.goalphi)
+		
+		self.arg_diff = self.goalphi - (self.ex-0)
+		if self.arg_diff < 0:
+		    self.arg_diff += 360
+		
+		print(f"Argument to goal: {round(self.arg_diff,2)} [deg]")
+		
+		if self.runningTime == 0:
+		    self.runningTime = time.time()
+		    
+		# elif time.time() - self.runningTime < 10:
+		    # print("run")
+		    
+		elif self.goaldis < ct.const.GOAL_DISTANCE_THRE:
+		    self.motor1.stop()
+		    self.motor2.stop()
+		    self.goaltime = time.time()-self.runningTime
+		    self.running_finish = True
+		    print(f"Goal Time: {self.goaltime}")
+		    print("GOAAAAAAAAAL!!!!!")
+		    self.state = 8
+		    self.laststate = 8
+		
+		else:
+		    if self.arg_diff <= 180 and self.arg_diff > 20:
+			self.motor1.go(ct.const.RUNNING_MOTOR_VREF-15)
+			self.motor2.go(ct.const.RUNNING_MOTOR_VREF)
+			
+		    elif self.arg_diff > 180 and self.arg_diff < 340:
+			self.motor1.go(ct.const.RUNNING_MOTOR_VREF)
+			self.motor2.go(ct.const.RUNNING_MOTOR_VREF-15)
+		    
+		    else:
+			self.motor1.go(ct.const.RUNNING_MOTOR_VREF)
+			self.motor2.go(ct.const.RUNNING_MOTOR_VREF)
+
+	def finish(self):
+		if self.finishTime == 0:
+		    self.finishTime = time.time()
+		    print("\n",self.startTime)
+		    print("\nFinished\n")
+		    self.motor1.stop()
+		    self.motor2.stop()
+		    GPIO.output(ct.const.SEPARATION_PARA,0) #焼き切りが危ないのでlowにしておく
+		    GPIO.output(ct.const.SEPARATION_MOD1,0) #焼き切りが危ないのでlowにしておく
+		    GPIO.output(ct.const.SEPARATION_MOD2,0) #焼き切りが危ないのでlowにしておく
+		    self.RED_LED.led_off()
+		    self.BLUE_LED.led_off()
+		    self.GREEN_LED.led_off()
+		    self.pc2.stop()
+		    time.sleep(0.5)
+		    cv2.destroyAllWindows()
+		    sys.exit()
 
 	
 	def keyboardinterrupt(self): #キーボードインタラプト入れた場合に発動する関数
