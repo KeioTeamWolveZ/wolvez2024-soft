@@ -163,7 +163,8 @@ class Cansat():
                   + "ay:"+str(self.ay).rjust(6) + ","\
                   + "az:"+str(self.az).rjust(6) + ","\
                   + "q:"+str(self.ex).rjust(6) + ","\
-                  + "pressure:"+str(self.pressure).rjust(6)
+                  + "pressure:"+str(self.pressure).rjust(6) + ","\
+                  + "cameraCount:"+str(self.cameraCount).rjust(6)
 		print(datalog)
 
 		with open(f'results/{self.startTime}/control_result.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
@@ -315,7 +316,7 @@ class Cansat():
 			# 右を向くコード
 			# ??????????????
 			for i in range(5):
-				self.cameraCount += 1
+				# ~ self.cameraCount += 1
 				self.frame = self.picam2.capture_array()#0,self.results_img_dir+f'/{self.cameraCount}')
 				# 指定色のマスクを作成
 				mask_orange = self.color.mask_color(self.frame,ct.const.LOWER_ORANGE,ct.const.UPPER_ORANGE)
@@ -325,7 +326,7 @@ class Cansat():
 			# 左を向く
 			# ??????????????
 			for i in range(5):
-				self.cameraCount += 1
+				# ~ self.cameraCount += 1
 				self.frame = self.picam2.capture_array()#0,self.results_img_dir+f'/{self.cameraCount}')
 				# 指定色のマスクを作成
 				mask_orange = self.color.mask_color(self.frame,ct.const.LOWER_ORANGE,ct.const.UPPER_ORANGE)
@@ -366,7 +367,7 @@ class Cansat():
 	            self.acc_tf = False
 	
 	        # 気圧の判定
-	        if press > self.DROPPING_PRESS_THRE: #気圧が閾値以上で着地判定
+	        if press > self.DROPPING_PRESS_THRE-100: #気圧が閾値以上で着地判定
 	            self.countPressDropLoop+=1            
 	            if self.countPressDropLoop > self.DROPPING_PRESS_COUNT_THRE: #気圧判定の複数回連続成功が必要
 	                self.press_tf = True
