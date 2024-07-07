@@ -1,5 +1,5 @@
 import pigpio
-from cansat2 import Cansat 
+from cansat import Cansat 
 import time 
 import RPi.GPIO as GPIO
 
