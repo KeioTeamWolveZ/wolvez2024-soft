@@ -22,7 +22,7 @@ try:
 
     # ~ time.sleep(1.3)
 
-    time.sleep(5)
+    time.sleep(0.5)
 
 
     #Motor.back(100)

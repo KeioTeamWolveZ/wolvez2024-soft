@@ -1,4 +1,4 @@
-import cv2
+2import cv2
 import numpy as np
 import cv2.aruco as aruco
 from datetime import datetime

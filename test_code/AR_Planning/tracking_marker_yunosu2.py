@@ -24,8 +24,8 @@ lost_marker_cnt = 0
 
 
 # ==============================colorの設定=============================
-lower_orange = np.array([100, 110, 100])
-upper_orange = np.array([120, 220, 255])
+lower_orange = np.array([105, 56, 0])
+upper_orange = np.array([150, 255, 255])
 color_tools = Color_tools(lower_orange,upper_orange)
 MAX_CONTOUR_THRESHOLD = 1000
 
@@ -195,6 +195,7 @@ while True:
                                
                             else:
                                 print("'\033[32m'---perfect REACHED---'\033[0m'")
+                                time.sleep(50)
 
                         
                         elif closing_threshold >= distance_of_marker >= closing_threshold - closing_range:
@@ -210,6 +211,14 @@ while True:
                             elif tvec[0] <= -0.03:
                                 print("---back 反時計周り---")
                                 motor1.back(45)
+                                motor2.back(35)
+                                time.sleep(0.5)
+                                motor1.stop()
+                                motor2.stop()
+                                
+                            else:
+                                print("---back---")
+                                motor1.back(35)
                                 motor2.back(35)
                                 time.sleep(0.5)
                                 motor1.stop()
