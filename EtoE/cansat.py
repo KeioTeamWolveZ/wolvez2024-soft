@@ -11,7 +11,8 @@ import math
 from datetime import datetime
 from glob import escape, glob
 from picamera2 import Picamera2 
-from libcamera import controls 
+from libcamera import controls
+from numpy import arccos, arctan2, sin, cos, tan, deg2rad, rad2deg
 
 import constant as ct
 from Wolvez2024_now.led import led
@@ -31,7 +32,8 @@ from Wolvez2024_now.Color_tools import Color_tools
 4. first_releasing()
 5. moving_release_position()
 6. judgement()
-7. finish()
+7. running()
+8. finish()
 
 """
 class Cansat():
@@ -228,6 +230,12 @@ class Cansat():
 			print("\033[32m",6,"\033[0m")
 		elif self.state == 7:
 			print("\033[32m",7,"\033[0m")
+			self.running()
+		elif self.state == 8:
+			print("\033[32m",8,"\033[0m")
+			self.finish()
+		else:
+			self.state = self.laststate #どこにも引っかからない場合何かがおかしいのでlaststateに戻してあげる
 	
 	def sensor_setup(self):
 		# センサのセットアップを実行
@@ -478,8 +486,6 @@ class Cansat():
 		pass
 	def judgement(self): # state = 6
 		pass
-	def finish(self): # state = 7
-		pass
 
 	def stuck_detection(self):
 		print(self.ax**2+self.ay**2)
@@ -529,7 +535,7 @@ class Cansat():
 		GPIO.output(pin,0) #電圧をLOWにして焼き切りを終了する
 		print("Separation done")
 	
-	def running(self):
+	def running(self): # state = 7
 		dlon = self.goallon - self.lon
 		# distance to the goal
 		self.goaldis = ct.const.EARTH_RADIUS * arccos(sin(deg2rad(self.lat))*sin(deg2rad(self.goallat)) + cos(deg2rad(self.lat))*cos(deg2rad(self.goallat))*cos(deg2rad(dlon)))
@@ -565,18 +571,18 @@ class Cansat():
 		
 		else:
 		    if self.arg_diff <= 180 and self.arg_diff > 20:
-			self.motor1.go(ct.const.RUNNING_MOTOR_VREF-15)
-			self.motor2.go(ct.const.RUNNING_MOTOR_VREF)
+				self.motor1.go(ct.const.RUNNING_MOTOR_VREF-15)
+				self.motor2.go(ct.const.RUNNING_MOTOR_VREF)
 			
 		    elif self.arg_diff > 180 and self.arg_diff < 340:
-			self.motor1.go(ct.const.RUNNING_MOTOR_VREF)
-			self.motor2.go(ct.const.RUNNING_MOTOR_VREF-15)
+				self.motor1.go(ct.const.RUNNING_MOTOR_VREF)
+				self.motor2.go(ct.const.RUNNING_MOTOR_VREF-15)
 		    
 		    else:
-			self.motor1.go(ct.const.RUNNING_MOTOR_VREF)
-			self.motor2.go(ct.const.RUNNING_MOTOR_VREF)
+				self.motor1.go(ct.const.RUNNING_MOTOR_VREF)
+				self.motor2.go(ct.const.RUNNING_MOTOR_VREF)
 
-	def finish(self):
+	def finish(self): # state = 8
 		if self.finishTime == 0:
 		    self.finishTime = time.time()
 		    print("\n",self.startTime)
@@ -596,8 +602,17 @@ class Cansat():
 
 	
 	def keyboardinterrupt(self): #キーボードインタラプト入れた場合に発動する関数
-		motor1.stop()
-		motor2.stop()
+		self.motor1.stop()
+		self.motor2.stop()
+		GPIO.output(ct.const.SEPARATION_PARA,0) #焼き切りが危ないのでlowにしておく
+		GPIO.output(ct.const.SEPARATION_MOD1,0) #焼き切りが危ないのでlowにしておく
+		GPIO.output(ct.const.SEPARATION_MOD2,0) #焼き切りが危ないのでlowにしておく
+		self.RED_LED.led_off()
+		self.BLUE_LED.led_off()
+		self.GREEN_LED.led_off()
+		self.pc2.stop()
+		time.sleep(0.5)
+		cv2.destroyAllWindows()
 		pass
 	
 			
