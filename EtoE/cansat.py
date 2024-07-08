@@ -9,6 +9,7 @@ import os
 import re
 import math
 from datetime import datetime
+import cv2.aruco as aruco
 from glob import escape, glob
 from picamera2 import Picamera2 
 from libcamera import controls
@@ -21,6 +22,8 @@ from Wolvez2024_now.bno055 import BNO055
 from Wolvez2024_now.bmp import BMP
 from Wolvez2024_now.motor_pico import motor as motor
 from Wolvez2024_now.Color_tools import Color_tools
+from Wolvez2024_now.Ar_tools import Artools
+
 
 
 """
@@ -70,6 +73,18 @@ class Cansat():
 		self.picam2.start()
 		# picam2.set_controls({"AfMode": controls.AfModeEnum.Continuous})
 		self.picam2.set_controls({"AfMode":0,"LensPosition":5.5})
+
+		# =============================================== ARマーカ ===============================================
+		self.dictionary = aruco.getPredefinedDictionary(aruco.DICT_ARUCO_ORIGINAL)
+		# マーカーサイズの設定
+		self.marker_length = 0.0215  # マーカーの1辺の長さ（メートル）
+		self.camera_matrix = np.load("mtx.npy")
+		self.distortion_coeff = np.load("dist.npy")
+		self.find_marker = False
+		self.ar = Artools()
+		self.VEC_GOAL = [0.0,0.1968730025228114,0.3]
+		self.closing_threshold = 0.4
+		self.CLOSING_RANGE_THRE = 0.02
 		
 		# ================================================= LED ================================================= 
 		self.RED_LED = led(ct.const.RED_LED_PIN) # 
@@ -90,8 +105,9 @@ class Cansat():
 		self.startTime_time=time.time() #
 		self.startTime = str(datetime.now())[:19].replace(" ","_").replace(":","-") #
 		self.stuckTime = 0
+
+		self.releasing_state == 2
     
-		
 
 		
 		# =============================================== 時間記録 =============================================== 
@@ -116,12 +132,17 @@ class Cansat():
 		self.mirror_count = 0
 		# flight
 		self.countFlyLoop = 0
+		# AR
+		self.ultra_count = 0
+		self.reject_count = 0 # 拒否された回数をカウントするための変数
 		# =============================================== bool =============================================== 
 		self.time_tf = False
 		self.acc_tf = False
 		self.press_tf = False
 		self.flight = True
 		self.mirrer = False
+		self.prev = np.array([])
+		self.TorF = True
 		
 		
 		# ============================================= 変数の初期化 ============================================= 
@@ -137,6 +158,8 @@ class Cansat():
 		self.ex= 0 #
 		self.lat = 0 #
 		self.lon = 0 #
+		self.yunosu_pos = "Left"
+		self.last_pos = "Plan_A"
 		self.mkdir()
 		
 	def mkdir(self):
@@ -472,17 +495,157 @@ class Cansat():
 		# self.separation()
 		# 焼き切り放出
 		pass
+
 	def moving_release_position(self): # state = 5
-		# releasing_state = 1: 接近
-		## 作戦１：放出モジュールが十分に遠いとき
-		## 作戦２：放出モジュールが遠いとき
-		
-		# releasing_state = 2: 判定
-		## 加速度センサによる姿勢推定と投射角度の確認
-		
-		# releasing_state = 3: 微調整
-		## 回転機構による投射角変更
-		pass
+		if self.releasing_state == 1 #: 接近
+			## 作戦１：放出モジュールが十分に遠いとき
+			## 作戦２：放出モジュールが遠いとき
+			print("'\033[44m'","5-1.moving_release_position",'\033[0m')
+			self.frame = self.picam2.capture_array()
+			self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
+			height = self.frame2.shape[0]
+			width = self.frame2.shape[1]
+			gray = cv2.cvtColor(self.frame2, cv2.COLOR_BGR2GRAY) # グレースケールに変換
+			corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary) # ARマーカーの検出   
+
+			if ids is not None:
+				# aruco.DetectedMarkers(frame, corners, ids)
+				for i in range(len(ids)):
+					if ids[i] in [0,1,2,3,4,5]:
+						image_points_2d = np.array(corners[i],dtype='double')
+						# print(corners[i])
+
+						rvec, tvec, _ = aruco.estimatePoseSingleMarkers(corners[i], self.marker_length,self.camera_matrix, self.distortion_coeff)
+						tvec = np.squeeze(tvec)
+						rvec = np.squeeze(rvec)
+						# 回転ベクトルからrodoriguesへ変換
+						rvec_matrix = cv2.Rodrigues(rvec)
+						rvec_matrix = rvec_matrix[0] # rodoriguesから抜き出し
+						transpose_tvec = tvec[np.newaxis, :].T # 並進ベクトルの転置
+						proj_matrix = np.hstack((rvec_matrix, transpose_tvec)) # 合成
+						euler_angle = cv2.decomposeProjectionMatrix(proj_matrix)[6]  # オイラー角への変換[deg]
+						self.prev = list(self.prev)
+
+						if self.ultra_count < 20:
+							self.prev.append(tvec)
+							print("ARマーカーの位置を算出中")
+							self.ultra_count += 1 #最初（位置リセット後も）は20回取得して平均取得
+							self.find_marker = True
+						else:
+							# print("prev_length: ",len(prev))
+							self.TorF = self.ar.outlier(tvec, self.prev, self.ultra_count, 0.3) # true:correct, false:outlier
+							self.ultra_count += 1
+							if self.TorF: # detected AR marker is reliable
+								self.reject_count = 0
+								print("x : " + str(tvec[0]))
+								print("y : " + str(tvec[1]))
+								print("z : " + str(tvec[2]))
+								tvec[0] = tvec[0]
+								polar_exchange = self.ar.polar_change(tvec)
+								print(f"yunosu_function_{ids[i]}:",polar_exchange)
+								distance_of_marker = polar_exchange[0] #r
+								angle_of_marker = polar_exchange[1] #theta
+								print("======",distance_of_marker)
+								
+								if distance_of_marker >= self.closing_threshold + self.CLOSING_RANGE_THRE:
+									if tvec[0] >= 0.05:
+										print("---motor LEFT---")
+										self.motor_control(70,45,0.5) # m1:右、m2:左、time:時間
+										yunosu_pos = "Left"
+											
+									elif 0.05 > tvec[0] > -0.05:
+										go_ahead_gain = (distance_of_marker-self.closing_threshold) / self.closing_threshold
+										print("---motor GO AHEAD---")
+										self.motor_control(40+60*go_ahead_gain,40+60*go_ahead_gain,0.5) # m1:右、m2:左、time:時間
+										self.motor1.stop()
+										self.motor2.stop()
+									
+									else:
+										print("---motor RIGHT---")
+										self.motor_control(45,70,0.5) # m1:右、m2:左、time:時間
+										yunosu_pos = "Right"
+
+								elif distance_of_marker >= self.closing_threshold:
+									if tvec[0] >= 0.03:
+										print("---turn RIGHT---")
+										self.motor_control(45,-45,0.3) # m1:右、m2:左、time:時間
+									elif tvec[0] <= -0.03:
+										print("---turn LEFT---")
+										self.motor_control(-45,45,0.3) # m1:右、m2:左、time:時間
+									else:
+										print("'\033[32m'---perfect REACHED---'\033[0m'")
+
+								if distance_of_marker <= self.closing_threshold - self.CLOSING_RANGE_THRE:
+									if -20 <= angle_of_marker <= 0: #ARマーカがやや左から正面にある場合
+										print("右回転")
+										self.motor_control(70,-70,0.3) # m1:右、m2:左、time:時間
+										yunosu_pos = "Left"
+									
+									
+									elif 0 <= angle_of_marker <= 20: #ARマーカがやや右から正面にある場合
+										print("左回転")
+										self.motor_control(-70,70,0.5) # m1:右、m2:左、time:時間
+										yunosu_pos = "Right"
+									
+									else: #4+k秒ただ直進(ARマーカから離れる)   
+										print("直進")
+										last_pos = "Plan_B"
+										self.motor_control(70,70,2.5) # m1:右、m2:左、time:時間
+
+							else: # detected AR marker is not reliable
+								print("state of marker is rejected")
+								self.find_marker = False
+								print(self.ultra_count)
+								self.reject_count += 1 # 拒否された回数をカウント
+								if self.reject_count > 10: # 拒否され続けたらリセットしてARマーカーの基準を上書き（再計算）
+									self.ultra_count = 0
+									self.reject_count = 0 #あってもなくても良い
+			
+			if last_pos == "Plan_A" and not self.find_marker: #ARマーカを認識していない時，認識するまでその場回転
+				if yunosu_pos == "Left":
+					print("ARマーカー探してます(LEFT)")
+					self.motor_control(-60,60,0.5) # m1:右、m2:左、time:時間
+				
+				elif yunosu_pos == "Right":
+					print("ARマーカー探してます(RIGHT)")
+					self.motor_control(60,-60,0.5) # m1:右、m2:左、time:時間
+				
+			elif last_pos == "Plan_B":
+				print("Plan_B now")
+				self.motor_control(70,70,0.5) # m1:右、m2:左、time:時間
+				last_pos = "Plan_A"
+			pass
+
+		elif self.releasing_state == 2:
+			"""
+				微調整ステート
+			"""
+			print("'\033[44m'","5-2.moving_release_position",'\033[0m')
+			pass
+		elif self.releasing_state == 3:
+			"""
+				物資モジュール投射
+			"""
+			print("'\033[44m'","5-3.moving_release_position",'\033[0m')
+			pass
+			
+
+	def motor_control(self,m1,m2,time):
+		# m1:右モーターの速度
+		# m2:左モーターの速度
+		# time:モーターを動かす時間
+		if m1>=0:
+			self.motor1.go(m1)
+		else:
+			self.motor1.back(m1)
+		if m2>=0:
+			self.motor2.go(m2)
+		else:
+			self.motor2.back(m2)
+		time.sleep(time)
+		self.motor1.stop()
+		self.motor2.stop()
+
 	def judgement(self): # state = 6
 		pass
 
