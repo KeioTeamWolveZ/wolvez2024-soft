@@ -11,8 +11,8 @@ Motor2 = motor.motor(20,16,12,-1)
 
 try:
     print("motor run") 
-    Motor1.go(100)
-    Motor2.go(100)
+    Motor1.go(50)
+    Motor2.go(50)
 #     Motor1.back(80)
 #     Motor2.back(80)
 #     time.sleep(0.5)

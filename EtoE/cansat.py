@@ -466,7 +466,6 @@ class Cansat():
 				# 回避しながらmotor.go()
 				# stuck検知
 				self.stuck_detection()
-			
 		
 	def first_releasing(self): # state = 4
 		print("'\033[44m'","4.first_releasing",'\033[0m')
