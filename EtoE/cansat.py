@@ -248,7 +248,7 @@ class Cansat():
 		elif self.state == 4:
 			pass
 		elif self.state == 5:
-			print("\033[32m",5,"\033[0m")
+			self.moving_release_position()
 		elif self.state == 6:
 			print("\033[32m",6,"\033[0m")
 		elif self.state == 7:
@@ -353,6 +353,7 @@ class Cansat():
 			for i in range(5):
 				# ~ self.cameraCount += 1
 				self.frame = self.picam2.capture_array()#0,self.results_img_dir+f'/{self.cameraCount}')
+				self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)	
 				# 指定色のマスクを作成
 				mask_orange = self.color.mask_color(self.frame,ct.const.LOWER_ORANGE,ct.const.UPPER_ORANGE)
 				# 輪郭を抽出して最大の面積を算出し、線で囲む
@@ -363,6 +364,7 @@ class Cansat():
 			for i in range(5):
 				# ~ self.cameraCount += 1
 				self.frame = self.picam2.capture_array()#0,self.results_img_dir+f'/{self.cameraCount}')
+				self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
 				# 指定色のマスクを作成
 				mask_orange = self.color.mask_color(self.frame,ct.const.LOWER_ORANGE,ct.const.UPPER_ORANGE)
 				# 輪郭を抽出して最大の面積を算出し、線で囲む
@@ -497,10 +499,12 @@ class Cansat():
 		pass
 
 	def moving_release_position(self): # state = 5
-		if self.releasing_state == 1 #: 接近
+		if self.releasing_state == 1 :# 接近
 			## 作戦１：放出モジュールが十分に遠いとき
 			## 作戦２：放出モジュールが遠いとき
 			print("'\033[44m'","5-1.moving_release_position",'\033[0m')
+			
+			self.cameraCount += 1
 			self.frame = self.picam2.capture_array()
 			self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
 			height = self.frame2.shape[0]
@@ -537,15 +541,10 @@ class Cansat():
 							self.ultra_count += 1
 							if self.TorF: # detected AR marker is reliable
 								self.reject_count = 0
-								print("x : " + str(tvec[0]))
-								print("y : " + str(tvec[1]))
-								print("z : " + str(tvec[2]))
 								tvec[0] = tvec[0]
 								polar_exchange = self.ar.polar_change(tvec)
-								print(f"yunosu_function_{ids[i]}:",polar_exchange)
 								distance_of_marker = polar_exchange[0] #r
 								angle_of_marker = polar_exchange[1] #theta
-								print("======",distance_of_marker)
 								
 								if distance_of_marker >= self.closing_threshold + self.CLOSING_RANGE_THRE:
 									if tvec[0] >= 0.05:
