@@ -387,11 +387,8 @@ class Cansat():
 		# 撮影
 		self.cameraCount += 1
 		self.frame = self.picam2.capture_array()#0,self.results_img_dir+f'/{self.cameraCount}')
-		self.frame2 = cv2.rotate(self.frame,cv2.ROTATE_90_CLOCKWISE)		
-		height = self.frame2.shape[0]
-		width = self.frame2.shape[1]
 		# オレンジ色のマスクを作成
-		mask_orange = self.color.mask_color(self.frame2,ct.const.LOWER_ORANGE,ct.const.UPPER_ORANGE)
+		mask_orange = self.color.mask_color(self.frame,ct.const.LOWER_ORANGE,ct.const.UPPER_ORANGE)
 		# 輪郭を抽出して最大の面積を算出し、線で囲む
 		mask_orange,cX,cY,max_contour_area = self.color.detect_color(mask_orange,ct.const.MAX_CONTOUR_THRESHOLD)
 		print("\033[33m","COLOR : ","\033[0m","cX:",cX,"cY:",cY,"max_contour_area:",max_contour_area)

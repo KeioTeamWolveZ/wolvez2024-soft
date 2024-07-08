@@ -4,7 +4,7 @@ import RPi.GPIO as GPIO
 import sys
 import time
 
-class Motor():
+class motor():
     def __init__(self,pin1,pin2,vref): #各ピンのセットアップ
         GPIO.setmode(GPIO.BCM) 
         GPIO.setup(pin1, GPIO.OUT)
