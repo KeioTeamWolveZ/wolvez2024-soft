@@ -8,7 +8,7 @@ start_state = 5
 
 end_state = 8
 
-try:
+try:	
 	cansat  = Cansat(start_state)
 	cansat.sensor_setup()
 	while True:
