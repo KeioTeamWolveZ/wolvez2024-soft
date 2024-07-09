@@ -46,7 +46,7 @@ motor2 = motor.motor(20,16,12,-1)
 servo = motor.motor()
 servo.set_id(2)
 nowangle = 90
-servo.go(nowangle)
+servo.go_deg(nowangle)
 
 # ====================================定数の定義====================================
 VEC_GOAL = [0.0,0.1968730025228114,0.3]
@@ -66,14 +66,20 @@ ar = Artools()
 # ============================関数定義================================
 def adjust_angle(tvec):
     global nowangle
-    if tvec[0] < -0.02:
-        servo.go(nowangle+1)
-        nowangle += 1
-        print(nowangle)
-    elif tvec[0] > 0.02:
-        servo.go(nowangle-1)
-        nowangle -= 1
-        print(nowangle)
+    if tvec[0] > 0.01:
+        if nowangle >= 180:
+            return
+        else:
+            nowangle += 10
+            servo.go_deg(nowangle)
+            # ~ print("servo: "+str(nowangle))
+    elif tvec[0] < -0.01:
+        if nowangle <= 0:
+            return
+        else:
+            nowangle -= 10
+            servo.go_deg(nowangle)
+            # ~ print("servo: "+str(nowangle))
     else:
         pass
 
@@ -142,6 +148,8 @@ while True:
                         distance_of_marker = polar_exchange[0] #r
                         angle_of_marker = polar_exchange[1] #theta
                         print("======",distance_of_marker)
+                        print("servo: "+str(nowangle))
+                        print("==================")
                         
        
 
@@ -167,33 +175,33 @@ while True:
     if last_pos == "Plan_A" and not find_marker: #ARマーカを認識していない時，認識するまでその場回転
         if yunosu_pos == "Left":
             print("ARマーカー探してます(LEFT)")
-            motor1.back(60)   #その場左回転
-            motor2.go(60)
-            time.sleep(0.5)
-            motor1.stop()
-            motor2.stop()
-            time.sleep(0.5)
+            # ~ motor1.back(60)   #その場左回転
+            # ~ motor2.go(60)
+            # ~ time.sleep(0.5)
+            # ~ motor1.stop()
+            # ~ motor2.stop()
+            # ~ time.sleep(0.5)
            
                 
         elif yunosu_pos == "Right":
             print("ARマーカー探してます(RIGHT)")
-            motor1.go(60)   #その場左回転
-            motor2.back(60)
-            time.sleep(0.5)
-            motor1.stop()
-            motor2.stop()
-            time.sleep(0.5)
+            # ~ motor1.go(60)   #その場左回転
+            # ~ motor2.back(60)
+            # ~ time.sleep(0.5)
+            # ~ motor1.stop()
+            # ~ motor2.stop()
+            # ~ time.sleep(0.5)
            
         
     elif last_pos == "Plan_B":
         print("Plan_B now")
-        motor1.go(70)
-        motor2.go(70)
-        time.sleep(0.5)
-        motor1.stop()
-        motor2.stop()
-        time.sleep(0.5)
-        last_pos = "Plan_A"
+        # ~ motor1.go(70)
+        # ~ motor2.go(70)
+        # ~ time.sleep(0.5)
+        # ~ motor1.stop()
+        # ~ motor2.stop()
+        # ~ time.sleep(0.5)
+        # ~ last_pos = "Plan_A"
 
 
         # else:
