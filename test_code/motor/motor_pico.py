@@ -27,7 +27,6 @@ class motor():
         self.id = id
         
     def go(self, v):
-        v = -v
         self.velocity = v
         v = v * 360.0 / 100.0
         self.send("%d %d %d\n" % (self.id, 0, int(self.dir * v)))
