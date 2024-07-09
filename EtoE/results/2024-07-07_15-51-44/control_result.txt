@@ -1,0 +1,114 @@
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.002,az: 0.006,q:   0.0,pressure: 99880
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:   0.0,az: 0.002,q: 0.062,pressure: 99891
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay: 0.002,az:   0.0,q: 0.062,pressure: 99884
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:-0.002,az:   0.0,q: 0.062,pressure: 99884
+0,state:0,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:   0.0,az:   0.0,q: 0.062,pressure: 99887
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay:-0.003,az: 0.001,q: 0.062,pressure: 99891
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:   0.0,az:   0.0,q: 0.062,pressure: 99891
+0,state:0,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay: 0.008,az:   0.0,q: 0.062,pressure: 99892
+0,state:0,Time:0,Lat:     0,Lng:     0,ax: 0.007,ay: 0.004,az: 0.001,q: 0.062,pressure: 99889
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay: 0.003,az:-0.001,q: 0.062,pressure: 99887
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.002,az: 0.001,q: 0.062,pressure: 99889
+0,state:0,Time:0,Lat:     0,Lng:     0,ax: 0.002,ay: 0.002,az: 0.002,q: 0.062,pressure: 99895
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:   0.0,az:-0.001,q: 0.062,pressure: 99886
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.001,az:-0.001,q: 0.062,pressure: 99891
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:   0.0,az: 0.002,q: 0.062,pressure: 99895
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.002,az:-0.002,q: 0.062,pressure: 99895
+0,state:0,Time:0,Lat:     0,Lng:     0,ax: 0.002,ay: 0.002,az: 0.001,q: 0.062,pressure: 99891
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.002,az: 0.001,q: 0.062,pressure: 99886
+0,state:0,Time:0,Lat:     0,Lng:     0,ax: 0.002,ay: 0.001,az: 0.001,q: 0.062,pressure: 99887
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:-0.001,az:-0.002,q: 0.062,pressure: 99891
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.001,az:-0.001,q: 0.062,pressure: 99895
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay: 0.003,az:-0.001,q: 0.062,pressure: 99889
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.001,az: 0.001,q: 0.062,pressure: 99891
+0,state:0,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay:   0.0,az:   0.0,q: 0.062,pressure: 99889
+0,state:0,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay: 0.001,az:-0.001,q: 0.062,pressure: 99887
+0,state:0,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:-0.003,az:   0.0,q: 0.062,pressure: 99889
+0,state:0,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:-0.002,az: 0.001,q: 0.062,pressure: 99889
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.001,az:   0.0,q: 0.062,pressure: 99889
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:-0.004,az:-0.004,q: 0.062,pressure: 99894
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.009,ay: 0.002,az:-0.006,q: 0.062,pressure: 99894
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.011,ay: 0.003,az:-0.006,q: 0.062,pressure: 99887
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: -0.02,ay:-0.001,az:-0.008,q: 0.062,pressure: 99884
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.004,ay:-0.002,az:-0.004,q: 0.062,pressure: 99889
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.003,ay: 0.002,az: 0.011,q: 0.062,pressure: 99887
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.006,ay:-0.006,az:-0.004,q: 0.062,pressure: 99884
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:  0.01,ay: 0.021,az: 0.002,q: 0.062,pressure: 99891
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.143,ay:-0.072,az: 0.062,q: 0.062,pressure: 99887
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.014,ay:  0.02,az: 0.004,q: 0.062,pressure: 99895
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.027,ay: 0.016,az: 0.002,q: 0.125,pressure: 99887
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.012,ay: 0.013,az:-0.002,q: 0.062,pressure: 99891
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.006,ay:-0.012,az:-0.008,q: 0.062,pressure: 99891
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.008,ay: 0.002,az: 0.004,q: 0.125,pressure: 99891
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.006,ay: 0.004,az:-0.001,q: 0.062,pressure: 99895
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.039,ay: 0.084,az: 0.042,q: 0.062,pressure: 99894
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.036,ay:-0.049,az:-0.013,q: 0.125,pressure: 99889
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.004,ay:-0.009,az: 0.006,q: 0.125,pressure: 99891
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.169,ay: -0.02,az: 0.093,q: 0.125,pressure: 99894
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.059,ay: 0.041,az: 0.019,q:356.188,pressure: 99887
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.012,ay:-0.069,az:-0.184,q: 358.5,pressure: 99892
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.022,ay:   0.0,az:-0.008,q:358.438,pressure: 99884
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.024,ay:-0.083,az:-0.044,q: 358.5,pressure: 99881
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.204,ay: -0.19,az: -0.06,q:358.375,pressure: 99881
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.037,ay: 0.017,az:-0.002,q:358.562,pressure: 99891
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.027,ay: -0.04,az:-0.002,q:358.438,pressure: 99889
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.427,ay: 0.008,az: 0.081,q:358.375,pressure: 99884
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.076,ay:-0.141,az:-0.008,q:358.125,pressure: 99886
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.139,ay:-0.083,az:-0.011,q:357.562,pressure: 99894
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.164,ay: 0.611,az: 0.048,q: 357.0,pressure: 99889
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.483,ay: 0.514,az:-0.049,q:353.25,pressure: 99881
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.149,ay: 0.536,az: 0.788,q: 343.5,pressure: 99881
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-1.462,ay: -1.35,az:-0.692,q:345.75,pressure: 99891
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.019,ay: 0.247,az:-1.233,q: 5.375,pressure: 99891
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.172,ay: 2.282,az: 0.233,q:17.062,pressure: 99889
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.331,ay: 2.227,az: -0.11,q:12.625,pressure: 99895
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.596,ay: 2.503,az:-0.244,q: 2.125,pressure: 99894
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.279,ay: 0.041,az: 0.216,q:358.188,pressure: 99894
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.567,ay:  0.71,az: 0.681,q:359.25,pressure: 99888
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.071,ay: 0.021,az: -0.01,q:359.688,pressure: 99888
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.013,ay:-0.004,az: 0.003,q:359.688,pressure: 99891
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.006,ay:-0.001,az:   0.0,q:356.688,pressure: 99887
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.009,ay: -0.01,az:-0.002,q:356.562,pressure: 99892
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.006,az:   0.0,q:356.562,pressure: 99884
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.013,ay:-0.001,az: 0.002,q:356.375,pressure: 99886
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.009,ay: 0.006,az: 0.002,q:356.438,pressure: 99884
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.017,ay:-0.006,az:-0.002,q: 356.0,pressure: 99894
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.006,ay: 0.003,az: 0.004,q:356.062,pressure: 99889
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.024,ay: 0.001,az:-0.001,q: 356.0,pressure: 99892
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:-0.002,az:-0.001,q:355.938,pressure: 99891
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.004,ay:-0.001,az:   0.0,q:355.938,pressure: 99895
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.019,ay: 0.004,az:   0.0,q:355.938,pressure: 99880
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.009,ay:-0.002,az: 0.001,q:355.938,pressure: 99884
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay: -0.01,az: 0.001,q:355.938,pressure: 99883
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.027,ay:   0.0,az:-0.003,q:355.938,pressure: 99883
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.014,ay:-0.013,az: 0.001,q:355.938,pressure: 99883
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.014,ay: 0.011,az:-0.002,q:355.938,pressure: 99887
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.011,ay:-0.006,az:-0.002,q:355.938,pressure: 99891
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:  0.01,ay: 0.007,az: 0.009,q:355.938,pressure: 99889
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.023,ay: 0.006,az:-0.001,q:355.938,pressure: 99883
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.017,az: 0.002,q:355.938,pressure: 99884
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.018,ay:-0.004,az:   0.0,q: 356.0,pressure: 99886
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.068,ay:-0.023,az:-0.008,q: 356.0,pressure: 99887
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.022,ay:-0.014,az:-0.008,q:355.938,pressure: 99886
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.009,ay:-0.008,az: 0.002,q:355.938,pressure: 99887
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.002,az: 0.003,q:355.938,pressure: 99889
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.012,ay:-0.002,az:-0.001,q:355.938,pressure: 99895
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.012,ay: 0.003,az: 0.001,q:355.938,pressure: 99887
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay: 0.001,az:-0.006,q:355.938,pressure: 99900
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.006,ay: -0.01,az: 0.001,q:355.938,pressure: 99881
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.028,ay: 0.003,az:-0.001,q:355.938,pressure: 99887
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.007,ay:-0.011,az:-0.002,q:355.938,pressure: 99889
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.017,ay: 0.008,az:-0.004,q:355.938,pressure: 99891
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.036,ay:-0.016,az: 0.002,q:355.938,pressure: 99894
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.009,ay:-0.014,az:-0.001,q:355.938,pressure: 99897
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.017,ay:-0.003,az:-0.003,q:355.938,pressure: 99884
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.004,ay:-0.019,az:-0.014,q:355.938,pressure: 99886
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.018,ay: -0.01,az: 0.014,q:355.938,pressure: 99887
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.026,ay: 0.031,az: 0.012,q:355.938,pressure: 99889
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.039,ay: -0.01,az: 0.006,q:355.875,pressure: 99891
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.011,ay:-0.036,az:-0.022,q:355.938,pressure: 99889
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.033,ay: 0.012,az: 0.001,q:355.875,pressure: 99881
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.006,ay:-0.026,az:-0.002,q:355.875,pressure: 99886
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.069,ay: -0.02,az: 0.006,q:355.875,pressure: 99884
+0,state:3,Time:0,Lat:     0,Lng:     0,ax: 0.022,ay:   0.0,az: 0.006,q:355.875,pressure: 99877
+0,state:3,Time:0,Lat:     0,Lng:     0,ax:-0.009,ay: 0.012,az:-0.001,q:355.875,pressure: 99889
