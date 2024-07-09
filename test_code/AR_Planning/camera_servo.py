@@ -43,6 +43,10 @@ elif int(camera) == 2:
 GPIO.setwarnings(False)
 motor1 = motor.motor(6,5,13)
 motor2 = motor.motor(20,16,12,-1)
+servo = motor.motor()
+servo.set_id(2)
+nowangle = 90
+servo.go(nowangle)
 
 # ====================================定数の定義====================================
 VEC_GOAL = [0.0,0.1968730025228114,0.3]
@@ -58,6 +62,20 @@ k = 0
 j = 0
 # ==============================クラスのインスタンス化==============================
 ar = Artools()
+
+# ============================関数定義================================
+def adjust_angle(tvec):
+    global nowangle
+    if tvec[0] < -0.02:
+        servo.go(nowangle+1)
+        nowangle += 1
+        print(nowangle)
+    elif tvec[0] > 0.02:
+        servo.go(nowangle-1)
+        nowangle -= 1
+        print(nowangle)
+    else:
+        pass
 
 # =======================================================================
 # ==============================メインループ==============================
@@ -118,107 +136,13 @@ while True:
                         # print("pitch: " + str(euler_angle[1]))
                         # print("yaw  : " + str(euler_angle[2]))
                         tvec[0] = tvec[0]
+                        adjust_angle(tvec)
                         polar_exchange = ar.polar_change(tvec)
                         print(f"yunosu_function_{ids[i]}:",polar_exchange)
                         distance_of_marker = polar_exchange[0] #r
                         angle_of_marker = polar_exchange[1] #theta
                         print("======",distance_of_marker)
                         
-                        if distance_of_marker >= closing_threshold + closing_range:
-                            if tvec[0] >= 0.05:
-                                print("---motor LEFT---")
-                                motor2.go(45)
-                                motor1.go(70)
-                                time.sleep(0.5)
-                                motor1.stop()
-                                motor2.stop()
-                                time.sleep(0.5)
-                                yunosu_pos = "Left"
-                                    
-                            elif 0.05 > tvec[0] > -0.05:
-                                go_ahead_gain = (distance_of_marker-closing_threshold) / closing_threshold
-                                print("---motor GO AHEAD---")
-                                motor1.go(40+60*go_ahead_gain)
-                                motor2.go(40+60*go_ahead_gain)
-                                time.sleep(0.5)
-                                motor1.stop()
-                                motor2.stop
-                                time.sleep(0.5)
-                                
-                              
-                            else:
-                                print("---motor RIGHT---")
-                                motor1.go(45)
-                                motor2.go(70)
-                                time.sleep(0.5)
-                                motor1.stop()
-                                motor2.stop()
-                                time.sleep(0.5)
-                                yunosu_pos = "Right"
-                            
-
-                        elif distance_of_marker >= closing_threshold:
-                            if tvec[0] >= 0.03:
-                                print("---turn RIGHT---")
-                                motor1.go(45)
-                                motor2.back(45)
-                                time.sleep(0.5)
-                                motor1.stop()
-                                motor2.stop()
-                                time.sleep(0.5)
-                        
-                            elif tvec[0] <= -0.03:
-                                print("---turn LEFT---")
-                                motor1.back(45)
-                                motor2.go(45)
-                                time.sleep(0.5)
-                                motor1.stop()
-                                motor2.stop()
-                                time.sleep(0.5)
-                               
-                            else:
-                                print("'\033[32m'---perfect REACHED---'\033[0m'")
-
-                        if distance_of_marker <= closing_threshold - closing_range:
-                            if -20 <= angle_of_marker <= 0: #ARマーカがやや左から正面にある場合
-                                print("右回転")
-                                motor1.go(70)   #その場右回転
-                                motor2.back(70)
-                                time.sleep(0.3)
-                                motor1.stop()
-                                motor2.stop()
-                                time.sleep(0.5)
-                                yunosu_pos = "Left"
-                              
-                               
-                            elif 0 <= angle_of_marker <= 20: #ARマーカがやや右から正面にある場合
-                                print("左回転")
-                                motor1.back(70)   #その場左回転
-                                motor2.go(70)
-                                time.sleep(0.3)
-                                motor1.stop()
-                                motor2.stop()
-                                time.sleep(0.5)
-                                yunosu_pos = "Right"
-                               
-                            else: #4+k秒ただ直進(ARマーカから離れる)   
-                                print("直進")
-                                last_pos = "Plan_B"
-                                motor1.go(70)
-                                motor2.go(70)
-                                time.sleep(2.5)
-                                motor1.stop()
-                                motor2.stop()
-                                time.sleep(0.5)
-                            
-                    else: # detected AR marker is not reliable
-                        print("state of marker is rejected")
-                        find_marker = False
-                        print(ultra_count)
-                        reject_count += 1 # 拒否された回数をカウント
-                        if reject_count > 10: # 拒否され続けたらリセットしてARマーカーの基準を上書き（再計算）
-                            ultra_count = 0
-                            reject_count = 0 #あってもなくても良い
        
 
                 # 発見したマーカーから1辺が30センチメートルの正方形を描画
