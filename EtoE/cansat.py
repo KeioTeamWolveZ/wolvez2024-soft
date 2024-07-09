@@ -524,12 +524,13 @@ class Cansat():
 			corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary) # ARマーカーの検出   
 
 			# オレンジ色のマスクを作成
-			mask_blue = self.color.mask_color(self.frame,ct.const.LOWER_BLUE,ct.const.LOWER_BLUE)
+			mask_blue = self.color.mask_color(self.frame,ct.const.LOWER_BLUE,ct.const.UPPER_BLUE)
 			# 輪郭を抽出して最大の面積を算出し、線で囲む
-			mask_blue,cX,cY,max_contour_area = self.color.detect_color(mask_blue,self.MAX_CONTOUR_THRESHOLD)
+			mask_blue,cX,cY,max_contour_area = self.color.detect_color(mask_blue,ct.const.MAX_CONTOUR_THRESHOLD)
 			#print("cX:",cX,"cY:",cY,"max_contour_area:",max_contour_area)
 			if cX:
 				cv2.circle(self.frame2,(width-cY,cX),30,100,-1)
+			
 
 			if ids is not None:
 			# aruco.DetectedMarkers(frame, corners, ids)
@@ -598,6 +599,8 @@ class Cansat():
 									else:
 										print("'\033[32m'---perfect REACHED---'\033[0m'")
 										time.sleep(1)
+										self.releasing_state = 2
+										print("state_change")
 
 								
 								elif self.closing_threshold >= distance_of_marker >= self.closing_threshold - self.CLOSING_RANGE_THRE:
@@ -647,12 +650,14 @@ class Cansat():
 							lens = 10.5
 						else:
 							lens = change_lens
+							
 
 
 			elif self.last_pos == "Plan_A" :#and not find_marker: #ARマーカを認識していない時，認識するまでその場回転
 				self.lost_marker_cnt+=1
 			if self.lost_marker_cnt > 10: # kore iru?
 				if cX:
+					print("==========================\n==========================\n")
 					self.cam_pint = 10.5
 					while self.cam_pint > 3.0: #pint change start
 						if ids is None:
@@ -725,10 +730,12 @@ class Cansat():
 		if m1>=0:
 			self.motor1.go(m1)
 		else:
+			m1 = abs(m1)
 			self.motor1.back(m1)
 		if m2>=0:
 			self.motor2.go(m2)
 		else:
+			m2 = abs(m2)
 			self.motor2.back(m2)
 		time.sleep(t)
 		self.motor1.stop()

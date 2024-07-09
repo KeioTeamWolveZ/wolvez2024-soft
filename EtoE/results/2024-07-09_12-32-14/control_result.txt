@@ -1,0 +1,32 @@
+0,state:5,Time:12:32:17,Lat:0.00000000,Lng:-0.00000000,ax:-0.004,ay:-0.003,az: 0.004,q:   0.0,pressure: 99845,cameraCount:     0
+0,state:5,Time:12:32:18,Lat:0.00000000,Lng:-0.00000000,ax:   0.0,ay:-0.003,az: 0.001,q:359.938,pressure: 99846,cameraCount:     1
+0,state:5,Time:12:32:18,Lat:0.00000000,Lng:-0.00000000,ax: 0.003,ay:-0.002,az:-0.001,q:359.938,pressure: 99842,cameraCount:     2
+0,state:5,Time:12:32:19,Lat:0.00000000,Lng:-0.00000000,ax: 0.002,ay: 0.001,az:-0.002,q:359.938,pressure: 99846,cameraCount:     3
+0,state:5,Time:12:32:19,Lat:0.00000000,Lng:-0.00000000,ax:   0.0,ay: 0.001,az:   0.0,q:359.938,pressure: 99851,cameraCount:     4
+0,state:5,Time:12:32:19,Lat:0.00000000,Lng:-0.00000000,ax:-0.001,ay: 0.001,az:-0.001,q:359.938,pressure: 99848,cameraCount:     5
+0,state:5,Time:12:32:20,Lat:0.00000000,Lng:-0.00000000,ax:-0.001,ay:-0.001,az:   0.0,q:359.938,pressure: 99846,cameraCount:     6
+0,state:5,Time:12:32:20,Lat:0.00000000,Lng:-0.00000000,ax:-0.001,ay: 0.002,az:   0.0,q:359.938,pressure: 99852,cameraCount:     7
+0,state:5,Time:12:32:21,Lat:0.00000000,Lng:-0.00000000,ax: 0.002,ay: 0.002,az: 0.002,q:359.938,pressure: 99855,cameraCount:     8
+0,state:5,Time:12:32:21,Lat:0.00000000,Lng:-0.00000000,ax: 0.001,ay: 0.004,az:-0.002,q:359.938,pressure: 99851,cameraCount:     9
+0,state:5,Time:12:32:22,Lat:0.00000000,Lng:-0.00000000,ax:   0.0,ay: 0.001,az:-0.002,q:359.938,pressure: 99849,cameraCount:    10
+0,state:5,Time:12:32:23,Lat:0.00000000,Lng:-0.00000000,ax: 0.061,ay: 0.034,az:-0.054,q:359.938,pressure: 99854,cameraCount:    11
+0,state:5,Time:12:32:23,Lat:0.00000000,Lng:-0.00000000,ax: 0.038,ay: 0.039,az:-0.036,q:359.938,pressure: 99846,cameraCount:    12
+0,state:5,Time:12:32:24,Lat:0.00000000,Lng:-0.00000000,ax:-0.001,ay: 0.009,az:-0.152,q:359.938,pressure: 99851,cameraCount:    13
+0,state:5,Time:12:32:25,Lat:0.00000000,Lng:-0.00000000,ax: 0.034,ay: 0.013,az:-0.018,q:359.938,pressure: 99846,cameraCount:    14
+0,state:5,Time:12:32:26,Lat:0.00000000,Lng:-0.00000000,ax:-0.017,ay:-0.014,az: 0.004,q:359.938,pressure: 99848,cameraCount:    15
+0,state:5,Time:12:32:27,Lat:0.00000000,Lng:-0.00000000,ax:-0.014,ay:-0.017,az: 0.017,q:359.938,pressure: 99852,cameraCount:    16
+0,state:5,Time:12:32:28,Lat:0.00000000,Lng:-0.00000000,ax: 0.009,ay:-0.006,az:-0.016,q:359.938,pressure: 99851,cameraCount:    17
+0,state:5,Time:12:32:29,Lat:0.00000000,Lng:-0.00000000,ax: 0.007,ay: -0.02,az: 0.007,q:359.938,pressure: 99848,cameraCount:    18
+0,state:5,Time:12:32:30,Lat:0.00000000,Lng:-0.00000000,ax: 0.007,ay: 0.003,az:-0.024,q:359.938,pressure: 99849,cameraCount:    19
+0,state:5,Time:12:32:31,Lat:0.00000000,Lng:-0.00000000,ax: 0.021,ay: 0.009,az:-0.021,q:   0.0,pressure: 99855,cameraCount:    20
+0,state:5,Time:12:32:32,Lat:0.00000000,Lng:-0.00000000,ax: 0.077,ay:  0.05,az:-0.052,q:   0.0,pressure: 99852,cameraCount:    21
+0,state:5,Time:12:32:33,Lat:0.00000000,Lng:-0.00000000,ax: 0.006,ay: 0.019,az:-0.019,q:   0.0,pressure: 99852,cameraCount:    22
+0,state:5,Time:12:32:34,Lat:0.00000000,Lng:-0.00000000,ax: 0.028,ay: 0.014,az:-0.009,q:   0.0,pressure: 99849,cameraCount:    23
+0,state:5,Time:12:32:35,Lat:0.00000000,Lng:-0.00000000,ax:-0.036,ay:   0.0,az:-0.002,q:   0.0,pressure: 99840,cameraCount:    24
+0,state:5,Time:12:32:36,Lat:0.00000000,Lng:-0.00000000,ax: 0.006,ay: 0.003,az: -0.02,q:   0.0,pressure: 99848,cameraCount:    25
+0,state:5,Time:12:32:37,Lat:0.00000000,Lng:-0.00000000,ax: 0.002,ay:-0.013,az: 0.007,q:   0.0,pressure: 99855,cameraCount:    26
+0,state:5,Time:12:32:37,Lat:0.00000000,Lng:-0.00000000,ax: 0.021,ay:-0.001,az:-0.016,q:   0.0,pressure: 99849,cameraCount:    27
+0,state:5,Time:12:32:38,Lat:0.00000000,Lng:-0.00000000,ax: 0.029,ay: 0.023,az:-0.017,q: 0.062,pressure: 99852,cameraCount:    28
+0,state:5,Time:12:32:39,Lat:0.00000000,Lng:-0.00000000,ax: 0.048,ay: 0.018,az:-0.036,q: 0.062,pressure: 99851,cameraCount:    29
+0,state:5,Time:12:32:40,Lat:0.00000000,Lng:-0.00000000,ax: 0.052,ay: 0.037,az:-0.042,q: 0.125,pressure: 99843,cameraCount:    30
+0,state:5,Time:12:32:41,Lat:0.00000000,Lng:-0.00000000,ax:-0.002,ay:-0.008,az:  0.01,q: 0.062,pressure: 99849,cameraCount:    31
