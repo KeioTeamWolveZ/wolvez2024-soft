@@ -526,7 +526,7 @@ class Cansat():
 			# オレンジ色のマスクを作成
 			mask_blue = self.color.mask_color(self.frame,ct.const.LOWER_BLUE,ct.const.LOWER_BLUE)
 			# 輪郭を抽出して最大の面積を算出し、線で囲む
-			mask_orange,cX,cY,max_contour_area = self.color.detect_color(mask_blue,self.MAX_CONTOUR_THRESHOLD)
+			mask_blue,cX,cY,max_contour_area = self.color.detect_color(mask_blue,self.MAX_CONTOUR_THRESHOLD)
 			#print("cX:",cX,"cY:",cY,"max_contour_area:",max_contour_area)
 			if cX:
 				cv2.circle(self.frame2,(width-cY,cX),30,100,-1)
@@ -666,8 +666,6 @@ class Cansat():
 							break
 					if self.cam_pint <= 3.5:
 						x,y = width-cY,cX
-						# cv2.line(self.frame2,[width//2,10],[width//2,1200],(255,0,255),5)
-						# cv2.line(self.frame2,[x,10],[x,1200],(255,0,255),5)
 						
 						self.cam_pint = 5.5 #default pint
 						self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
