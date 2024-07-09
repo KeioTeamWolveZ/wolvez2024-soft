@@ -524,9 +524,9 @@ class Cansat():
 			corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary) # ARマーカーの検出   
 
 			# オレンジ色のマスクを作成
-			mask_orange = color_tools.mask_color(self.frame,lower_orange,upper_orange)
+			mask_blue = self.color.mask_color(self.frame,ct.const.LOWER_BLUE,ct.const.LOWER_BLUE)
 			# 輪郭を抽出して最大の面積を算出し、線で囲む
-			mask_orange,cX,cY,max_contour_area = color_tools.detect_color(mask_orange,MAX_CONTOUR_THRESHOLD)
+			mask_orange,cX,cY,max_contour_area = self.color.detect_color(mask_blue,self.MAX_CONTOUR_THRESHOLD)
 			#print("cX:",cX,"cY:",cY,"max_contour_area:",max_contour_area)
 			if cX:
 				cv2.circle(self.frame2,(width-cY,cX),30,100,-1)
@@ -534,261 +534,176 @@ class Cansat():
 			if ids is not None:
 			# aruco.DetectedMarkers(frame, corners, ids)
 				for i in range(len(ids)):
-				    if ids[i] in [0,1,2,3,4,5]:
-					image_points_2d = np.array(corners[i],dtype='double')
-					# print(corners[i])
+					if ids[i] in [0,1,2,3,4,5]:
+						rvec, tvec, _ = aruco.estimatePoseSingleMarkers(corners[i], self.marker_length, self.camera_matrix, self.distortion_coeff)
+						tvec = np.squeeze(tvec)
+						rvec = np.squeeze(rvec)
+						# 回転ベクトルからrodoriguesへ変換
+						rvec_matrix = cv2.Rodrigues(rvec)
+						rvec_matrix = rvec_matrix[0] # rodoriguesから抜き出し
+						transpose_tvec = tvec[np.newaxis, :].T # 並進ベクトルの転置
+						proj_matrix = np.hstack((rvec_matrix, transpose_tvec)) # 合成
+						euler_angle = cv2.decomposeProjectionMatrix(proj_matrix)[6]  # オイラー角への変換[deg]
+						self.prev = list(self.prev)
+						self.lost_marker_cnt = 0
 
-					rvec, tvec, _ = aruco.estimatePoseSingleMarkers(corners[i], marker_length, camera_matrix, distortion_coeff)
-					tvec = np.squeeze(tvec)
-					rvec = np.squeeze(rvec)
-					# 回転ベクトルからrodoriguesへ変換
-					rvec_matrix = cv2.Rodrigues(rvec)
-					rvec_matrix = rvec_matrix[0] # rodoriguesから抜き出し
-					transpose_tvec = tvec[np.newaxis, :].T # 並進ベクトルの転置
-					proj_matrix = np.hstack((rvec_matrix, transpose_tvec)) # 合成
-					euler_angle = cv2.decomposeProjectionMatrix(proj_matrix)[6]  # オイラー角への変換[deg]
-					self.prev = list(self.prev)
-					self.lost_marker_cnt = 0
+						if self.ultra_count < 1:
+							self.prev.append(tvec)
+							print("ARマーカーの位置を算出中")
+							self.ultra_count += 1 #最初（位置リセット後も）は20回取得して平均取得
+							self.find_marker = True
+						else:
+							# print("prev_length: ",len(prev))
+							TorF = self.ar.outlier(tvec, self.prev, self.ultra_count, 0.3) # true:correct, false:outlier
+							self.ultra_count += 1
+							if TorF: # detected AR marker is reliable
+								self.reject_count = 0
+								print("x : " + str(tvec[0]))
+								print("y : " + str(tvec[1]))
+								print("z : " + str(tvec[2]))
+								tvec[0] = tvec[0]
+								polar_exchange = self.ar.polar_change(tvec)
+								print(f"yunosu_function_{ids[i]}:",polar_exchange)
+								distance_of_marker = polar_exchange[0] #r
+								angle_of_marker = polar_exchange[1] #theta
+								print("======",distance_of_marker)
+								
+								if distance_of_marker >= self.closing_threshold + self.CLOSING_RANGE_THRE:
+									if tvec[0] >= 0.05:
+										print("---右に曲がります---")
+										self.motor_control(70,60,0.5)
+									
+										
+									elif 0.05 > tvec[0] > -0.05:
+										go_ahead_gain = (distance_of_marker-self.closing_threshold) / self.closing_threshold
+										print("---motor GO AHEAD---")
+										self.motor_control(40+60*go_ahead_gain,40+60*go_ahead_gain,0.5)
+									
+									
+									else:
+										print("---左に曲がります---")
+										self.motor_control(60,70,0.5)
+										
+										
 
-					if self.ultra_count < 1:
-					    self.prev.append(tvec)
-					    print("ARマーカーの位置を算出中")
-					    self.ultra_count += 1 #最初（位置リセット後も）は20回取得して平均取得
-					    self.find_marker = True
-					else:
-					    # print("prev_length: ",len(prev))
-					    TorF = ar.outlier(tvec, self.prev, self.ultra_count, 0.3) # true:correct, false:outlier
-					    self.ultra_count += 1
-					    if TorF: # detected AR marker is reliable
-						self.reject_count = 0
-						print("x : " + str(tvec[0]))
-						print("y : " + str(tvec[1]))
-						print("z : " + str(tvec[2]))
-						tvec[0] = tvec[0]
+								elif distance_of_marker >= self.closing_threshold:
+									if tvec[0] >= 0.03:
+										print("---時計周り---")
+										self.motor_control(45,-45,0.5)
+								
+									elif tvec[0] <= -0.03:
+										print("---反時計周り---")
+										self.motor_control(-45,45,0.5)
+									
+									else:
+										print("'\033[32m'---perfect REACHED---'\033[0m'")
+										time.sleep(1)
+
+								
+								elif self.closing_threshold >= distance_of_marker >= self.closing_threshold - self.CLOSING_RANGE_THRE:
+									if tvec[0] >= 0.03:
+										print("---back 時計周り---")
+										self.motor_control(-35,-45,0.5)
+								
+									elif tvec[0] <= -0.03:
+										print("---back 反時計周り---")
+										self.motor_control(-45,-35,0.5)
+									
+									else:
+										print("---back---")
+										self.motor_control(-35,-35,0.5)
+								
+								elif distance_of_marker <= self.closing_threshold - self.CLOSING_RANGE_THRE:
+									if -50 <= angle_of_marker <= 0: #ARマーカがやや左から正面にある場合
+										print("時計周り")
+										self.motor_control(70,-70,0.3)
+										yunosu_pos = "Left"
+										last_pos = "Plan_B"
+									
+									
+									elif 0 <= angle_of_marker <= 50: #ARマーカがやや右から正面にある場合
+										print("反時計周り")
+										self.motor_control(-70,70,0.3)
+										yunosu_pos = "Right"
+										last_pos = "Plan_B"
+								
+							else: # detected AR marker is not reliable
+								print("state of marker is rejected")
+								self.find_marker = False
+								print(self.ultra_count)
+								self.reject_count += 1 # 拒否された回数をカウント
+								if self.reject_count > 10: # 拒否され続けたらリセットしてARマーカーの基準を上書き（再計算）
+									self.ultra_count = 0
+									self.reject_count = 0 #あってもなくても良い
+
+						distance, angle = self.ar.Correct(tvec,self.VEC_GOAL)
 						polar_exchange = self.ar.polar_change(tvec)
-						print(f"yunosu_function_{ids[i]}:",polar_exchange)
-						distance_of_marker = polar_exchange[0] #r
-						angle_of_marker = polar_exchange[1] #theta
-						print("======",distance_of_marker)
-						
-						if distance_of_marker >= self.closing_threshold + self.CLOSING_RANGE_THRE:
-						    if tvec[0] >= 0.05:
-							print("---右に曲がります---")
-							self.motor_control(70,60,0.5)
-							
-							    
-						    elif 0.05 > tvec[0] > -0.05:
-							go_ahead_gain = (distance_of_marker-closing_threshold) / closing_threshold
-							print("---motor GO AHEAD---")
-							motor1.go(40+60*go_ahead_gain)
-							motor2.go(40+60*go_ahead_gain)
-							time.sleep(0.5)
-							motor1.stop()
-							motor2.stop()
-							
-						      
-						    else:
-							print("---左に曲がります---")
-							motor1.go(60)
-							motor2.go(70)
-							time.sleep(0.5)
-							motor1.stop()
-							motor2.stop()
-						    
-						    
-
-						elif distance_of_marker >= closing_threshold:
-						    if tvec[0] >= 0.03:
-							print("---時計周り---")
-							motor1.go(45)
-							motor2.back(45)
-							time.sleep(0.5)
-							motor1.stop()
-							motor2.stop()
-							time.sleep(0.5)
-						
-						    elif tvec[0] <= -0.03:
-							print("---反時計周り---")
-							motor1.back(45)
-							motor2.go(45)
-							time.sleep(0.5)
-							motor1.stop()
-							motor2.stop()
-						       
-						    else:
-							print("'\033[32m'---perfect REACHED---'\033[0m'")
-							time.sleep(50)
-
-						
-						elif self.closing_threshold >= distance_of_marker >= self.closing_threshold - CLOSING_RANGE_THRE:
-						    if tvec[0] >= 0.03:
-							print("---back 時計周り---")
-							motor1.back(35)
-							motor2.back(45)
-							time.sleep(0.5)
-							motor1.stop()
-							motor2.stop()
-							time.sleep(0.5)
-						
-						    elif tvec[0] <= -0.03:
-							print("---back 反時計周り---")
-							motor1.back(45)
-							motor2.back(35)
-							time.sleep(0.5)
-							motor1.stop()
-							motor2.stop()
-							
-						    else:
-							print("---back---")
-							motor1.back(35)
-							motor2.back(35)
-							time.sleep(0.5)
-							motor1.stop()
-							motor2.stop()
-						
-						elif distance_of_marker <= self.closing_threshold - self.CLOSING_RANGE_THRE:
-						    if -50 <= angle_of_marker <= 0: #ARマーカがやや左から正面にある場合
-							print("時計周り")
-							motor1.go(70)   #その場右回転
-							motor2.back(70)
-							time.sleep(0.3)
-							motor1.stop()
-							motor2.stop()
-							yunosu_pos = "Left"
-							last_pos = "Plan_B"
-						      
-						       
-						    elif 0 <= angle_of_marker <= 50: #ARマーカがやや右から正面にある場合
-							print("反時計周り")
-							motor1.back(70)   #その場左回転
-							motor2.go(70)
-							time.sleep(0.3)
-							motor1.stop()
-							motor2.stop()
-							yunosu_pos = "Right"
-							last_pos = "Plan_B"
-						       
-						    #else: #4+k秒ただ直進(ARマーカから離れる)   
-						     #   print("直進")
-						      #  last_pos = "Plan_B"
-						       # motor1.go(go_value)
-							#motor2.go(go_value)
-							#time.sleep(1.5)
-							#motor1.stop()
-							#motor2.stop()
-							#time.sleep(0.5)
-						    
-					    else: # detected AR marker is not reliable
-						print("state of marker is rejected")
-						self.find_marker = False
-						print(self.ultra_count)
-						self.reject_count += 1 # 拒否された回数をカウント
-						if self.reject_count > 10: # 拒否され続けたらリセットしてARマーカーの基準を上書き（再計算）
-						    self.ultra_count = 0
-						    self.reject_count = 0 #あってもなくても良い
+						# print("kabuto_function:",distance,angle)
+						# print("yunosu_function:",polar_exchange)
+						change_lens = -17.2*polar_exchange[0]+9.84
+						if change_lens < 3:
+							lens = 3
+						elif change_lens > 10:
+							lens = 10.5
+						else:
+							lens = change_lens
 
 
-					# 発見したマーカーから1辺が30センチメートルの正方形を描画
-					color = (0,255,0)
-					line = np.int32(np.squeeze(corners[i]))
-					cv2.polylines(frame,[line],True,color,2)
-					    
-					cv2.line(frame, (width//2,0), (width//2,height),(255,255,0))
-					distance, angle = ar.Correct(tvec,VEC_GOAL)
-					polar_exchange = ar.polar_change(tvec)
-					# print("kabuto_function:",distance,angle)
-					# print("yunosu_function:",polar_exchange)
-					change_lens = -17.2*polar_exchange[0]+9.84
-					if change_lens < 3:
-					    lens = 3
-					elif change_lens > 10:
-					    lens = 10.5
-					else:
-					    lens = change_lens
-
-
-			elif last_pos == "Plan_A" :#and not find_marker: #ARマーカを認識していない時，認識するまでその場回転
+			elif self.last_pos == "Plan_A" :#and not find_marker: #ARマーカを認識していない時，認識するまでその場回転
 				self.lost_marker_cnt+=1
 			if self.lost_marker_cnt > 10: # kore iru?
-			    if cX:
-				cam_pint = 10.5
-				while cam_pint > 3.0: #pint change start
-				    if ids is None:
-					cam_pint -= 0.5
-					print("pint:",cam_pint)
-					picam2.set_controls({"AfMode":0,"LensPosition":cam_pint})
-					frame = picam2.capture_array()
-					gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # グレースケールに変換
-					corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, dictionary)
-				    else:
-					break
-				if cam_pint <= 3.5:
-				    x,y = width-cY,cX
-				    cv2.line(frame2,[width//2,10],[width//2,1200],(255,0,255),5)
-				    cv2.line(frame2,[x,10],[x,1200],(255,0,255),5)
-				    
-				    cam_pint = 5.5 #default pint
-				    picam2.set_controls({"AfMode":0,"LensPosition":cam_pint})
-				    if x < width/2-100:
-					print(f"color:ARマーカー探してます(LEFT) (x={x})")
-					motor1.back(40)   #その場左回転
-					motor2.go(60)
-					time.sleep(0.5)
-					motor1.stop()
-					motor2.stop()
-				    elif x > width/2+100:
-					print(f"color:ARマーカー探してます(RIGHT) (x={x})")
-					motor1.go(60)   #その場左回転
-					motor2.go(40)
-					time.sleep(0.5)
-					motor1.stop()
-					motor2.stop()
-				    else:
-					print(f"color:ARマーカー探してます(GO) (x={x})")
-					motor1.go(50)   #その場左回転
-					motor2.go(50)
-					time.sleep(0.5)
-					motor1.stop()
-					motor2.stop()
-				
+				if cX:
+					self.cam_pint = 10.5
+					while self.cam_pint > 3.0: #pint change start
+						if ids is None:
+							self.cam_pint -= 0.5
+							print("pint:",self.cam_pint)
+							self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
+							frame = self.picam2.capture_array()
+							gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # グレースケールに変換
+							corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary)
+						else:
+							break
+					if self.cam_pint <= 3.5:
+						x,y = width-cY,cX
+						# cv2.line(self.frame2,[width//2,10],[width//2,1200],(255,0,255),5)
+						# cv2.line(self.frame2,[x,10],[x,1200],(255,0,255),5)
 						
-			    elif self.yunosu_pos == "Left":
-				print("ARマーカー探してます(LEFT)")
-				motor1.back(60)   #その場左回転
-				motor2.go(60)
-				time.sleep(0.5)
-				motor1.stop()
-				motor2.stop()
-				    
-			    elif self.yunosu_pos == "Right":
-				print("ARマーカー探してます(RIGHT)")
-				motor1.go(60)   #その場左回転
-				motor2.back(60)
-				time.sleep(0.5)
-				motor1.stop()
-				motor2.stop()
+						self.cam_pint = 5.5 #default pint
+						self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
+						if x < width/2-100:
+							print(f"color:ARマーカー探してます(LEFT) (x={x})")
+							self.motor_control(-40,60,0.5)
+						elif x > width/2+100:
+							print(f"color:ARマーカー探してます(RIGHT) (x={x})")
+							self.motor_control(60,40,0.5)
+						else:
+							print(f"color:ARマーカー探してます(GO) (x={x})")
+							self.motor_control(50,50,0.5)
+				elif self.yunosu_pos == "Left":
+					print("ARマーカー探してます(LEFT)")
+					self.motor_control(-60,60,0.5)
+				elif self.yunosu_pos == "Right":
+					print("ARマーカー探してます(RIGHT)")
+					self.motor_control(60,-60,0.5)
 			   
 
 			elif self.last_pos == "Plan_B":
 				self.lost_marker_cnt+=1
 				print("lost marker cnt +1")
-			if self.lost_marker_cnt > 10:
-			    if self.yunosu_pos == "Left":
-				gain1 = 30
-				gain2 = 0
-			    else:
-				gain1 = 0
-				gain2 = 30
-				
-			    print("Plan_B now")
-			    motor1.go(70+gain1)
-			    motor2.go(70+gain2)
-			    time.sleep(2.5 + self.k)
-			    motor1.stop()
-			    motor2.stop()
-			    self.last_pos = "Plan_A"
-			    self.k += 1
-			    print(self.k)
+				if self.lost_marker_cnt > 10:
+					if self.yunosu_pos == "Left":
+						gain1 = 30
+						gain2 = 0
+					else:
+						gain1 = 0
+						gain2 = 30
+						
+						print("Plan_B now")
+						self.motor_control(70+gain1,70+gain2,2.5 + self.k)
+						self.last_pos = "Plan_A"
+						self.k += 1
+						print(self.k)
 			    
     
 		elif self.releasing_state == 2:
