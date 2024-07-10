@@ -61,8 +61,8 @@ class Cansat():
 		# ~ self.MotorL = motor(ct.const.RIGHT_MOTOR_IN1_PIN,ct.const.RIGHT_MOTOR_IN2_PIN,ct.const.RIGHT_MOTOR_VREF_PIN)
 		# ~ self.MotorR = motor(ct.const.LEFT_MOTOR_IN1_PIN,ct.const.LEFT_MOTOR_IN2_PIN, ct.const.LEFT_MOTOR_VREF_PIN)
 		GPIO.setwarnings(False)
-		self.motor1 = motor(6,5,13)
-		self.motor2 = motor(20,16,12,-1)
+		self.motor1 = motor(dir = -1)
+		self.motor2 = motor()
 		self.servo = motor()
 		self.servo.set_id(2)
 		# =============================================== カメラ =============================================== 
@@ -727,7 +727,7 @@ class Cansat():
 				self.gray = cv2.cvtColor(self.frame2, cv2.COLOR_BGR2GRAY) # グレースケールに変換
 				self.corners, self.ids, self.rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary)
 				rvec, tvec, _ = aruco.estimatePoseSingleMarkers(corners[i], self.marker_length, self.camera_matrix, self.distortion_coeff)
-                tvec = np.squeeze(tvec)
+				tvec = np.squeeze(tvec)
 				self.adjust_angle(tvec)
 
 		

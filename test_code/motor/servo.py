@@ -5,9 +5,9 @@ servo = motor.motor()
 servo.set_id(2)
 
 
-servo.go(180)
+servo.go_deg(90)
 print("180")
 time.sleep(5) # 5 seconds stop
-servo.go(0)
+servo.go_deg(90)
 print("0")
 time.sleep(5) # 5 seconds stop
