@@ -626,15 +626,15 @@ class Cansat():
 									if -50 <= angle_of_marker <= 0: #ARマーカがやや左から正面にある場合
 										print("時計周り")
 										self.motor_control(70,-70,0.3)
-										yunosu_pos = "Left"
-										last_pos = "Plan_B"
+										self.yunosu_pos = "Left"
+										self.last_pos = "Plan_B"
 									
 									
 									elif 0 <= angle_of_marker <= 50: #ARマーカがやや右から正面にある場合
 										print("反時計周り")
 										self.motor_control(-70,70,0.3)
-										yunosu_pos = "Right"
-										last_pos = "Plan_B"
+										self.yunosu_pos = "Right"
+										self.last_pos = "Plan_B"
 								
 							else: # detected AR marker is not reliable
 								print("state of marker is rejected")
@@ -645,17 +645,17 @@ class Cansat():
 									self.ultra_count = 0
 									self.reject_count = 0 #あってもなくても良い
 
-						distance, angle = self.ar.Correct(tvec,self.VEC_GOAL)
+						self.distance, self.angle = self.ar.Correct(tvec,self.VEC_GOAL)
 						polar_exchange = self.ar.polar_change(tvec)
 						# print("kabuto_function:",distance,angle)
 						# print("yunosu_function:",polar_exchange)
 						change_lens = -17.2*polar_exchange[0]+9.84
 						if change_lens < 3:
-							lens = 3
+							self.lens = 3
 						elif change_lens > 10:
-							lens = 10.5
+							self.lens = 10.5
 						else:
-							lens = change_lens
+							self.lens = change_lens
 							
 
 
@@ -719,7 +719,21 @@ class Cansat():
 			"""
 				微調整ステート
 			"""
-				
+			while True:
+				frame = self.picam2.capture_array()
+				self.frame2 = self.cv2.rotate(self.frame,cv2.ROTATE_90_CLOCKWISE)
+				self.height = self.frame2.shape[0]
+				self.width = self.frame2.shape[1]
+				self.gray = cv2.cvtColor(self.frame2, cv2.COLOR_BGR2GRAY) # グレースケールに変換
+				self.corners, self.ids, self.rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary)
+				rvec, tvec, _ = aruco.estimatePoseSingleMarkers(corners[i], self.marker_length, self.camera_matrix, self.distortion_coeff)
+                tvec = np.squeeze(tvec)
+				self.adjust_angle(tvec)
+
+		
+		
+
+
 			print("'\033[44m'","5-2.moving_release_position",'\033[0m')
 			pass
 		elif self.releasing_state == 3:
