@@ -63,6 +63,8 @@ class Cansat():
 		GPIO.setwarnings(False)
 		self.motor1 = motor(6,5,13)
 		self.motor2 = motor(20,16,12,-1)
+		self.servo = motor()
+		self.servo.set_id(2)
 		# =============================================== カメラ =============================================== 
 		self.picam2 = Picamera2()
 		size = (1100, 1800)
@@ -171,6 +173,8 @@ class Cansat():
 		self.yunosu_pos = "Left"
 		self.last_pos = "Plan_A"
 		self.mkdir()
+
+		self.nowangle = 90  # サーボモータの角度
 		
 	def mkdir(self):
 		"""
@@ -510,19 +514,21 @@ class Cansat():
 		pass
 
 	def moving_release_position(self): # state = 5
+		
+		self.cameraCount += 1
+		self.frame = self.picam2.capture_array()
+		self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
+		height = self.frame2.shape[0]
+		width = self.frame2.shape[1]
+		gray = cv2.cvtColor(self.frame2, cv2.COLOR_BGR2GRAY) # グレースケールに変換
+		corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary) # ARマーカーの検出   
+		
 		if self.releasing_state == 1 :# 接近
 			## 作戦１：放出モジュールが十分に遠いとき
 			## 作戦２：放出モジュールが遠いとき
 			print("'\033[44m'","5-1.moving_release_position",'\033[0m')
 			
-			self.cameraCount += 1
-			self.frame = self.picam2.capture_array()
-			self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
-			height = self.frame2.shape[0]
-			width = self.frame2.shape[1]
-			gray = cv2.cvtColor(self.frame2, cv2.COLOR_BGR2GRAY) # グレースケールに変換
-			corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary) # ARマーカーの検出   
-
+		
 			# オレンジ色のマスクを作成
 			mask_blue = self.color.mask_color(self.frame,ct.const.LOWER_BLUE,ct.const.UPPER_BLUE)
 			# 輪郭を抽出して最大の面積を算出し、線で囲む
@@ -713,6 +719,7 @@ class Cansat():
 			"""
 				微調整ステート
 			"""
+				
 			print("'\033[44m'","5-2.moving_release_position",'\033[0m')
 			pass
 		elif self.releasing_state == 3:
@@ -857,7 +864,24 @@ class Cansat():
 		    cv2.destroyAllWindows()
 		    sys.exit()
 
-	
+	def adjust_angle(self, tvec):
+			if tvec[0] > 0.01:
+				if self.nowangle >= 180:
+					return
+				else:
+					self.nowangle += 10
+					self.servo.go_deg(self.nowangle)
+					# ~ print("servo: "+str(nowangle))
+			elif tvec[0] < -0.01:
+				if self.nowangle <= 0:
+					return
+				else:
+					self.nowangle -= 10
+					self.servo.go_deg(self.nowangle)
+					# ~ print("servo: "+str(nowangle))
+			else:
+				pass
+
 	def keyboardinterrupt(self): #キーボードインタラプト入れた場合に発動する関数
 		self.motor1.stop()
 		self.motor2.stop()
