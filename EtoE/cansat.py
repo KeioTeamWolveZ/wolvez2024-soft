@@ -726,12 +726,33 @@ class Cansat():
 			print("'\033[44m'","5-3.moving_release_position",'\033[0m')
 			pass
 		
-		elif self.releasing_state == 4:
-			"""
-				物資モジュール確認
 
-			"""
-		    self.cameraCount += 1
+	def motor_control(self,m1,m2,t):
+		# m1:右モーターの速度
+		# m2:左モーターの速度
+		# time:モーターを動かす時間
+		if m1>=0:
+			self.motor1.go(m1)
+		else:
+			m1 = abs(m1)
+			self.motor1.back(m1)
+		if m2>=0:
+			self.motor2.go(m2)
+		else:
+			m2 = abs(m2)
+			self.motor2.back(m2)
+		time.sleep(t)
+		self.motor1.stop()
+		self.motor2.stop()
+
+	def judgement(self): # state = 6
+		"""
+			物資モジュール確認
+
+		"""
+		if self.closing_state == 1:
+			print("'\033[44m'","6-1.Go to judgement",'\033[0m')
+			self.cameraCount += 1
 			self.frame = self.picam2.capture_array()
 			self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
 			height = self.frame2.shape[0]
@@ -817,8 +838,8 @@ class Cansat():
 										time.sleep(1)
 										state = 6
 										break
-		     							
- 
+										
+
 								
 								elif self.closing_threshold_2 >= distance_of_marker >= self.closing_threshold_2 - self.CLOSING_RANGE_THRE_2:
 									if tvec[0] >= 0.03:
@@ -906,7 +927,7 @@ class Cansat():
 				elif self.yunosu_pos == "Right":
 					print("ARマーカー探してます(RIGHT)")
 					self.motor_control(60,-60,0.5)
-			   
+				
 
 			elif self.last_pos == "Plan_B":
 				self.lost_marker_cnt+=1
@@ -924,28 +945,13 @@ class Cansat():
 						self.last_pos = "Plan_A"
 						self.k += 1
 						print(self.k)
-			
+		elif self.closing_state == 2:
+			"""
+				撮影・評価
 
-	def motor_control(self,m1,m2,t):
-		# m1:右モーターの速度
-		# m2:左モーターの速度
-		# time:モーターを動かす時間
-		if m1>=0:
-			self.motor1.go(m1)
-		else:
-			m1 = abs(m1)
-			self.motor1.back(m1)
-		if m2>=0:
-			self.motor2.go(m2)
-		else:
-			m2 = abs(m2)
-			self.motor2.back(m2)
-		time.sleep(t)
-		self.motor1.stop()
-		self.motor2.stop()
-
-	def judgement(self): # state = 6
-		pass
+			"""
+			print("'\033[44m'","6-2.judgement",'\033[0m')
+			pass
 
 	def stuck_detection(self):
 		print(self.ax**2+self.ay**2)
