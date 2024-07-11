@@ -20,8 +20,9 @@ from Wolvez2024_now.led import led
 from Wolvez2024_now.gps import GPS
 from Wolvez2024_now.bno055 import BNO055
 from Wolvez2024_now.bmp import BMP
+from Wolvez2024_now.Ar_tools import lora
 from Wolvez2024_now.motor_pico import motor as motor
-from Wolvez2024_now.Color_tools import Color_tools
+from Wolvez2024_now.lora import Color_tools
 from Wolvez2024_now.Ar_tools import Artools
 
 
@@ -98,6 +99,7 @@ class Cansat():
 		self.bno055 = BNO055() #
 		self.bmp = BMP() #
 		self.color = Color_tools(ct.const.LOWER_ORANGE,ct.const.LOWER_ORANGE)
+		self.lora = lora()
 		
 		# ============================================ ステート管理 ============================================ 
 		self.timer = 0 # 
@@ -109,8 +111,6 @@ class Cansat():
 		self.stuckTime = 0
 		self.releasing_state = 1
     
-
-		
 		# =============================================== 時間記録 =============================================== 
 		self.preparingTime = 0 #
 		self.flyingTime = 0 #
@@ -222,18 +222,17 @@ class Cansat():
 	    if self.state == 3:
 		    mission_log = mission_log + ","\
 		    + "Para_distancing:" + str(self.distancing_finish) # パラから距離を取る
-	    # if self.state == 4:
-	    #     mission_log = mission_log + ","\
-	    #         + "Releasing_01:"  + str(self.releasing_01) # 電池モジュール焼き切り
-	    #         + ","　+ "Releasing_01:"  + str(self.releasing_01) # 電池モジュール焼き切り
-	    # if self.state == 5:
-	    #     mission_log = mission_log + ","\
-	    #         + "Releasing_02:"  + str(self.releasing_02) # 電力消費モジュール焼き切り
-	    # if self.state == 6:
-	    #     mission_log = mission_log + ","\
-	    #         + "ConnectingState:" + str(self.connecting_state) + ","\
-	    #         + "Done-Approach:" + str(self.done_approach) + ","\
-	    #         + "Done-Connect:" + str(self.connected)
+	    if self.state == 4:
+	        mission_log = mission_log + ","\
+	            + "Releasing_01:"  + str(self.releasing_01) # 電池モジュール焼き切り
+	    if self.state == 5:
+	        mission_log = mission_log + ","\
+	            + "Releasing_02:"  + str(self.releasing_02) # 電力消費モジュール焼き切り
+	    if self.state == 6:
+	        mission_log = mission_log + ","\
+	            + "ConnectingState:" + str(self.connecting_state) + ","\
+	            + "Done-Approach:" + str(self.done_approach) + ","\
+	            + "Done-Connect:" + str(self.connected)
 
 	    with open(f'results/{self.startTime}/mission_log.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
 		    test.write(mission_log + '\n')
@@ -259,16 +258,15 @@ class Cansat():
 			self.para_escaping()
 			pass
 		elif self.state == 4:
+			self.first_releasing()
 			pass
 		elif self.state == 5:
 			self.moving_release_position()
 		elif self.state == 6:
-			print("\033[32m",6,"\033[0m")
+			self.judgement()
 		elif self.state == 7:
-			print("\033[32m",7,"\033[0m")
 			self.running()
 		elif self.state == 8:
-			print("\033[32m",8,"\033[0m")
 			self.finish()
 		else:
 			self.state = self.laststate #どこにも引っかからない場合何かがおかしいのでlaststateに戻してあげる
@@ -278,7 +276,7 @@ class Cansat():
 		self.gps.setupGps()
 		self.bno055.setupBno()
 		self.bno055.bnoInitial()
-		#self.lora.sendDevice.setup_lora()
+		self.lora.sendDevice.setup_lora()
 		#self.arm.setup()
 		if self.bno055.begin() is not True:
 			print("Error initializing device")
@@ -301,7 +299,15 @@ class Cansat():
 		self.lon = round(float(self.gps.Lon),5)
 		
 		self.writeData()
+		if not self.state == 1: #preparingのときは電波を発しない
+			self.sendLoRa()
 		pass
+
+	def sendLoRa(self): #通信モジュールの送信を行う関数
+		datalog = str(self.state)+ ","\
+            + str(round(self.lat,5)) + ","\
+            + str(round(self.lon,5))
+		self.lora.sendData(datalog) #データを送信
 	
 	def preparing(self): # state = 0
 		self.img = self.picam2.capture_array()#0,self.results_img_dir+f'/{self.cameraCount}')
@@ -606,7 +612,6 @@ class Cansat():
 										print("'\033[32m'---perfect REACHED---'\033[0m'")
 										time.sleep(1)
 										self.releasing_state = 2
-										print("state_change")
 
 								
 								elif self.closing_threshold >= distance_of_marker >= self.closing_threshold - self.CLOSING_RANGE_THRE:
@@ -720,6 +725,7 @@ class Cansat():
 				微調整ステート
 			"""
 			print("'\033[44m'","5-2.moving_release_position",'\033[0m')
+			self.releasing_state = 3
 			pass
 
 		elif self.releasing_state == 3:
@@ -728,6 +734,7 @@ class Cansat():
 
 			"""
 			print("'\033[44m'","5-3.moving_release_position",'\033[0m')
+			self.state = 6
 			pass
 		
 
@@ -1084,6 +1091,7 @@ class Cansat():
 		self.pc2.stop()
 		time.sleep(0.5)
 		cv2.destroyAllWindows()
+		GPIO.cleanup()
 		pass
 	
 			
