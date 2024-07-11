@@ -365,6 +365,7 @@ class Cansat():
 				# ~ self.cameraCount += 1
 				self.frame = self.picam2.capture_array()#0,self.results_img_dir+f'/{self.cameraCount}')
 				self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)	
+				cv2.imwrite(self.results_img_dir+f'/{self.cameraCount}.jpg',self.frame2)
 				# 指定色のマスクを作成
 				mask_orange = self.color.mask_color(self.frame,ct.const.LOWER_ORANGE,ct.const.UPPER_ORANGE)
 				# 輪郭を抽出して最大の面積を算出し、線で囲む
@@ -376,6 +377,7 @@ class Cansat():
 				# ~ self.cameraCount += 1
 				self.frame = self.picam2.capture_array()#0,self.results_img_dir+f'/{self.cameraCount}')
 				self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
+				cv2.imwrite(self.results_img_dir+f'/{self.cameraCount}.jpg',self.frame2)
 				# 指定色のマスクを作成
 				mask_orange = self.color.mask_color(self.frame,ct.const.LOWER_ORANGE,ct.const.UPPER_ORANGE)
 				# 輪郭を抽出して最大の面積を算出し、線で囲む
@@ -438,6 +440,8 @@ class Cansat():
 		self.cameraCount += 1
 		self.frame = self.picam2.capture_array()#0,self.results_img_dir+f'/{self.cameraCount}')
 		self.frame2 = cv2.rotate(self.frame,cv2.ROTATE_90_CLOCKWISE)
+		# 写真を保存
+		cv2.imwrite(self.results_img_dir+f'/{self.cameraCount}.jpg',self.frame2)
 		height = self.frame2.shape[0]
 		width = self.frame2.shape[1]
 		# オレンジ色のマスクを作成
@@ -518,6 +522,7 @@ class Cansat():
 			self.cameraCount += 1
 			self.frame = self.picam2.capture_array()
 			self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
+			cv2.imwrite(self.results_img_dir+f'/{self.cameraCount}.jpg',self.frame2)
 			height = self.frame2.shape[0]
 			width = self.frame2.shape[1]
 			gray = cv2.cvtColor(self.frame2, cv2.COLOR_BGR2GRAY) # グレースケールに変換
