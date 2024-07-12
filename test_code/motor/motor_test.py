@@ -6,8 +6,8 @@ import time
 
 
 GPIO.setwarnings(False)
-Motor1 = motor.motor(6,5,13)
-Motor2 = motor.motor(20,16,12,-1)
+Motor1 = motor.motor(dir=-1)
+Motor2 = motor.motor()
 
 try:
     print("motor run") 

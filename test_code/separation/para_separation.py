@@ -1,8 +1,8 @@
 import RPi.GPIO as GPIO
 import time
-import motor
+import motor_pico as motor 
 from bno055 import BNO055
-from arm import Arm
+# from arm import Arm
 
 #pin1 = 25
 #pin2 = 24
@@ -12,8 +12,8 @@ pin1 = 8
 servo_pin = 23
 flight_pin = 4
 
-Motor1 = motor.motor(6,5,13)
-Motor2 = motor.motor(20,16,12)
+Motor1 = motor.motor(dir=-1)
+Motor2 = motor.motor()
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(pin1,GPIO.OUT) #焼き切り用のピンの設定
@@ -22,8 +22,8 @@ GPIO.output(pin1,0) #焼き切りが危ないのでlowにしておく
 #GPIO.setmode(GPIO.BCM) #GPIOの設定
 bno055 = BNO055()
 bno055.setupBno()
-arm = Arm(servo_pin)
-arm.setup()
+# arm = Arm(servo_pin)
+# arm.setup()
 if bno055.begin() is not True:
     print("Error initializing device")
     exit()
@@ -51,21 +51,21 @@ try:
 
                 print("Running Motor...\n")
                 time.sleep(3)
-                Motor1.go(100)
-                Motor2.go(100)
+                Motor1.go(80)
+                Motor2.go(80)
                 time.sleep(3)
                 Motor1.stop()
                 Motor2.stop()
                 time.sleep(2)
                 
-                print("Arming\n")
-                time.sleep(3)
-                arm.up()
-                time.sleep(1)
-                arm.down()
-                time.sleep(1)
+                # print("Arming\n")
+                # time.sleep(3)
+                # arm.up()
+                # time.sleep(1)
+                # arm.down()
+                # time.sleep(1)
                 
-                arm.stop()
+                # arm.stop()
                 GPIO.cleanup()
                 print("\n================Done Para-Separation================\n\n")
                 
@@ -74,6 +74,6 @@ try:
                 #    countDropLoop = 0 #初期化の必要あり
 
 except:
-    arm.stop()
+    # arm.stop()
     GPIO.output(pin1,0) #電圧をLOWにして焼き切りを終了
     GPIO.cleanup()
