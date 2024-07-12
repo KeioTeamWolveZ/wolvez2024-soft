@@ -20,9 +20,9 @@ from Wolvez2024_now.led import led
 from Wolvez2024_now.gps import GPS
 from Wolvez2024_now.bno055 import BNO055
 from Wolvez2024_now.bmp import BMP
-from Wolvez2024_now.Ar_tools import lora
+from Wolvez2024_now.lora import lora
 from Wolvez2024_now.motor_pico import motor as motor
-from Wolvez2024_now.lora import Color_tools
+from Wolvez2024_now.Color_tools import Color_tools
 from Wolvez2024_now.Ar_tools import Artools
 
 
@@ -51,7 +51,7 @@ class Cansat():
 		
 		# ============================================== constant ============================================== 
 		
-		self.TIME_THRESHOLD = 60 # ct.const.DROPPING_TIME_THRE
+		self.TIME_THRESHOLD = 10 # ct.const.DROPPING_TIME_THRE
 		self.DROPPING_ACC_THRE = 0.005 # ct.const.DROPPING_ACC_THRE
 		self.DROPPING_PRESS_THRE = 99887 # ct.const.DROPPING_PRESS_THRE
 		self.DROPPING_ACC_COUNT_THRE = 20 # ct.const.DROPPING_ACC_COUNT_THRE
@@ -62,8 +62,8 @@ class Cansat():
 		# ~ self.MotorL = motor(ct.const.RIGHT_MOTOR_IN1_PIN,ct.const.RIGHT_MOTOR_IN2_PIN,ct.const.RIGHT_MOTOR_VREF_PIN)
 		# ~ self.MotorR = motor(ct.const.LEFT_MOTOR_IN1_PIN,ct.const.LEFT_MOTOR_IN2_PIN, ct.const.LEFT_MOTOR_VREF_PIN)
 		GPIO.setwarnings(False)
-		self.motor1 = motor(dir=)
-		self.motor2 = motor(20,16,12,-1)
+		self.motor1 = motor()
+		self.motor2 = motor(dir=-1)
 		# =============================================== カメラ =============================================== 
 		self.picam2 = Picamera2()
 		size = (1100, 1800)
@@ -110,12 +110,14 @@ class Cansat():
 		self.startTime = str(datetime.now())[:19].replace(" ","_").replace(":","-") #
 		self.stuckTime = 0
 		self.releasing_state = 1
+		self.closing_state = 1
     
 		# =============================================== 時間記録 =============================================== 
 		self.preparingTime = 0 #
 		self.flyingTime = 0 #
 		self.landtime = 0
 		self.escapeTime = 0
+		self.runningTime = 0
 		
 		# =============================================== カウンタ =============================================== 
 		# センサ用
@@ -411,7 +413,7 @@ class Cansat():
 	        戻り値：着陸判定（着地：True,未着陸：False）
 	        """
 	        # 時間の判定
-	        if time.time() - t > 60: # TIME_THRESHOLD
+	        if time.time() - t > self.TIME_THRESHOLD: # TIME_THRESHOLD
 	            self.time_tf =True
 	        else:
 	            self.time_tf = False
@@ -435,7 +437,8 @@ class Cansat():
 	            self.press_tf = False
 	        if self.time_tf and self.acc_tf and self.press_tf:
 	            print("\033[32m","--<Successful landing>--","\033[0m")
-	            time.sleep(100)
+	            time.sleep(3)
+	            self.state = 3
 	            return True
 	        else:
 	            print("\033[32m",f"time:{self.time_tf} ; acc:{self.acc_tf} ; pressure:{self.press_tf}\n{(ax**2 + ay**2 + az**2)} < {self.DROPPING_ACC_THRE**2}","\033[0m")
@@ -518,6 +521,8 @@ class Cansat():
 		print("'\033[44m'","4.first_releasing",'\033[0m')
 		# self.separation()
 		# 焼き切り放出
+		time.sleep(5)
+		self.state = 5
 		pass
 
 	def moving_release_position(self): # state = 5
@@ -725,6 +730,7 @@ class Cansat():
 				微調整ステート
 			"""
 			print("'\033[44m'","5-2.moving_release_position",'\033[0m')
+			time.sleep(5)
 			self.releasing_state = 3
 			pass
 
@@ -734,6 +740,7 @@ class Cansat():
 
 			"""
 			print("'\033[44m'","5-3.moving_release_position",'\033[0m')
+			time.sleep(5)
 			self.state = 6
 			pass
 		
@@ -848,8 +855,9 @@ class Cansat():
 									else:
 										print("'\033[32m'---perfect REACHED 2---'\033[0m'")
 										time.sleep(1)
-										state = 6
-										break
+										self.closing_state = 2
+										print("closing:",self.closing_state)
+										
 										
 
 								
@@ -963,6 +971,8 @@ class Cansat():
 
 			"""
 			print("'\033[44m'","6-2.judgement",'\033[0m')
+			time.sleep(3)
+			self.state = 7
 			pass
 
 	def stuck_detection(self):

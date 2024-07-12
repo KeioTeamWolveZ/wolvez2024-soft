@@ -45,18 +45,21 @@ try:
                 #state = 3
                 #laststate = 3
                 print("Separation...\n")
-                GPIO.output(pin1,1) #電圧をHIGHにして焼き切りを行う
-                time.sleep(10) #継続時間を指定
-                GPIO.output(pin1,0) #電圧をLOWにして焼き切りを終了する
+                # ~ GPIO.output(pin1,1) #電圧をHIGHにして焼き切りを行う
+                # ~ time.sleep(6) #継続時間を指定
+                # ~ GPIO.output(pin1,0) #電圧をLOWにして焼き切りを終了する
 
                 print("Running Motor...\n")
-                time.sleep(3)
-                Motor1.go(00)
-                Motor2.go(00)
-                time.sleep(3)
+                for i in range(10):
+                        Motor1.back(100)
+                        Motor2.go(100)
+                        time.sleep(0.5)
+                        Motor1.go(70)
+                        Motor2.back(70)
+                        time.sleep(0.4)
                 Motor1.stop()
                 Motor2.stop()
-                time.sleep(2)
+                # ~ time.sleep(2)
                 
                 # print("Arming\n")
                 # time.sleep(3)
