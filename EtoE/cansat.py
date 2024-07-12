@@ -900,14 +900,14 @@ class Cansat():
 			if self.nowangle >= 180:
 				return False
 			else:
-				self.nowangle += 5
+				self.nowangle += 10
 				self.servo.go_deg(self.nowangle)
 				# ~ print("servo: "+str(nowangle))
 		elif tvec[0] < -0.01:
 			if self.nowangle <= 0:
 				return False
 			else:
-				self.nowangle -= 5
+				self.nowangle -= 10
 				self.servo.go_deg(self.nowangle)
 				# ~ print("servo: "+str(nowangle))
 		else:
