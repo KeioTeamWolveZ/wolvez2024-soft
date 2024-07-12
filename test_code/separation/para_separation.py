@@ -20,13 +20,13 @@ GPIO.setup(pin1,GPIO.OUT) #焼き切り用のピンの設定
 GPIO.output(pin1,0) #焼き切りが危ないのでlowにしておく
 
 #GPIO.setmode(GPIO.BCM) #GPIOの設定
-bno055 = BNO055()
-bno055.setupBno()
+# ~ bno055 = BNO055()
+# ~ bno055.setupBno()
 # arm = Arm(servo_pin)
 # arm.setup()
-if bno055.begin() is not True:
-    print("Error initializing device")
-    exit()
+# ~ if bno055.begin() is not True:
+    # ~ print("Error initializing device")
+    # ~ exit()
 
 countFlyLoop = 0
 state = 2
@@ -51,8 +51,8 @@ try:
 
                 print("Running Motor...\n")
                 time.sleep(3)
-                Motor1.go(80)
-                Motor2.go(80)
+                Motor1.go(00)
+                Motor2.go(00)
                 time.sleep(3)
                 Motor1.stop()
                 Motor2.stop()
