@@ -61,8 +61,8 @@ class Cansat():
 		# ~ self.MotorL = motor(ct.const.RIGHT_MOTOR_IN1_PIN,ct.const.RIGHT_MOTOR_IN2_PIN,ct.const.RIGHT_MOTOR_VREF_PIN)
 		# ~ self.MotorR = motor(ct.const.LEFT_MOTOR_IN1_PIN,ct.const.LEFT_MOTOR_IN2_PIN, ct.const.LEFT_MOTOR_VREF_PIN)
 		GPIO.setwarnings(False)
-		self.motor1 = motor(dir = -1)
-		self.motor2 = motor()
+		self.motor1 = motor()
+		self.motor2 = motor(dir = -1)
 		self.servo = motor()
 		self.servo.set_id(2)
 		# =============================================== カメラ =============================================== 
@@ -107,7 +107,7 @@ class Cansat():
 		self.startTime_time=time.time() #
 		self.startTime = str(datetime.now())[:19].replace(" ","_").replace(":","-") #
 		self.stuckTime = 0
-		self.releasing_state = 1
+		self.releasing_state = 2
     
 
 		
@@ -719,23 +719,39 @@ class Cansat():
 			"""
 				微調整ステート
 			"""
-			while True:
-				frame = self.picam2.capture_array()
-				self.frame2 = self.cv2.rotate(self.frame,cv2.ROTATE_90_CLOCKWISE)
-				self.height = self.frame2.shape[0]
-				self.width = self.frame2.shape[1]
-				self.gray = cv2.cvtColor(self.frame2, cv2.COLOR_BGR2GRAY) # グレースケールに変換
-				self.corners, self.ids, self.rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary)
-				rvec, tvec, _ = aruco.estimatePoseSingleMarkers(corners[i], self.marker_length, self.camera_matrix, self.distortion_coeff)
-				tvec = np.squeeze(tvec)
-				self.adjust_angle(tvec)
-
-		
-		
-
+			
+			frame = self.picam2.capture_array()
+			self.frame2 = cv2.rotate(self.frame,cv2.ROTATE_90_CLOCKWISE)
+			self.height = self.frame2.shape[0]
+			self.width = self.frame2.shape[1]
+			self.gray = cv2.cvtColor(self.frame2, cv2.COLOR_BGR2GRAY) # グレースケールに変換
+			self.corners, self.ids, self.rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary)
+			self.cam_pint = 10.5
+			while self.cam_pint > 3.0: #pint change start
+				print("pint:",self.cam_pint)
+				if self.ids is None:
+					self.cam_pint -= 0.5
+					print("pint:",self.cam_pint)
+					self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
+					frame = self.picam2.capture_array()
+					gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # グレースケールに変換
+					corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary)
+					
+				
+				else:
+					break
+					
+			if self.ids is not None:
+				for i in range(len(self.ids)):
+						if self.ids[i] in [0,1,2,3,4,5]:
+							rvec, tvec, _ = aruco.estimatePoseSingleMarkers(self.corners[i], self.marker_length, self.camera_matrix, self.distortion_coeff)
+							tvec = np.squeeze(tvec)
+							self.adjust_angle(tvec)
+				
 
 			print("'\033[44m'","5-2.moving_release_position",'\033[0m')
 			pass
+			
 		elif self.releasing_state == 3:
 			"""
 				物資モジュール投射
@@ -879,22 +895,25 @@ class Cansat():
 		    sys.exit()
 
 	def adjust_angle(self, tvec):
-			if tvec[0] > 0.01:
-				if self.nowangle >= 180:
-					return
-				else:
-					self.nowangle += 10
-					self.servo.go_deg(self.nowangle)
-					# ~ print("servo: "+str(nowangle))
-			elif tvec[0] < -0.01:
-				if self.nowangle <= 0:
-					return
-				else:
-					self.nowangle -= 10
-					self.servo.go_deg(self.nowangle)
-					# ~ print("servo: "+str(nowangle))
+		print(f"\033[33m", f"adjust angle : tvec = {tvec}", "\033[0m")		
+		if tvec[0] > 0.01:
+			if self.nowangle >= 180:
+				return False
 			else:
-				pass
+				self.nowangle += 5
+				self.servo.go_deg(self.nowangle)
+				# ~ print("servo: "+str(nowangle))
+		elif tvec[0] < -0.01:
+			if self.nowangle <= 0:
+				return False
+			else:
+				self.nowangle -= 5
+				self.servo.go_deg(self.nowangle)
+				# ~ print("servo: "+str(nowangle))
+		else:
+			print("just angle!!!!!!!!!!!!",self.nowangle)
+			return True
+			pass
 
 	def keyboardinterrupt(self): #キーボードインタラプト入れた場合に発動する関数
 		self.motor1.stop()

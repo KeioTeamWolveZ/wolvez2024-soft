@@ -1,0 +1,29 @@
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:-0.001,az: 0.004,q:   0.0,pressure: 99940,cameraCount:     0
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay:   0.0,az: 0.003,q:359.938,pressure: 99938,cameraCount:     1
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:   0.0,az: 0.001,q:359.938,pressure: 99937,cameraCount:     2
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:-0.002,az: 0.002,q:359.938,pressure: 99937,cameraCount:     3
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:-0.001,az:-0.002,q:359.938,pressure: 99938,cameraCount:     4
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:   0.0,az:   0.0,q:359.938,pressure: 99935,cameraCount:     5
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:   0.0,az:-0.002,q:359.938,pressure: 99941,cameraCount:     6
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:-0.001,az:-0.001,q:359.938,pressure: 99934,cameraCount:     7
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:-0.002,az:   0.0,q:359.938,pressure: 99938,cameraCount:     8
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.003,az:   0.0,q:359.938,pressure: 99945,cameraCount:     9
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:   0.0,az: 0.001,q:359.938,pressure: 99937,cameraCount:    10
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:-0.001,az: 0.001,q:359.938,pressure: 99948,cameraCount:    11
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay: 0.001,az: 0.003,q:359.938,pressure: 99945,cameraCount:    12
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.001,az: 0.002,q:359.938,pressure: 99941,cameraCount:    13
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.002,ay:   0.0,az:   0.0,q:359.938,pressure: 99945,cameraCount:    14
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:   0.0,az:-0.003,q:359.938,pressure: 99937,cameraCount:    15
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:-0.002,az:-0.002,q:359.938,pressure: 99938,cameraCount:    16
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay: 0.001,az:   0.0,q:359.938,pressure: 99934,cameraCount:    17
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:   0.0,az: 0.001,q:359.938,pressure: 99934,cameraCount:    18
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.001,az:   0.0,q:359.938,pressure: 99935,cameraCount:    19
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay: 0.003,az:-0.002,q:359.938,pressure: 99928,cameraCount:    20
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:   0.0,az: 0.002,q:359.938,pressure: 99924,cameraCount:    21
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.001,az: 0.001,q:359.938,pressure: 99934,cameraCount:    22
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:   0.0,az: 0.003,q:359.938,pressure: 99932,cameraCount:    23
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.002,az: 0.001,q:359.938,pressure: 99924,cameraCount:    24
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:   0.0,az:   0.0,q:359.938,pressure: 99928,cameraCount:    25
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay: 0.002,az:-0.001,q:359.938,pressure: 99928,cameraCount:    26
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay: 0.002,az:   0.0,q:359.938,pressure: 99926,cameraCount:    27
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay: 0.001,az: 0.002,q:359.938,pressure: 99924,cameraCount:    28
