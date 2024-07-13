@@ -63,7 +63,9 @@ class Cansat():
 		# ~ self.MotorR = motor(ct.const.LEFT_MOTOR_IN1_PIN,ct.const.LEFT_MOTOR_IN2_PIN, ct.const.LEFT_MOTOR_VREF_PIN)
 		GPIO.setwarnings(False)
 		self.motor1 = motor()
-		self.motor2 = motor(dir=-1)
+		self.motor2 = motor(dir = -1)
+		self.servo = motor()
+		self.servo.set_id(2)
 		# =============================================== カメラ =============================================== 
 		self.picam2 = Picamera2()
 		size = (1100, 1800)
@@ -175,6 +177,8 @@ class Cansat():
 		self.yunosu_pos = "Left"
 		self.last_pos = "Plan_A"
 		self.mkdir()
+
+		self.nowangle = 90  # サーボモータの角度
 		
 	def mkdir(self):
 		"""
@@ -526,6 +530,7 @@ class Cansat():
 		pass
 
 	def moving_release_position(self): # state = 5
+		
 		if self.releasing_state == 1 :# 接近
 			## 作戦１：放出モジュールが十分に遠いとき
 			## 作戦２：放出モジュールが遠いとき
@@ -636,15 +641,15 @@ class Cansat():
 									if -50 <= angle_of_marker <= 0: #ARマーカがやや左から正面にある場合
 										print("時計周り")
 										self.motor_control(70,-70,0.3)
-										yunosu_pos = "Left"
-										last_pos = "Plan_B"
+										self.yunosu_pos = "Left"
+										self.last_pos = "Plan_B"
 									
 									
 									elif 0 <= angle_of_marker <= 50: #ARマーカがやや右から正面にある場合
 										print("反時計周り")
 										self.motor_control(-70,70,0.3)
-										yunosu_pos = "Right"
-										last_pos = "Plan_B"
+										self.yunosu_pos = "Right"
+										self.last_pos = "Plan_B"
 								
 							else: # detected AR marker is not reliable
 								print("state of marker is rejected")
@@ -655,17 +660,17 @@ class Cansat():
 									self.ultra_count = 0
 									self.reject_count = 0 #あってもなくても良い
 
-						distance, angle = self.ar.Correct(tvec,self.VEC_GOAL)
+						self.distance, self.angle = self.ar.Correct(tvec,self.VEC_GOAL)
 						polar_exchange = self.ar.polar_change(tvec)
 						# print("kabuto_function:",distance,angle)
 						# print("yunosu_function:",polar_exchange)
 						change_lens = -17.2*polar_exchange[0]+9.84
 						if change_lens < 3:
-							lens = 3
+							self.lens = 3
 						elif change_lens > 10:
-							lens = 10.5
+							self.lens = 10.5
 						else:
-							lens = change_lens
+							self.lens = change_lens
 							
 
 
@@ -729,11 +734,41 @@ class Cansat():
 			"""
 				微調整ステート
 			"""
+			
+			frame = self.picam2.capture_array()
+			self.frame2 = cv2.rotate(self.frame,cv2.ROTATE_90_CLOCKWISE)
+			self.height = self.frame2.shape[0]
+			self.width = self.frame2.shape[1]
+			self.gray = cv2.cvtColor(self.frame2, cv2.COLOR_BGR2GRAY) # グレースケールに変換
+			self.corners, self.ids, self.rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary)
+			self.cam_pint = 10.5
+			while self.cam_pint > 3.0: #pint change start
+				print("pint:",self.cam_pint)
+				if self.ids is None:
+					self.cam_pint -= 0.5
+					print("pint:",self.cam_pint)
+					self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
+					frame = self.picam2.capture_array()
+					gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # グレースケールに変換
+					corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary)
+					
+				
+				else:
+					break
+					
+			if self.ids is not None:
+				for i in range(len(self.ids)):
+						if self.ids[i] in [0,1,2,3,4,5]:
+							rvec, tvec, _ = aruco.estimatePoseSingleMarkers(self.corners[i], self.marker_length, self.camera_matrix, self.distortion_coeff)
+							tvec = np.squeeze(tvec)
+							self.adjust_angle(tvec)
+				
+
 			print("'\033[44m'","5-2.moving_release_position",'\033[0m')
 			time.sleep(5)
 			self.releasing_state = 3
 			pass
-
+    
 		elif self.releasing_state == 3:
 			"""
 				物資モジュール投射
@@ -1088,7 +1123,27 @@ class Cansat():
 		    cv2.destroyAllWindows()
 		    sys.exit()
 
-	
+	def adjust_angle(self, tvec):
+		print(f"\033[33m", f"adjust angle : tvec = {tvec}", "\033[0m")		
+		if tvec[0] > 0.01:
+			if self.nowangle >= 180:
+				return False
+			else:
+				self.nowangle += 10
+				self.servo.go_deg(self.nowangle)
+				# ~ print("servo: "+str(nowangle))
+		elif tvec[0] < -0.01:
+			if self.nowangle <= 0:
+				return False
+			else:
+				self.nowangle -= 10
+				self.servo.go_deg(self.nowangle)
+				# ~ print("servo: "+str(nowangle))
+		else:
+			print("just angle!!!!!!!!!!!!",self.nowangle)
+			return True
+			pass
+
 	def keyboardinterrupt(self): #キーボードインタラプト入れた場合に発動する関数
 		self.motor1.stop()
 		self.motor2.stop()

@@ -1,0 +1,361 @@
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay: 0.002,az: 0.003,q:   0.0,pressure: 99940,cameraCount:     0
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.004,ay:-0.011,az:   0.0,q:359.25,pressure: 99931,cameraCount:     1
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.042,ay: 0.002,az: 0.014,q:359.188,pressure: 99937,cameraCount:     2
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:-0.001,az:-0.002,q:359.062,pressure: 99932,cameraCount:     3
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.002,ay: 0.002,az:   0.0,q:359.062,pressure: 99932,cameraCount:     4
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay: 0.001,az:   0.0,q:359.062,pressure: 99931,cameraCount:     5
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay: 0.001,az:-0.001,q:359.062,pressure: 99941,cameraCount:     6
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.001,az: 0.002,q:359.062,pressure: 99935,cameraCount:     7
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.069,ay:-0.073,az: 0.014,q:358.312,pressure: 99935,cameraCount:     8
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.016,ay:   0.0,az:   0.0,q:358.375,pressure: 99931,cameraCount:     9
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.017,ay:-0.006,az: 0.002,q:358.375,pressure: 99926,cameraCount:    10
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.062,ay:-0.017,az: 0.021,q:358.312,pressure: 99938,cameraCount:    11
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay: 0.002,az: 0.001,q:358.312,pressure: 99938,cameraCount:    12
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:   0.0,az:   0.0,q:358.312,pressure: 99941,cameraCount:    13
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay: 0.001,az:   0.0,q:358.312,pressure: 99937,cameraCount:    14
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay: 0.001,az:-0.001,q:358.312,pressure: 99932,cameraCount:    15
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.004,ay:-0.003,az:   0.0,q:358.312,pressure: 99934,cameraCount:    16
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:-0.001,az: 0.002,q:358.312,pressure: 99938,cameraCount:    17
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.013,ay: 0.012,az:   0.0,q:358.062,pressure: 99927,cameraCount:    18
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.004,ay: -0.01,az:-0.003,q:358.062,pressure: 99938,cameraCount:    19
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.017,ay:-0.006,az:-0.002,q:358.062,pressure: 99934,cameraCount:    20
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.019,ay:   0.0,az:-0.002,q: 358.0,pressure: 99940,cameraCount:    21
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.011,ay:-0.008,az: 0.003,q: 358.0,pressure: 99935,cameraCount:    22
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.019,ay:-0.004,az: 0.002,q: 358.0,pressure: 99938,cameraCount:    23
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: -0.01,ay: 0.006,az:-0.006,q: 358.0,pressure: 99932,cameraCount:    24
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.004,ay:-0.001,az: 0.002,q: 358.0,pressure: 99937,cameraCount:    25
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.013,ay:   0.0,az: 0.001,q: 358.0,pressure: 99934,cameraCount:    26
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.011,ay: 0.004,az:-0.007,q: 358.0,pressure: 99949,cameraCount:    27
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.008,ay:   0.0,az:-0.003,q: 358.0,pressure: 99937,cameraCount:    28
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:  0.01,ay:   0.0,az:-0.001,q: 358.0,pressure: 99940,cameraCount:    29
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.014,ay: 0.013,az:   0.0,q:358.062,pressure: 99934,cameraCount:    30
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:-0.002,az:   0.0,q:358.062,pressure: 99940,cameraCount:    31
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay: 0.001,az:-0.002,q:358.062,pressure: 99937,cameraCount:    32
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.002,az:   0.0,q:358.062,pressure: 99929,cameraCount:    33
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.002,ay:-0.002,az:-0.001,q:358.062,pressure: 99932,cameraCount:    34
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.003,ay:   0.0,az:-0.001,q:358.062,pressure: 99932,cameraCount:    35
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay: 0.001,az:-0.002,q:358.062,pressure: 99940,cameraCount:    36
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.001,az: 0.001,q:358.062,pressure: 99934,cameraCount:    37
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.003,ay:-0.001,az:   0.0,q:358.062,pressure: 99935,cameraCount:    38
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.004,ay:-0.003,az: 0.002,q:358.062,pressure: 99938,cameraCount:    39
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.003,ay:-0.002,az:-0.001,q:358.062,pressure: 99938,cameraCount:    40
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:-0.002,az:   0.0,q:358.062,pressure: 99940,cameraCount:    41
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.001,az: 0.001,q:358.062,pressure: 99946,cameraCount:    42
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:  0.01,ay:-0.008,az:-0.002,q:358.312,pressure: 99938,cameraCount:    43
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay: 0.001,az: 0.001,q:358.312,pressure: 99937,cameraCount:    44
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:-0.001,az:   0.0,q:358.312,pressure: 99940,cameraCount:    45
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay: 0.001,az:-0.001,q:358.312,pressure: 99929,cameraCount:    46
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:   0.0,az: 0.001,q:358.312,pressure: 99938,cameraCount:    47
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay: 0.001,az: 0.001,q:358.312,pressure: 99937,cameraCount:    48
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay: 0.004,az: 0.001,q:358.312,pressure: 99935,cameraCount:    49
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay:   0.0,az:-0.001,q:358.312,pressure: 99935,cameraCount:    50
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.001,az: 0.003,q:358.312,pressure: 99941,cameraCount:    51
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:-0.001,az: 0.002,q:358.312,pressure: 99941,cameraCount:    52
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:-0.002,az:-0.002,q:358.312,pressure: 99930,cameraCount:    53
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay: 0.002,az:   0.0,q:358.312,pressure: 99944,cameraCount:    54
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.006,az:-0.001,q:358.25,pressure: 99934,cameraCount:    55
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:   0.0,az:   0.0,q:358.25,pressure: 99937,cameraCount:    56
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.003,ay:-0.002,az:   0.0,q:358.25,pressure: 99940,cameraCount:    57
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:   0.0,az: 0.001,q:358.25,pressure: 99937,cameraCount:    58
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.002,ay:-0.002,az:-0.001,q:358.25,pressure: 99943,cameraCount:    59
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:-0.001,az:-0.001,q:358.25,pressure: 99935,cameraCount:    60
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay:-0.001,az:-0.001,q:358.25,pressure: 99948,cameraCount:    61
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.001,az:-0.001,q:358.25,pressure: 99948,cameraCount:    62
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:-0.001,az:   0.0,q:358.25,pressure: 99946,cameraCount:    63
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay: 0.001,az: 0.002,q:358.25,pressure: 99940,cameraCount:    64
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:-0.001,az:-0.001,q:358.25,pressure: 99941,cameraCount:    65
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:   0.0,az:-0.001,q:358.25,pressure: 99937,cameraCount:    66
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.002,ay: 0.001,az:-0.001,q:358.25,pressure: 99940,cameraCount:    67
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay:   0.0,az: 0.002,q:358.25,pressure: 99934,cameraCount:    68
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.002,az: 0.001,q:358.25,pressure: 99938,cameraCount:    69
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay: 0.002,az:   0.0,q:358.25,pressure: 99941,cameraCount:    70
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:   0.0,az:   0.0,q:358.25,pressure: 99940,cameraCount:    71
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:-0.002,az:-0.002,q:358.25,pressure: 99948,cameraCount:    72
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:   0.0,az:   0.0,q:358.25,pressure: 99951,cameraCount:    73
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.003,ay:-0.001,az: 0.001,q:358.25,pressure: 99938,cameraCount:    74
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.002,az:   0.0,q:358.25,pressure: 99946,cameraCount:    75
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.014,ay:-0.006,az:-0.002,q: 358.5,pressure: 99943,cameraCount:    76
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.002,az:   0.0,q: 358.5,pressure: 99935,cameraCount:    77
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.016,ay:   0.0,az:-0.002,q:358.812,pressure: 99938,cameraCount:    78
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.002,az:   0.0,q:358.812,pressure: 99938,cameraCount:    79
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.003,ay:   0.0,az: 0.001,q:358.812,pressure: 99943,cameraCount:    80
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:   0.0,az:   0.0,q:358.812,pressure: 99938,cameraCount:    81
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.001,az:-0.001,q:358.812,pressure: 99943,cameraCount:    82
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay: 0.001,az:-0.001,q:358.812,pressure: 99941,cameraCount:    83
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.002,ay: 0.002,az:   0.0,q:358.812,pressure: 99937,cameraCount:    84
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay:-0.002,az:   0.0,q:358.812,pressure: 99941,cameraCount:    85
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:   0.0,az: 0.001,q:358.812,pressure: 99940,cameraCount:    86
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay: 0.002,az:-0.002,q:358.812,pressure: 99941,cameraCount:    87
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.003,az: 0.002,q:358.812,pressure: 99940,cameraCount:    88
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:-0.001,az: 0.001,q:358.812,pressure: 99941,cameraCount:    89
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:  0.02,ay:-0.009,az: 0.009,q:358.875,pressure: 99940,cameraCount:    90
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:-0.001,az: 0.001,q:358.875,pressure: 99940,cameraCount:    91
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.003,ay: 0.001,az:   0.0,q:358.875,pressure: 99938,cameraCount:    92
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:-0.002,az:-0.001,q:358.875,pressure: 99938,cameraCount:    93
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.013,ay: -0.01,az:-0.006,q:358.875,pressure: 99935,cameraCount:    94
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:-0.002,az: 0.001,q:358.875,pressure: 99941,cameraCount:    95
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.001,az: 0.001,q:358.875,pressure: 99943,cameraCount:    96
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:   0.0,az:   0.0,q:358.875,pressure: 99940,cameraCount:    97
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:-0.001,az: 0.001,q:358.875,pressure: 99940,cameraCount:    98
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:-0.001,az:   0.0,q:358.875,pressure: 99941,cameraCount:    99
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.001,az:   0.0,q:358.875,pressure: 99937,cameraCount:   100
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:   0.0,az:-0.001,q:358.875,pressure: 99943,cameraCount:   101
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:-0.001,az:-0.002,q:358.875,pressure: 99941,cameraCount:   102
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:   0.0,az:   0.0,q:358.875,pressure: 99948,cameraCount:   103
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:   0.0,az: 0.001,q:358.875,pressure: 99948,cameraCount:   104
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:-0.002,az:-0.001,q:358.875,pressure: 99944,cameraCount:   105
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.002,ay: 0.003,az: 0.001,q:358.875,pressure: 99948,cameraCount:   106
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay: 0.001,az:   0.0,q:358.875,pressure: 99935,cameraCount:   107
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.002,az:   0.0,q:358.875,pressure: 99935,cameraCount:   108
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:-0.001,az:   0.0,q:358.875,pressure: 99937,cameraCount:   109
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.017,ay:-0.002,az: 0.001,q:358.875,pressure: 99941,cameraCount:   110
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.059,ay: 0.014,az: 0.026,q:358.875,pressure: 99944,cameraCount:   111
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay:  0.01,az: 0.002,q:358.875,pressure: 99938,cameraCount:   112
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:   0.0,az: 0.001,q:358.875,pressure: 99934,cameraCount:   113
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.001,az: 0.001,q:358.875,pressure: 99946,cameraCount:   114
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:   0.0,az:-0.001,q:358.875,pressure: 99941,cameraCount:   115
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.001,az:-0.001,q:358.875,pressure: 99941,cameraCount:   116
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.002,ay: 0.001,az: 0.002,q:358.875,pressure: 99944,cameraCount:   117
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:-0.003,az: 0.001,q:358.875,pressure: 99943,cameraCount:   118
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:   0.0,az: 0.002,q:358.875,pressure: 99944,cameraCount:   119
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:-0.001,az: 0.002,q:358.875,pressure: 99935,cameraCount:   120
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:   0.0,az:-0.001,q:358.875,pressure: 99937,cameraCount:   121
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay: 0.002,az:-0.002,q:358.875,pressure: 99944,cameraCount:   122
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.001,az:-0.002,q:358.875,pressure: 99934,cameraCount:   123
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay: 0.002,az: 0.001,q:358.875,pressure: 99944,cameraCount:   124
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay: 0.003,az: 0.002,q:358.875,pressure: 99941,cameraCount:   125
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:   0.0,az: 0.001,q:358.875,pressure: 99935,cameraCount:   126
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.002,ay:   0.0,az:-0.001,q:358.875,pressure: 99946,cameraCount:   127
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.002,az:-0.004,q:358.875,pressure: 99938,cameraCount:   128
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:-0.003,az:-0.003,q:358.875,pressure: 99941,cameraCount:   129
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.003,ay: 0.003,az:   0.0,q:358.875,pressure: 99935,cameraCount:   130
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.001,az: 0.002,q:358.875,pressure: 99946,cameraCount:   131
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:   0.0,az:-0.001,q:358.875,pressure: 99944,cameraCount:   132
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:-0.002,az:-0.002,q:358.875,pressure: 99938,cameraCount:   133
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.004,ay:   0.0,az: 0.001,q:358.812,pressure: 99937,cameraCount:   134
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:   0.0,az: 0.001,q:358.812,pressure: 99944,cameraCount:   135
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay: 0.002,az:   0.0,q:358.812,pressure: 99943,cameraCount:   136
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:-0.001,az:   0.0,q:358.812,pressure: 99937,cameraCount:   137
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay: 0.002,az:   0.0,q:358.812,pressure: 99940,cameraCount:   138
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.002,ay: 0.003,az: 0.003,q:358.688,pressure: 99924,cameraCount:   139
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.003,ay: 0.001,az: 0.001,q:358.562,pressure: 99938,cameraCount:   140
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.004,ay:-0.002,az: 0.001,q:358.562,pressure: 99937,cameraCount:   141
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.003,ay: 0.001,az:   0.0,q:358.562,pressure: 99938,cameraCount:   142
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:-0.002,az:   0.0,q:358.562,pressure: 99934,cameraCount:   143
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.002,ay:-0.002,az:-0.001,q:358.562,pressure: 99943,cameraCount:   144
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.004,ay:-0.001,az:-0.001,q:358.562,pressure: 99943,cameraCount:   145
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay: 0.002,az:   0.0,q:358.562,pressure: 99938,cameraCount:   146
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.001,az: 0.001,q:358.562,pressure: 99935,cameraCount:   147
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:   0.0,az:-0.001,q:358.562,pressure: 99944,cameraCount:   148
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.002,az:   0.0,q:358.562,pressure: 99938,cameraCount:   149
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:-0.001,az: 0.002,q:358.562,pressure: 99946,cameraCount:   150
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.003,ay: 0.001,az:   0.0,q:358.562,pressure: 99948,cameraCount:   151
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:-0.002,az:-0.002,q:358.562,pressure: 99937,cameraCount:   152
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:   0.0,az:-0.001,q:358.562,pressure: 99930,cameraCount:   153
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:-0.002,az:   0.0,q:358.562,pressure: 99943,cameraCount:   154
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay:-0.001,az: 0.001,q:358.562,pressure: 99949,cameraCount:   155
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:-0.001,az: 0.001,q:358.562,pressure: 99938,cameraCount:   156
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.001,az: 0.001,q:358.562,pressure: 99940,cameraCount:   157
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay:-0.002,az:   0.0,q:358.562,pressure: 99937,cameraCount:   158
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.001,az: 0.002,q:358.562,pressure: 99932,cameraCount:   159
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.003,ay: 0.004,az: 0.001,q:358.562,pressure: 99926,cameraCount:   160
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.006,ay:-0.001,az:-0.001,q:358.625,pressure: 99938,cameraCount:   161
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.003,ay:-0.002,az:-0.001,q:358.625,pressure: 99934,cameraCount:   162
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay:   0.0,az:   0.0,q:358.625,pressure: 99944,cameraCount:   163
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.003,ay:   0.0,az:   0.0,q:358.625,pressure: 99944,cameraCount:   164
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay:   0.0,az:-0.001,q:358.625,pressure: 99943,cameraCount:   165
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.001,az: 0.001,q:358.625,pressure: 99940,cameraCount:   166
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.001,az:   0.0,q:358.625,pressure: 99943,cameraCount:   167
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay: 0.001,az:   0.0,q:358.625,pressure: 99941,cameraCount:   168
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.018,ay:  0.01,az: 0.002,q:358.625,pressure: 99940,cameraCount:   169
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.042,ay: 0.007,az:-0.003,q:358.625,pressure: 99949,cameraCount:   170
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.004,ay: 0.001,az: 0.002,q:358.625,pressure: 99938,cameraCount:   171
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.007,ay:-0.002,az:-0.001,q:358.625,pressure: 99940,cameraCount:   172
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay: 0.001,az:   0.0,q:358.625,pressure: 99943,cameraCount:   173
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.003,ay:-0.001,az: 0.002,q:358.625,pressure: 99937,cameraCount:   174
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:  0.01,ay: 0.001,az: 0.001,q:358.625,pressure: 99937,cameraCount:   175
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.004,ay:-0.006,az:-0.002,q:358.375,pressure: 99935,cameraCount:   176
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.003,ay:-0.001,az:-0.001,q:358.125,pressure: 99938,cameraCount:   177
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay:   0.0,az:-0.002,q:358.125,pressure: 99937,cameraCount:   178
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.002,ay: 0.003,az: 0.002,q:358.125,pressure: 99940,cameraCount:   179
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay: 0.002,az: 0.001,q:358.125,pressure: 99941,cameraCount:   180
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: -0.01,ay:-0.002,az: 0.001,q:358.125,pressure: 99944,cameraCount:   181
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.008,ay: 0.008,az: 0.009,q:358.25,pressure: 99940,cameraCount:   182
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.007,ay: 0.002,az: 0.004,q:358.438,pressure: 99944,cameraCount:   183
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.009,ay: 0.001,az: 0.006,q:358.688,pressure: 99943,cameraCount:   184
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.006,ay:-0.002,az: 0.002,q:358.938,pressure: 99946,cameraCount:   185
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.016,ay:-0.002,az:-0.003,q:359.188,pressure: 99937,cameraCount:   186
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.011,ay:-0.001,az: 0.001,q:-1328.812,pressure: 99944,cameraCount:   187
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay: 0.001,az:   0.0,q:359.188,pressure: 99941,cameraCount:   188
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.003,ay: 0.001,az: 0.001,q:359.188,pressure: 99948,cameraCount:   189
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.007,ay: 0.002,az: 0.007,q:359.125,pressure: 99938,cameraCount:   190
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.028,ay: 0.003,az:   0.0,q:359.312,pressure: 99937,cameraCount:   191
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.006,ay:   0.0,az:-0.002,q:359.312,pressure: 99935,cameraCount:   192
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:  0.02,ay:-0.004,az:-0.002,q:359.312,pressure: 99943,cameraCount:   193
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.013,ay:-0.009,az:   0.0,q:359.312,pressure: 99948,cameraCount:   194
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: -0.01,ay: 0.004,az:-0.004,q:359.062,pressure: 99940,cameraCount:   195
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.003,ay: 0.001,az:-0.002,q:358.812,pressure: 99941,cameraCount:   196
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.018,ay: 0.007,az: 0.001,q:358.562,pressure: 99937,cameraCount:   197
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.027,ay:-0.011,az:-0.001,q:358.312,pressure: 99949,cameraCount:   198
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay: 0.002,az:   0.0,q:358.312,pressure: 99938,cameraCount:   199
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:   0.0,az:-0.001,q:358.312,pressure: 99934,cameraCount:   200
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.003,ay: 0.001,az: 0.002,q:358.312,pressure: 99943,cameraCount:   201
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.002,az:   0.0,q:358.312,pressure: 99937,cameraCount:   202
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:   0.0,az:   0.0,q:358.312,pressure: 99941,cameraCount:   203
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.019,ay:-0.003,az:-0.004,q:358.312,pressure: 99935,cameraCount:   204
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.003,az: 0.003,q:-1329.688,pressure: 99938,cameraCount:   205
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay: 0.002,az:   0.0,q:358.312,pressure: 99943,cameraCount:   206
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.009,ay:-0.006,az:-0.003,q:358.312,pressure: 99938,cameraCount:   207
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:  0.01,ay:-0.001,az:-0.001,q:358.312,pressure: 99948,cameraCount:   208
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.008,ay:-0.003,az: 0.001,q:358.312,pressure: 99941,cameraCount:   209
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.004,ay:-0.001,az: 0.003,q:358.312,pressure: 99938,cameraCount:   210
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.008,ay:-0.007,az:-0.003,q:358.312,pressure: 99941,cameraCount:   211
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.007,ay: 0.001,az: 0.002,q:358.312,pressure: 99941,cameraCount:   212
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.003,ay:-0.007,az:-0.002,q:358.312,pressure: 99943,cameraCount:   213
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay: 0.004,az: 0.003,q:358.312,pressure: 99948,cameraCount:   214
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.031,ay: 0.001,az:-0.002,q:357.938,pressure: 99944,cameraCount:   215
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.007,ay: 0.003,az:   0.0,q:357.938,pressure: 99948,cameraCount:   216
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.017,ay:-0.009,az:-0.001,q:357.938,pressure: 99949,cameraCount:   217
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:  0.02,ay:-0.006,az:-0.001,q:357.938,pressure: 99935,cameraCount:   218
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.007,ay:   0.0,az:   0.0,q:357.938,pressure: 99932,cameraCount:   219
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.007,ay: 0.008,az: 0.002,q:357.938,pressure: 99940,cameraCount:   220
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.038,ay:-0.007,az: 0.008,q:357.938,pressure: 99944,cameraCount:   221
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay: 0.002,az:-0.001,q:357.938,pressure: 99940,cameraCount:   222
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.008,az: 0.001,q:357.938,pressure: 99944,cameraCount:   223
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.008,ay: 0.006,az: 0.002,q:357.938,pressure: 99948,cameraCount:   224
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: -0.01,ay:-0.002,az:   0.0,q:357.938,pressure: 99937,cameraCount:   225
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.031,ay: 0.013,az:-0.006,q:357.938,pressure: 99941,cameraCount:   226
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.009,ay: 0.002,az:-0.002,q:357.938,pressure: 99944,cameraCount:   227
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.007,ay:-0.002,az:-0.001,q:357.938,pressure: 99940,cameraCount:   228
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:   0.0,az:   0.0,q:357.938,pressure: 99938,cameraCount:   229
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:-0.002,az: 0.002,q:357.938,pressure: 99944,cameraCount:   230
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay: 0.001,az:-0.003,q: 358.0,pressure: 99940,cameraCount:   231
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.001,az:-0.002,q: 358.0,pressure: 99937,cameraCount:   232
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.014,ay: 0.012,az: 0.001,q:357.938,pressure: 99940,cameraCount:   233
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.006,ay:  0.01,az:-0.002,q:357.938,pressure: 99943,cameraCount:   234
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.006,ay: 0.001,az:-0.002,q:357.938,pressure: 99949,cameraCount:   235
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.003,ay:-0.004,az:   0.0,q:357.938,pressure: 99952,cameraCount:   236
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.004,ay: 0.002,az:-0.002,q:357.938,pressure: 99952,cameraCount:   237
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.007,ay:-0.002,az:-0.002,q:357.938,pressure: 99946,cameraCount:   238
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.022,ay:  0.01,az: 0.004,q:357.938,pressure: 99935,cameraCount:   239
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.018,ay:-0.006,az: 0.001,q:357.938,pressure: 99949,cameraCount:   240
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay: 0.001,az: 0.002,q:357.938,pressure: 99946,cameraCount:   241
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.002,ay:   0.0,az:   0.0,q:357.938,pressure: 99935,cameraCount:   242
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.003,ay:-0.002,az:   0.0,q:357.938,pressure: 99949,cameraCount:   243
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.002,ay: 0.002,az: 0.002,q:357.938,pressure: 99944,cameraCount:   244
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.008,ay:-0.006,az:-0.001,q:357.938,pressure: 99941,cameraCount:   245
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.018,ay:-0.006,az:-0.001,q:357.938,pressure: 99946,cameraCount:   246
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:  0.01,ay:-0.002,az: 0.001,q:357.938,pressure: 99944,cameraCount:   247
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.011,ay: 0.002,az: 0.003,q:357.938,pressure: 99946,cameraCount:   248
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.003,ay:-0.001,az:   0.0,q:357.938,pressure: 99949,cameraCount:   249
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:-0.003,az:-0.001,q:357.938,pressure: 99941,cameraCount:   250
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.004,ay: 0.002,az: 0.002,q:357.938,pressure: 99943,cameraCount:   251
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.007,ay: 0.003,az: 0.002,q:357.938,pressure: 99944,cameraCount:   252
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.004,ay:-0.001,az: 0.002,q:357.938,pressure: 99943,cameraCount:   253
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay: 0.003,az: 0.006,q:357.938,pressure: 99937,cameraCount:   254
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.007,ay:-0.001,az: 0.003,q:357.938,pressure: 99935,cameraCount:   255
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.004,ay:-0.003,az:-0.002,q:357.938,pressure: 99941,cameraCount:   256
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.007,ay: -0.01,az:-0.003,q:357.938,pressure: 99944,cameraCount:   257
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay: 0.002,az: 0.004,q:357.938,pressure: 99937,cameraCount:   258
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.006,ay: 0.002,az: 0.002,q:357.938,pressure: 99946,cameraCount:   259
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.003,az: 0.001,q:357.938,pressure: 99941,cameraCount:   260
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay: 0.002,az: 0.006,q:357.938,pressure: 99946,cameraCount:   261
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.016,ay: 0.007,az:-0.003,q:357.938,pressure: 99937,cameraCount:   262
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.009,ay:-0.006,az:-0.002,q:357.938,pressure: 99946,cameraCount:   263
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.007,az:   0.0,q:357.938,pressure: 99938,cameraCount:   264
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.021,ay:-0.007,az:-0.003,q:357.938,pressure: 99940,cameraCount:   265
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.022,ay:   0.0,az: 0.003,q:357.938,pressure: 99944,cameraCount:   266
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.017,ay: 0.002,az:-0.002,q:357.938,pressure: 99946,cameraCount:   267
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.012,ay: 0.006,az: 0.007,q:357.938,pressure: 99944,cameraCount:   268
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.007,ay:-0.001,az: 0.002,q:357.938,pressure: 99949,cameraCount:   269
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.068,ay:-0.013,az:-0.018,q: 358.0,pressure: 99944,cameraCount:   270
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.026,ay:-0.029,az:-0.001,q:358.062,pressure: 99948,cameraCount:   271
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.012,ay: 0.001,az:   0.0,q:358.125,pressure: 99943,cameraCount:   272
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.066,ay: -0.02,az: 0.001,q: 358.0,pressure: 99951,cameraCount:   273
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.108,ay:   0.0,az: 0.014,q:356.938,pressure: 99935,cameraCount:   274
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.001,az:-0.002,q:357.062,pressure: 99941,cameraCount:   275
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.002,az:   0.0,q:357.062,pressure: 99941,cameraCount:   276
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.001,az:   0.0,q:357.062,pressure: 99946,cameraCount:   277
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:-0.001,az: 0.001,q:357.062,pressure: 99937,cameraCount:   278
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay: 0.001,az:-0.003,q:357.062,pressure: 99940,cameraCount:   279
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.001,az:   0.0,q:357.062,pressure: 99943,cameraCount:   280
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:   0.0,az: 0.001,q:357.062,pressure: 99940,cameraCount:   281
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.001,az: 0.002,q:357.062,pressure: 99949,cameraCount:   282
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:   0.0,az: 0.001,q:357.062,pressure: 99940,cameraCount:   283
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.001,az:   0.0,q:357.062,pressure: 99941,cameraCount:   284
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay: 0.003,az:   0.0,q:357.062,pressure: 99944,cameraCount:   285
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:   0.0,az: 0.002,q:357.062,pressure: 99940,cameraCount:   286
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:-0.001,az: 0.002,q:357.062,pressure: 99948,cameraCount:   287
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay: 0.001,az: 0.001,q:357.062,pressure: 99940,cameraCount:   288
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay: 0.001,az:-0.001,q:357.062,pressure: 99941,cameraCount:   289
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.001,az:   0.0,q:357.062,pressure: 99946,cameraCount:   290
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay: 0.002,az:-0.002,q:357.062,pressure: 99949,cameraCount:   291
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay: 0.002,az: 0.001,q:357.062,pressure: 99944,cameraCount:   292
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.001,az:-0.001,q:357.062,pressure: 99944,cameraCount:   293
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:   0.0,az:   0.0,q:357.062,pressure: 99944,cameraCount:   294
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay: 0.001,az: 0.001,q:357.062,pressure: 99943,cameraCount:   295
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay: 0.002,az:   0.0,q:357.062,pressure: 99938,cameraCount:   296
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay:   0.0,az:-0.004,q:357.062,pressure: 99943,cameraCount:   297
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:-0.001,az:   0.0,q:357.062,pressure: 99940,cameraCount:   298
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:   0.0,az: 0.001,q:357.062,pressure: 99948,cameraCount:   299
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.002,az:-0.001,q:357.062,pressure: 99941,cameraCount:   300
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay: 0.001,az:   0.0,q:357.062,pressure: 99940,cameraCount:   301
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.002,ay:-0.001,az:   0.0,q:357.062,pressure: 99943,cameraCount:   302
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:   0.0,az: 0.002,q:357.062,pressure: 99941,cameraCount:   303
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.001,az: 0.001,q:357.062,pressure: 99951,cameraCount:   304
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.003,az:   0.0,q:357.062,pressure: 99949,cameraCount:   305
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay: 0.003,az:   0.0,q:357.062,pressure: 99944,cameraCount:   306
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay:   0.0,az:-0.003,q:357.062,pressure: 99940,cameraCount:   307
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:   0.0,az:-0.001,q:357.062,pressure: 99935,cameraCount:   308
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay:   0.0,az:-0.001,q:357.062,pressure: 99944,cameraCount:   309
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay:   0.0,az:   0.0,q:357.062,pressure: 99941,cameraCount:   310
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:   0.0,az:-0.002,q:357.062,pressure: 99944,cameraCount:   311
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.001,az: 0.002,q:357.062,pressure: 99948,cameraCount:   312
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay: 0.001,az: 0.001,q:357.062,pressure: 99949,cameraCount:   313
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.001,az:   0.0,q:357.062,pressure: 99952,cameraCount:   314
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.001,az:   0.0,q:357.062,pressure: 99951,cameraCount:   315
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:   0.0,az: 0.003,q:357.062,pressure: 99951,cameraCount:   316
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:   0.0,az:   0.0,q:357.062,pressure: 99949,cameraCount:   317
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay: 0.002,az:   0.0,q:357.062,pressure: 99949,cameraCount:   318
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay:-0.001,az: 0.002,q:357.062,pressure: 99948,cameraCount:   319
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.001,az: 0.001,q:357.062,pressure: 99948,cameraCount:   320
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.003,az: 0.002,q:357.062,pressure: 99943,cameraCount:   321
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:-0.001,az: 0.002,q:357.062,pressure: 99946,cameraCount:   322
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.002,ay:-0.002,az:   0.0,q:357.062,pressure: 99951,cameraCount:   323
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.002,ay:-0.001,az: 0.001,q:357.062,pressure: 99952,cameraCount:   324
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay: 0.001,az: 0.001,q:357.062,pressure: 99943,cameraCount:   325
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay: 0.002,az:-0.001,q:357.062,pressure: 99949,cameraCount:   326
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:   0.0,az:   0.0,q:357.062,pressure: 99946,cameraCount:   327
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay: 0.001,az: 0.002,q:357.062,pressure: 99943,cameraCount:   328
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:   0.0,az:-0.001,q:357.062,pressure: 99948,cameraCount:   329
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.003,az:-0.001,q:357.062,pressure: 99941,cameraCount:   330
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.001,az:-0.001,q:357.062,pressure: 99948,cameraCount:   331
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:   0.0,az:   0.0,q:357.062,pressure: 99949,cameraCount:   332
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.002,az: 0.001,q:357.062,pressure: 99943,cameraCount:   333
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.002,ay:-0.001,az:   0.0,q:357.062,pressure: 99951,cameraCount:   334
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.003,az:   0.0,q:357.062,pressure: 99948,cameraCount:   335
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.001,az:   0.0,q:357.062,pressure: 99946,cameraCount:   336
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay:   0.0,az:-0.001,q:357.062,pressure: 99948,cameraCount:   337
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.001,az: 0.002,q:357.062,pressure: 99946,cameraCount:   338
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.003,ay:   0.0,az:   0.0,q:357.062,pressure: 99948,cameraCount:   339
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.003,ay: 0.002,az:-0.002,q:357.062,pressure: 99944,cameraCount:   340
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:-0.001,az:   0.0,q:357.062,pressure: 99954,cameraCount:   341
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:-0.002,az:   0.0,q:357.062,pressure: 99943,cameraCount:   342
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.002,az: 0.002,q:357.062,pressure: 99946,cameraCount:   343
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:   0.0,az: 0.001,q:357.062,pressure: 99941,cameraCount:   344
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.001,az:-0.001,q:357.062,pressure: 99944,cameraCount:   345
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay:-0.001,az: 0.002,q:357.062,pressure: 99944,cameraCount:   346
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:-0.001,az:   0.0,q:357.062,pressure: 99949,cameraCount:   347
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:-0.001,az:-0.001,q:357.062,pressure: 99944,cameraCount:   348
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay:-0.002,az: 0.001,q:357.062,pressure: 99946,cameraCount:   349
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:-0.002,az:-0.002,q:357.062,pressure: 99938,cameraCount:   350
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:   0.0,az:   0.0,q:357.062,pressure: 99941,cameraCount:   351
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.001,az: 0.002,q:357.062,pressure: 99949,cameraCount:   352
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.032,ay: 0.007,az:-0.009,q:357.062,pressure: 99948,cameraCount:   353
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay:-0.001,az: 0.002,q:357.062,pressure: 99940,cameraCount:   354
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.001,az:-0.001,q:357.062,pressure: 99948,cameraCount:   355
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.002,ay:-0.001,az: 0.001,q:357.062,pressure: 99944,cameraCount:   356
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay:-0.001,az:-0.001,q:357.062,pressure: 99949,cameraCount:   357
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:-0.001,az: 0.003,q:357.062,pressure: 99948,cameraCount:   358
+0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:   0.0,az:   0.0,q:357.062,pressure: 99943,cameraCount:   359
+0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.018,ay: 0.004,az: 0.004,q:357.062,pressure: 99948,cameraCount:   360
