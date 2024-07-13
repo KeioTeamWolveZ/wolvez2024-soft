@@ -58,10 +58,12 @@ const.PARA_ESCAPE_TIME_THRE = 10
 
 const.LOWER_ORANGE = np.array([0, 220, 158])
 const.UPPER_ORANGE = np.array([55, 255, 255])
+const.LOWER_BLUE = np.array([105, 56, 0])
+const.UPPER_BLUE = np.array([150, 255, 255])
+
 const.MAX_CONTOUR_THRESHOLD = 1000
 
 const.SEPARATION_TIME_THRE = 5 #焼き切り時間
-# const.ARM_CARIBRATION_THRE = 5 #アームのマーカーが認識できるまで繰り返す時間
 const.LANDING_MOTOR_TIME_THRE = 10 #分離シートから離れるためにモータを回転させる時間
 # const.RELEASING_MOTOR_TIME_THRE = 0.7 #放出と放出の間にモータを回転させる時間
 # const.TURNING_MOTOR_TIME_THRE = 1.5 #turning time after the end of second-releasing
@@ -72,7 +74,6 @@ const.LANDING_MOTOR_TIME_THRE = 10 #分離シートから離れるためにモ�
 const.AVOID_COLOR_THRE = 20 #色認識されなかった合計回数の閾値
 
 # const.CONNECTED_HEIGHT_THRE = 700 #アームを上げた場合に接続できていることを確認する時の色の高さの閾値
-
 const.EARTH_RADIUS = 6378.137 # [km]
 
 # # Stack

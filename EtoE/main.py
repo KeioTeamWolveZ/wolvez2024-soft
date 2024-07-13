@@ -4,11 +4,11 @@ import time
 import RPi.GPIO as GPIO
 
 
-start_state = 1
+start_state = 6
 
 end_state = 8
 
-try:
+try:	
 	cansat  = Cansat(start_state)
 	cansat.sensor_setup()
 	while True:
