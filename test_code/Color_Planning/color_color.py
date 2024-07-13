@@ -49,9 +49,10 @@ TorF = True
 # ar = Artools()
 
 # ==============================オレンジ色検出のためのHSV値の設定==============================
-lower_blue = np.array([105, 98, 0])
-upper_blue = np.array([175, 254, 254])
-lower_red = np.array([142, 49, 0])
+lower_blue = np.array([90, 40, 26])
+upper_blue = np.array([135, 250, 250])
+
+lower_red = np.array([165, 15, 10])
 upper_red = np.array([179, 250, 250])
 # ==============================Tkinter GUIの設定==============================
 def update_values(lower_orange, upper_orange):
@@ -123,7 +124,7 @@ def main_loop():
         contours_red, _ = cv2.findContours(mask_red, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         if contours_red:
             max_contour = max(contours_red, key=cv2.contourArea)
-            if cv2.contourArea(max_contour) > MAX_CONTOUR_THRESHOLD:  # 面積が1000より大きい場合のみ描画
+            if cv2.contourArea(max_contour) > MAX_CONTOUR_THRESHOLD//10:  # 面積が1000より大きい場合のみ描画
                 cv2.drawContours(frame, [max_contour], -1, (0, 255, 0), 3)
                 M = cv2.moments(max_contour)
                 if M["m00"] != 0:
@@ -142,19 +143,7 @@ def main_loop():
                             print("The red center is outside the blue convex hull.")
                     except :
                         pass
-
-
-                    # all_inside = True
-                    # if hull is not None:
-                    #     for point in max_contour:
-                    #         if cv2.pointPolygonTest(hull, (int(point[0][0]),int(point[0][1])), False) < 0:
-                    #             all_inside = False
-                    #             break
-                        
-                    #     if all_inside:
-                    #         print("\033[33mThe entire red region is inside the blue convex hull.\033[0m")
-                    #     else:
-                    #         print("The entire red region is not inside the blue convex hull.")
+                    
         # 結果の表示
         mask_blue = cv2.resize(mask_blue, None, fx=0.5, fy=0.5)
         frame = cv2.resize(frame, None, fx=0.5, fy=0.5)
