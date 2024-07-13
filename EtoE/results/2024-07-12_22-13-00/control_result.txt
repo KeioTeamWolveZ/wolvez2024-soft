@@ -1,8 +1,0 @@
-0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay: 0.001,az: 0.002,q:   0.0,pressure: 99928,cameraCount:     0
-0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.004,ay: 0.003,az: 0.001,q:   0.0,pressure: 99932,cameraCount:     1
-0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay: 0.001,az:-0.001,q:   0.0,pressure: 99929,cameraCount:     2
-0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.001,ay: 0.001,az: 0.002,q:   0.0,pressure: 99935,cameraCount:     3
-0,state:5,Time:0,Lat:     0,Lng:     0,ax: 0.001,ay:   0.0,az:-0.001,q:   0.0,pressure: 99932,cameraCount:     4
-0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay: 0.001,az:   0.0,q:   0.0,pressure: 99932,cameraCount:     5
-0,state:5,Time:0,Lat:     0,Lng:     0,ax:-0.002,ay: 0.001,az:-0.001,q:   0.0,pressure: 99924,cameraCount:     6
-0,state:5,Time:0,Lat:     0,Lng:     0,ax:   0.0,ay:   0.0,az:-0.001,q:   0.0,pressure: 99934,cameraCount:     7

@@ -62,8 +62,8 @@ class Cansat():
 		# ~ self.MotorL = motor(ct.const.RIGHT_MOTOR_IN1_PIN,ct.const.RIGHT_MOTOR_IN2_PIN,ct.const.RIGHT_MOTOR_VREF_PIN)
 		# ~ self.MotorR = motor(ct.const.LEFT_MOTOR_IN1_PIN,ct.const.LEFT_MOTOR_IN2_PIN, ct.const.LEFT_MOTOR_VREF_PIN)
 		GPIO.setwarnings(False)
-		self.motor1 = motor()
-		self.motor2 = motor(dir = -1)
+		self.motor1 = motor(dir = -1)
+		self.motor2 = motor()
 		self.servo = motor()
 		self.servo.set_id(2)
 		# =============================================== カメラ =============================================== 
@@ -275,6 +275,8 @@ class Cansat():
 			self.running()
 		elif self.state == 8:
 			self.finish()
+		elif self.state == 99:
+			self.motor_test()
 		else:
 			self.state = self.laststate #どこにも引っかからない場合何かがおかしいのでlaststateに戻してあげる
 	
@@ -372,15 +374,19 @@ class Cansat():
 		print("'\033[44m'","2.landing",'\033[0m')
 		trigger = self.judge_arrival(self.landtime, self.ax, self.ay, self.az, self.pressure)
 		if trigger:
+			# para separation
+			time.sleep(3)
+			self.separation(ct.const.SEPARATION_PARA)
+			# kaiten
 			cX_right = []
 			cX_left = []
 			# 右を向くコード
 			# ??????????????
 			for i in range(5):
-				# ~ self.cameraCount += 1
+				self.cameraCount += 1
 				self.frame = self.picam2.capture_array()#0,self.results_img_dir+f'/{self.cameraCount}')
 				self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)	
-				cv2.imwrite(self.results_img_dir+f'/{self.cameraCount}.jpg',self.frame2)
+				cv2.imwrite(self.results_img_dir+f'/mission_{self.cameraCount}.jpg',self.frame2)
 				# 指定色のマスクを作成
 				mask_orange = self.color.mask_color(self.frame,ct.const.LOWER_ORANGE,ct.const.UPPER_ORANGE)
 				# 輪郭を抽出して最大の面積を算出し、線で囲む
@@ -389,10 +395,10 @@ class Cansat():
 			# 左を向く
 			# ??????????????
 			for i in range(5):
-				# ~ self.cameraCount += 1
+				self.cameraCount += 1
 				self.frame = self.picam2.capture_array()#0,self.results_img_dir+f'/{self.cameraCount}')
 				self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
-				cv2.imwrite(self.results_img_dir+f'/{self.cameraCount}.jpg',self.frame2)
+				cv2.imwrite(self.results_img_dir+f'/mission_{self.cameraCount}.jpg',self.frame2)
 				# 指定色のマスクを作成
 				mask_orange = self.color.mask_color(self.frame,ct.const.LOWER_ORANGE,ct.const.UPPER_ORANGE)
 				# 輪郭を抽出して最大の面積を算出し、線で囲む
@@ -400,7 +406,7 @@ class Cansat():
 				cX_left.append(cX)
 			# カメラ回転機構の正常動作の判定
 			try :         
-				if abs(np.array(cX_right).mean() - np.array(cX_right).mean()) < ct.const.CAMERA_ROTATION_THRE:
+				if abs(np.array(cX_right).mean() - np.array(cX_left).mean()) > ct.const.CAMERA_ROTATION_THRE:
 					print("\033[33m","MISSION : ","\033[33m", "camera rotation success!")
 					# mission log
 					# ?????????????????
@@ -502,6 +508,7 @@ class Cansat():
 				print("==============finish================")
 		else: # パラシュートが見えているとき -> 回避
 			self.escapeTime = 0
+			print("\033[43m", "=====orange=====","\033[0m")
 			print(cX > width/2)
 			if cX > width/2:
 				print("---motor right---")
@@ -524,7 +531,7 @@ class Cansat():
 		
 	def first_releasing(self): # state = 4
 		print("'\033[44m'","4.first_releasing",'\033[0m')
-		# self.separation()
+		self.separation(ct.const.SEPARATION_MOD1)
 		# 焼き切り放出
 		time.sleep(5)
 		self.state = 5
@@ -779,6 +786,7 @@ class Cansat():
 
 			"""
 			print("'\033[44m'","5-3.moving_release_position",'\033[0m')
+			self.separation(ct.const.SEPARATION_MOD2)
 			time.sleep(5)
 			self.state = 6
 			pass
@@ -1057,10 +1065,10 @@ class Cansat():
 	def separation(self,pin):
 		GPIO.setup(pin,GPIO.OUT) #焼き切り用のピンの設定tv 
 		GPIO.output(pin,0) #焼き切りが危ないのでlowにしておく
-		GPIO.output(pin,1) #電圧をHIGHにして焼き切りを行う
-		time.sleep(10) #継続時間を指定
+		# ~ GPIO.output(pin,1) #電圧をHIGHにして焼き切りを行う
+		time.sleep(6) #継続時間を指定
 		GPIO.output(pin,0) #電圧をLOWにして焼き切りを終了する
-		print("Separation done")
+		print("\n\n\==================n\nSeparation done\n\n==================\n\n")
 	
 	def running(self): # state = 7
 		dlon = self.goallon - self.lon
@@ -1160,6 +1168,32 @@ class Cansat():
 		cv2.destroyAllWindows()
 		GPIO.cleanup()
 		pass
+		
+	def motor_test(self):
+		try:
+		    print("motor run") 
+		    self.motor1.go(70)
+		    self.motor2.go(70)
+		#     Motor1.back(80)
+		#     Motor2.back(80)
+		#     time.sleep(0.5)
+		 #   Motor2.back(80)
+		    #Motor2.back(90)
+		#     time.sleep(1.08)
+		    time.sleep(1.5)
+
+		    #Motor.back(100)
+		    #time.sleep(3)
+		    print("motor stop")
+		    self.motor1.stop()
+		    self.motor2.stop()
+		    time.sleep(1)
+		except KeyboardInterrupt:
+		    self.motor1.stop()
+		    self.motor2.stop()
+		    time.sleep(1)
+		    GPIO.cleanup()
+    
 	
 			
 	

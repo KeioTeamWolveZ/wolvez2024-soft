@@ -52,8 +52,8 @@ elif int(camera) == 2:
     lens = 5.5
 # ==================================motor setting==================================
 GPIO.setwarnings(False)
-motor1 = motor.motor(6,5,13)
-motor2 = motor.motor(20,16,12,-1)
+motor1 = motor.motor(dir=-1)
+motor2 = motor.motor()
 go_value = 70
 # ====================================定数の定義====================================
 VEC_GOAL = [0.0,0.1968730025228114,0.3]
