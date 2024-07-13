@@ -143,18 +143,6 @@ def main_loop():
                     except :
                         pass
 
-
-                    # all_inside = True
-                    # if hull is not None:
-                    #     for point in max_contour:
-                    #         if cv2.pointPolygonTest(hull, (int(point[0][0]),int(point[0][1])), False) < 0:
-                    #             all_inside = False
-                    #             break
-                        
-                    #     if all_inside:
-                    #         print("\033[33mThe entire red region is inside the blue convex hull.\033[0m")
-                    #     else:
-                    #         print("The entire red region is not inside the blue convex hull.")
         # 結果の表示
         mask_blue = cv2.resize(mask_blue, None, fx=0.5, fy=0.5)
         frame = cv2.resize(frame, None, fx=0.5, fy=0.5)
