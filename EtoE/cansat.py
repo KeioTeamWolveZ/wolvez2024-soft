@@ -141,6 +141,8 @@ class Cansat():
 		# AR
 		self.ultra_count = 0
 		self.reject_count = 0 # 拒否された回数をカウントするための変数
+		# 評価
+		self.judge_cnt = 0
 		# =============================================== bool =============================================== 
 		self.time_tf = False
 		self.acc_tf = False
@@ -514,18 +516,11 @@ class Cansat():
 				print("---motor right---")
 				self.motor1.go(0)
 				self.motor2.go(motor_tr_vref)
-				# time.sleep(0.7)
-				# self.motor1.stop()
-				# self.motor2.stop()
 				self.stuck_detection()
 			else:
 				print("---motor left---")
 				self.motor1.go(motor_tr_vref)
 				self.motor2.go(0)
-				# time.sleep(0.7)
-				# self.motor1.stop()
-				# self.motor2.stop()
-				# 回避しながらmotor.go()
 				# stuck検知
 				self.stuck_detection()
 		
@@ -875,29 +870,29 @@ class Cansat():
 								if distance_of_marker >= self.closing_threshold_2 + self.CLOSING_RANGE_THRE_2:
 									if tvec[0] >= 0.05:
 										print("---右に曲がります---")
-										self.motor_control(70,60,0.5)
+										self.motor_control(70,60,0.3)
 									
 										
 									elif 0.05 > tvec[0] > -0.05:
 										go_ahead_gain = (distance_of_marker-self.closing_threshold_2) / self.closing_threshold_2
 										print("---motor GO AHEAD---")
-										self.motor_control(40+60*go_ahead_gain,40+60*go_ahead_gain,0.5)
+										self.motor_control(40+60*go_ahead_gain,40+60*go_ahead_gain,0.3)
 									
 									
 									else:
 										print("---左に曲がります---")
-										self.motor_control(60,70,0.5)
+										self.motor_control(60,70,0.3)
 										
 										
 
 								elif distance_of_marker >= self.closing_threshold_2:
 									if tvec[0] >= 0.03:
 										print("---時計周り---")
-										self.motor_control(45,-45,0.5)
+										self.motor_control(45,-45,0.3)
 								
 									elif tvec[0] <= -0.03:
 										print("---反時計周り---")
-										self.motor_control(-45,45,0.5)
+										self.motor_control(-45,45,0.3)
 									
 									else:
 										print("'\033[32m'---perfect REACHED 2---'\033[0m'")
@@ -911,27 +906,27 @@ class Cansat():
 								elif self.closing_threshold_2 >= distance_of_marker >= self.closing_threshold_2 - self.CLOSING_RANGE_THRE_2:
 									if tvec[0] >= 0.03:
 										print("---back 時計周り---")
-										self.motor_control(-35,-45,0.5)
+										self.motor_control(-35,-45,0.3)
 								
 									elif tvec[0] <= -0.03:
 										print("---back 反時計周り---")
-										self.motor_control(-45,-35,0.5)
+										self.motor_control(-45,-35,0.3)
 									
 									else:
 										print("---back---")
-										self.motor_control(-35,-35,0.5)
+										self.motor_control(-35,-35,0.3)
 								
 								elif distance_of_marker <= self.closing_threshold_2 - self.CLOSING_RANGE_THRE_2:
 									if -50 <= angle_of_marker <= 0: #ARマーカがやや左から正面にある場合
 										print("時計周り")
-										self.motor_control(70,-70,0.3)
+										self.motor_control(70,-70,0.2)
 										yunosu_pos = "Left"
 										last_pos = "Plan_B"
 									
 									
 									elif 0 <= angle_of_marker <= 50: #ARマーカがやや右から正面にある場合
 										print("反時計周り")
-										self.motor_control(-70,70,0.3)
+										self.motor_control(-70,70,0.2)
 										yunosu_pos = "Right"
 										last_pos = "Plan_B"
 								
@@ -946,15 +941,6 @@ class Cansat():
 
 						distance, angle = self.ar.Correct(tvec,self.VEC_GOAL)
 						polar_exchange = self.ar.polar_change(tvec)
-						# print("kabuto_function:",distance,angle)
-						# print("yunosu_function:",polar_exchange)
-						change_lens = -17.2*polar_exchange[0]+9.84
-						if change_lens < 3:
-							lens = 3
-						elif change_lens > 10:
-							lens = 10.5
-						else:
-							lens = change_lens
 							
 
 
@@ -1018,8 +1004,59 @@ class Cansat():
 
 			"""
 			print("'\033[44m'","6-2.judgement",'\033[0m')
-			time.sleep(3)
-			self.state = 7
+			self.cameraCount += 1
+			self.frame = self.picam2.capture_array()
+			self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
+			cv2.imwrite(self.results_img_dir+f'/mission_{self.cameraCount}.jpg',self.frame2)
+			height = self.frame2.shape[0]
+			width = self.frame2.shape[1]
+			
+			if self.judge_cnt < 5:
+				if self.frame2 is not None:
+					# オレンジ色の検出
+					lower_blue = np.array([90, 40, 26])
+					upper_blue = np.array([135, 250, 250])
+					lower_red = np.array([165, 15, 10])
+					upper_red = np.array([179, 250, 250])
+
+					hsv = cv2.cvtColor(self.frame2, cv2.COLOR_BGR2HSV)
+					mask_blue = cv2.inRange(hsv, lower_blue, upper_blue)
+					mask_red = cv2.inRange(hsv, lower_red, upper_red)
+					# 形態学的処理（膨張と収縮）を追加
+					kernel = np.ones((10,10), np.uint8)
+					mask_blue = cv2.morphologyEx(mask_blue, cv2.MORPH_OPEN, kernel)
+					mask_blue = cv2.morphologyEx(mask_blue, cv2.MORPH_CLOSE, kernel)
+					mask_red = cv2.morphologyEx(mask_red, cv2.MORPH_OPEN, kernel)
+					mask_red = cv2.morphologyEx(mask_red, cv2.MORPH_CLOSE, kernel)
+
+					# 輪郭を抽出して最大の面積を算出し、線で囲む
+					contours_blue, _ = cv2.findContours(mask_blue, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+					if contours_blue:
+						max_contour = max(contours_blue, key=cv2.contourArea)
+						hull = cv2.convexHull(max_contour)
+
+					contours_red, _ = cv2.findContours(mask_red, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+					if contours_red:
+						max_contour = max(contours_red, key=cv2.contourArea)
+						if cv2.contourArea(max_contour) > ct.const.MAX_CONTOUR_THRESHOLD//10:  # 面積が1000より大きい場合のみ描画
+							M = cv2.moments(max_contour)
+							if M["m00"] != 0:
+								cX = int(M["m10"] / M["m00"])
+								cY = int(M["m01"] / M["m00"])
+
+								try:
+									if cv2.pointPolygonTest(hull, (cX, cY), False) >= 0:
+										print("\033[33m~~~ INSIDE ~~~\033[0m")
+									else:
+										print("\033[33m~~~ OUTSIDE ~~~\033[0m")
+								except :
+									pass
+				self.motor_control(-50,-50,0.5)
+				time.sleep(1)
+				self.judge_cnt += 1
+			else:
+				time.sleep(3)
+				self.state = 7
 			pass
 
 	def stuck_detection(self):
