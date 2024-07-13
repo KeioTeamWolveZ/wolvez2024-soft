@@ -143,7 +143,7 @@ def main_loop():
                             print("The red center is outside the blue convex hull.")
                     except :
                         pass
-                    
+
         # 結果の表示
         mask_blue = cv2.resize(mask_blue, None, fx=0.5, fy=0.5)
         frame = cv2.resize(frame, None, fx=0.5, fy=0.5)
