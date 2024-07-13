@@ -68,7 +68,7 @@ class Cansat():
 		self.servo.set_id(2)
 		# =============================================== カメラ =============================================== 
 		self.picam2 = Picamera2()
-		size = (1100, 1800)
+		size = (1600, 2400)
 		config = self.picam2.create_preview_configuration(
 		main={"format": 'XRGB8888', "size": size})
 		self.picam2.align_configuration(config)
@@ -344,7 +344,7 @@ class Cansat():
 			if time.time() - self.preparingTime > ct.const.PREPARING_TIME_THRE:
 				self.startlon=np.mean(self.startgps_lon)
 				self.startlat=np.mean(self.startgps_lat)
-				self.state = 1
+				# ~ self.state = 1
 				self.laststate = 1
 		time.sleep(0.1)
 		self.RED_LED.led_off()

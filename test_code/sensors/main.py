@@ -41,8 +41,8 @@ if __name__ == '__main__':
     GPIO.setwarnings(False)
     MotorR = motor.motor(6,5,13)
     MotorL = motor.motor(20,16,12)
-    MotorR.go(80)
-    MotorL.back(80)
+    # ~ MotorR.go(80)
+    # ~ MotorL.back(80)
     
     lora_device = "/dev/ttyAMA1"  # ES920LRデバイス名 (UART2) 
     channel = 15
