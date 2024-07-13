@@ -1,1 +1,0 @@
-0,state:5,Time:10:05:56,Lat:0.00000000,Lng:-0.00000000,ax:-0.002,ay:-0.001,az: 0.004,q:   0.0,pressure: 99934,cameraCount:     0

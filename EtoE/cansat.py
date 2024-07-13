@@ -20,6 +20,7 @@ from Wolvez2024_now.led import led
 from Wolvez2024_now.gps import GPS
 from Wolvez2024_now.bno055 import BNO055
 from Wolvez2024_now.bmp import BMP
+from Wolvez2024_now.lora import lora
 from Wolvez2024_now.motor_pico import motor as motor
 from Wolvez2024_now.Color_tools import Color_tools
 from Wolvez2024_now.Ar_tools import Artools
@@ -50,7 +51,7 @@ class Cansat():
 		
 		# ============================================== constant ============================================== 
 		
-		self.TIME_THRESHOLD = 60 # ct.const.DROPPING_TIME_THRE
+		self.TIME_THRESHOLD = 10 # ct.const.DROPPING_TIME_THRE
 		self.DROPPING_ACC_THRE = 0.005 # ct.const.DROPPING_ACC_THRE
 		self.DROPPING_PRESS_THRE = 99887 # ct.const.DROPPING_PRESS_THRE
 		self.DROPPING_ACC_COUNT_THRE = 20 # ct.const.DROPPING_ACC_COUNT_THRE
@@ -61,8 +62,10 @@ class Cansat():
 		# ~ self.MotorL = motor(ct.const.RIGHT_MOTOR_IN1_PIN,ct.const.RIGHT_MOTOR_IN2_PIN,ct.const.RIGHT_MOTOR_VREF_PIN)
 		# ~ self.MotorR = motor(ct.const.LEFT_MOTOR_IN1_PIN,ct.const.LEFT_MOTOR_IN2_PIN, ct.const.LEFT_MOTOR_VREF_PIN)
 		GPIO.setwarnings(False)
-		self.motor1 = motor(6,5,13)
-		self.motor2 = motor(20,16,12,-1)
+		self.motor1 = motor()
+		self.motor2 = motor(dir = -1)
+		self.servo = motor()
+		self.servo.set_id(2)
 		# =============================================== カメラ =============================================== 
 		self.picam2 = Picamera2()
 		size = (1100, 1800)
@@ -98,6 +101,7 @@ class Cansat():
 		self.bno055 = BNO055() #
 		self.bmp = BMP() #
 		self.color = Color_tools(ct.const.LOWER_ORANGE,ct.const.LOWER_ORANGE)
+		self.lora = lora()
 		
 		# ============================================ ステート管理 ============================================ 
 		self.timer = 0 # 
@@ -108,14 +112,14 @@ class Cansat():
 		self.startTime = str(datetime.now())[:19].replace(" ","_").replace(":","-") #
 		self.stuckTime = 0
 		self.releasing_state = 1
+		self.closing_state = 1
     
-
-		
 		# =============================================== 時間記録 =============================================== 
 		self.preparingTime = 0 #
 		self.flyingTime = 0 #
 		self.landtime = 0
 		self.escapeTime = 0
+		self.runningTime = 0
 		
 		# =============================================== カウンタ =============================================== 
 		# センサ用
@@ -173,6 +177,8 @@ class Cansat():
 		self.yunosu_pos = "Left"
 		self.last_pos = "Plan_A"
 		self.mkdir()
+
+		self.nowangle = 90  # サーボモータの角度
 		
 	def mkdir(self):
 		"""
@@ -222,18 +228,17 @@ class Cansat():
 	    if self.state == 3:
 		    mission_log = mission_log + ","\
 		    + "Para_distancing:" + str(self.distancing_finish) # パラから距離を取る
-	    # if self.state == 4:
-	    #     mission_log = mission_log + ","\
-	    #         + "Releasing_01:"  + str(self.releasing_01) # 電池モジュール焼き切り
-	    #         + ","　+ "Releasing_01:"  + str(self.releasing_01) # 電池モジュール焼き切り
-	    # if self.state == 5:
-	    #     mission_log = mission_log + ","\
-	    #         + "Releasing_02:"  + str(self.releasing_02) # 電力消費モジュール焼き切り
-	    # if self.state == 6:
-	    #     mission_log = mission_log + ","\
-	    #         + "ConnectingState:" + str(self.connecting_state) + ","\
-	    #         + "Done-Approach:" + str(self.done_approach) + ","\
-	    #         + "Done-Connect:" + str(self.connected)
+	    if self.state == 4:
+	        mission_log = mission_log + ","\
+	            + "Releasing_01:"  + str(self.releasing_01) # 電池モジュール焼き切り
+	    if self.state == 5:
+	        mission_log = mission_log + ","\
+	            + "Releasing_02:"  + str(self.releasing_02) # 電力消費モジュール焼き切り
+	    if self.state == 6:
+	        mission_log = mission_log + ","\
+	            + "ConnectingState:" + str(self.connecting_state) + ","\
+	            + "Done-Approach:" + str(self.done_approach) + ","\
+	            + "Done-Connect:" + str(self.connected)
 
 	    with open(f'results/{self.startTime}/mission_log.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
 		    test.write(mission_log + '\n')
@@ -259,16 +264,15 @@ class Cansat():
 			self.para_escaping()
 			pass
 		elif self.state == 4:
+			self.first_releasing()
 			pass
 		elif self.state == 5:
 			self.moving_release_position()
 		elif self.state == 6:
-			print("\033[32m",6,"\033[0m")
+			self.judgement()
 		elif self.state == 7:
-			print("\033[32m",7,"\033[0m")
 			self.running()
 		elif self.state == 8:
-			print("\033[32m",8,"\033[0m")
 			self.finish()
 		else:
 			self.state = self.laststate #どこにも引っかからない場合何かがおかしいのでlaststateに戻してあげる
@@ -278,7 +282,7 @@ class Cansat():
 		self.gps.setupGps()
 		self.bno055.setupBno()
 		self.bno055.bnoInitial()
-		#self.lora.sendDevice.setup_lora()
+		self.lora.sendDevice.setup_lora()
 		#self.arm.setup()
 		if self.bno055.begin() is not True:
 			print("Error initializing device")
@@ -301,7 +305,15 @@ class Cansat():
 		self.lon = round(float(self.gps.Lon),5)
 		
 		self.writeData()
+		if not self.state == 1: #preparingのときは電波を発しない
+			self.sendLoRa()
 		pass
+
+	def sendLoRa(self): #通信モジュールの送信を行う関数
+		datalog = str(self.state)+ ","\
+            + str(round(self.lat,5)) + ","\
+            + str(round(self.lon,5))
+		self.lora.sendData(datalog) #データを送信
 	
 	def preparing(self): # state = 0
 		self.img = self.picam2.capture_array()#0,self.results_img_dir+f'/{self.cameraCount}')
@@ -367,6 +379,7 @@ class Cansat():
 				# ~ self.cameraCount += 1
 				self.frame = self.picam2.capture_array()#0,self.results_img_dir+f'/{self.cameraCount}')
 				self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)	
+				cv2.imwrite(self.results_img_dir+f'/{self.cameraCount}.jpg',self.frame2)
 				# 指定色のマスクを作成
 				mask_orange = self.color.mask_color(self.frame,ct.const.LOWER_ORANGE,ct.const.UPPER_ORANGE)
 				# 輪郭を抽出して最大の面積を算出し、線で囲む
@@ -378,6 +391,7 @@ class Cansat():
 				# ~ self.cameraCount += 1
 				self.frame = self.picam2.capture_array()#0,self.results_img_dir+f'/{self.cameraCount}')
 				self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
+				cv2.imwrite(self.results_img_dir+f'/{self.cameraCount}.jpg',self.frame2)
 				# 指定色のマスクを作成
 				mask_orange = self.color.mask_color(self.frame,ct.const.LOWER_ORANGE,ct.const.UPPER_ORANGE)
 				# 輪郭を抽出して最大の面積を算出し、線で囲む
@@ -403,7 +417,7 @@ class Cansat():
 	        戻り値：着陸判定（着地：True,未着陸：False）
 	        """
 	        # 時間の判定
-	        if time.time() - t > 60: # TIME_THRESHOLD
+	        if time.time() - t > self.TIME_THRESHOLD: # TIME_THRESHOLD
 	            self.time_tf =True
 	        else:
 	            self.time_tf = False
@@ -427,7 +441,8 @@ class Cansat():
 	            self.press_tf = False
 	        if self.time_tf and self.acc_tf and self.press_tf:
 	            print("\033[32m","--<Successful landing>--","\033[0m")
-	            time.sleep(100)
+	            time.sleep(3)
+	            self.state = 3
 	            return True
 	        else:
 	            print("\033[32m",f"time:{self.time_tf} ; acc:{self.acc_tf} ; pressure:{self.press_tf}\n{(ax**2 + ay**2 + az**2)} < {self.DROPPING_ACC_THRE**2}","\033[0m")
@@ -440,6 +455,7 @@ class Cansat():
 		self.cameraCount += 1
 		self.frame = self.picam2.capture_array()#0,self.results_img_dir+f'/{self.cameraCount}')
 		self.frame2 = cv2.rotate(self.frame,cv2.ROTATE_90_CLOCKWISE)
+		cv2.imwrite(self.results_img_dir+f'/{self.cameraCount}.jpg',self.frame2)
 		height = self.frame2.shape[0]
 		width = self.frame2.shape[1]
 		# オレンジ色のマスクを作成
@@ -509,9 +525,12 @@ class Cansat():
 		print("'\033[44m'","4.first_releasing",'\033[0m')
 		# self.separation()
 		# 焼き切り放出
+		time.sleep(5)
+		self.state = 5
 		pass
 
 	def moving_release_position(self): # state = 5
+		
 		if self.releasing_state == 1 :# 接近
 			## 作戦１：放出モジュールが十分に遠いとき
 			## 作戦２：放出モジュールが遠いとき
@@ -520,6 +539,7 @@ class Cansat():
 			self.cameraCount += 1
 			self.frame = self.picam2.capture_array()
 			self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
+			cv2.imwrite(self.results_img_dir+f'/{self.cameraCount}.jpg',self.frame2)
 			height = self.frame2.shape[0]
 			width = self.frame2.shape[1]
 			gray = cv2.cvtColor(self.frame2, cv2.COLOR_BGR2GRAY) # グレースケールに変換
@@ -602,7 +622,6 @@ class Cansat():
 										print("'\033[32m'---perfect REACHED---'\033[0m'")
 										time.sleep(1)
 										self.releasing_state = 2
-										print("state_change")
 
 								
 								elif self.closing_threshold >= distance_of_marker >= self.closing_threshold - self.CLOSING_RANGE_THRE:
@@ -622,15 +641,15 @@ class Cansat():
 									if -50 <= angle_of_marker <= 0: #ARマーカがやや左から正面にある場合
 										print("時計周り")
 										self.motor_control(70,-70,0.3)
-										yunosu_pos = "Left"
-										last_pos = "Plan_B"
+										self.yunosu_pos = "Left"
+										self.last_pos = "Plan_B"
 									
 									
 									elif 0 <= angle_of_marker <= 50: #ARマーカがやや右から正面にある場合
 										print("反時計周り")
 										self.motor_control(-70,70,0.3)
-										yunosu_pos = "Right"
-										last_pos = "Plan_B"
+										self.yunosu_pos = "Right"
+										self.last_pos = "Plan_B"
 								
 							else: # detected AR marker is not reliable
 								print("state of marker is rejected")
@@ -641,17 +660,17 @@ class Cansat():
 									self.ultra_count = 0
 									self.reject_count = 0 #あってもなくても良い
 
-						distance, angle = self.ar.Correct(tvec,self.VEC_GOAL)
+						self.distance, self.angle = self.ar.Correct(tvec,self.VEC_GOAL)
 						polar_exchange = self.ar.polar_change(tvec)
 						# print("kabuto_function:",distance,angle)
 						# print("yunosu_function:",polar_exchange)
 						change_lens = -17.2*polar_exchange[0]+9.84
 						if change_lens < 3:
-							lens = 3
+							self.lens = 3
 						elif change_lens > 10:
-							lens = 10.5
+							self.lens = 10.5
 						else:
-							lens = change_lens
+							self.lens = change_lens
 							
 
 
@@ -715,25 +734,81 @@ class Cansat():
 			"""
 				微調整ステート
 			"""
-			print("'\033[44m'","5-2.moving_release_position",'\033[0m')
-			pass
+			
+			frame = self.picam2.capture_array()
+			self.frame2 = cv2.rotate(self.frame,cv2.ROTATE_90_CLOCKWISE)
+			self.height = self.frame2.shape[0]
+			self.width = self.frame2.shape[1]
+			self.gray = cv2.cvtColor(self.frame2, cv2.COLOR_BGR2GRAY) # グレースケールに変換
+			self.corners, self.ids, self.rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary)
+			self.cam_pint = 10.5
+			while self.cam_pint > 3.0: #pint change start
+				print("pint:",self.cam_pint)
+				if self.ids is None:
+					self.cam_pint -= 0.5
+					print("pint:",self.cam_pint)
+					self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
+					frame = self.picam2.capture_array()
+					gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # グレースケールに変換
+					corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary)
+					
+				
+				else:
+					break
+					
+			if self.ids is not None:
+				for i in range(len(self.ids)):
+						if self.ids[i] in [0,1,2,3,4,5]:
+							rvec, tvec, _ = aruco.estimatePoseSingleMarkers(self.corners[i], self.marker_length, self.camera_matrix, self.distortion_coeff)
+							tvec = np.squeeze(tvec)
+							self.adjust_angle(tvec)
+				
 
+			print("'\033[44m'","5-2.moving_release_position",'\033[0m')
+			time.sleep(5)
+			self.releasing_state = 3
+			pass
+    
 		elif self.releasing_state == 3:
 			"""
 				物資モジュール投射
 
 			"""
 			print("'\033[44m'","5-3.moving_release_position",'\033[0m')
+			time.sleep(5)
+			self.state = 6
 			pass
 		
-		elif self.releasing_state == 4:
-			"""
-				物資モジュール確認
 
-			"""
-		    self.cameraCount += 1
+	def motor_control(self,m1,m2,t):
+		# m1:右モーターの速度
+		# m2:左モーターの速度
+		# time:モーターを動かす時間
+		if m1>=0:
+			self.motor1.go(m1)
+		else:
+			m1 = abs(m1)
+			self.motor1.back(m1)
+		if m2>=0:
+			self.motor2.go(m2)
+		else:
+			m2 = abs(m2)
+			self.motor2.back(m2)
+		time.sleep(t)
+		self.motor1.stop()
+		self.motor2.stop()
+
+	def judgement(self): # state = 6
+		"""
+			物資モジュール確認
+
+		"""
+		if self.closing_state == 1:
+			print("'\033[44m'","6-1.Go to judgement",'\033[0m')
+			self.cameraCount += 1
 			self.frame = self.picam2.capture_array()
 			self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
+			cv2.imwrite(self.results_img_dir+f'/{self.cameraCount}.jpg',self.frame2)
 			height = self.frame2.shape[0]
 			width = self.frame2.shape[1]
 			gray = cv2.cvtColor(self.frame2, cv2.COLOR_BGR2GRAY) # グレースケールに変換
@@ -815,10 +890,11 @@ class Cansat():
 									else:
 										print("'\033[32m'---perfect REACHED 2---'\033[0m'")
 										time.sleep(1)
-										state = 6
-										break
-		     							
- 
+										self.closing_state = 2
+										print("closing:",self.closing_state)
+										
+										
+
 								
 								elif self.closing_threshold_2 >= distance_of_marker >= self.closing_threshold_2 - self.CLOSING_RANGE_THRE_2:
 									if tvec[0] >= 0.03:
@@ -906,7 +982,7 @@ class Cansat():
 				elif self.yunosu_pos == "Right":
 					print("ARマーカー探してます(RIGHT)")
 					self.motor_control(60,-60,0.5)
-			   
+				
 
 			elif self.last_pos == "Plan_B":
 				self.lost_marker_cnt+=1
@@ -924,28 +1000,15 @@ class Cansat():
 						self.last_pos = "Plan_A"
 						self.k += 1
 						print(self.k)
-			
+		elif self.closing_state == 2:
+			"""
+				撮影・評価
 
-	def motor_control(self,m1,m2,t):
-		# m1:右モーターの速度
-		# m2:左モーターの速度
-		# time:モーターを動かす時間
-		if m1>=0:
-			self.motor1.go(m1)
-		else:
-			m1 = abs(m1)
-			self.motor1.back(m1)
-		if m2>=0:
-			self.motor2.go(m2)
-		else:
-			m2 = abs(m2)
-			self.motor2.back(m2)
-		time.sleep(t)
-		self.motor1.stop()
-		self.motor2.stop()
-
-	def judgement(self): # state = 6
-		pass
+			"""
+			print("'\033[44m'","6-2.judgement",'\033[0m')
+			time.sleep(3)
+			self.state = 7
+			pass
 
 	def stuck_detection(self):
 		print(self.ax**2+self.ay**2)
@@ -1060,7 +1123,27 @@ class Cansat():
 		    cv2.destroyAllWindows()
 		    sys.exit()
 
-	
+	def adjust_angle(self, tvec):
+		print(f"\033[33m", f"adjust angle : tvec = {tvec}", "\033[0m")		
+		if tvec[0] > 0.01:
+			if self.nowangle >= 180:
+				return False
+			else:
+				self.nowangle += 10
+				self.servo.go_deg(self.nowangle)
+				# ~ print("servo: "+str(nowangle))
+		elif tvec[0] < -0.01:
+			if self.nowangle <= 0:
+				return False
+			else:
+				self.nowangle -= 10
+				self.servo.go_deg(self.nowangle)
+				# ~ print("servo: "+str(nowangle))
+		else:
+			print("just angle!!!!!!!!!!!!",self.nowangle)
+			return True
+			pass
+
 	def keyboardinterrupt(self): #キーボードインタラプト入れた場合に発動する関数
 		self.motor1.stop()
 		self.motor2.stop()
@@ -1073,6 +1156,7 @@ class Cansat():
 		self.pc2.stop()
 		time.sleep(0.5)
 		cv2.destroyAllWindows()
+		GPIO.cleanup()
 		pass
 	
 			
