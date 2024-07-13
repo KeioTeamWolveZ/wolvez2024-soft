@@ -113,6 +113,7 @@ class Cansat():
 		self.stuckTime = 0
 		self.releasing_state = 1
 		self.closing_state = 1
+		self.justAngle = False
     
 		# =============================================== 時間記録 =============================================== 
 		self.preparingTime = 0 #
@@ -735,12 +736,12 @@ class Cansat():
 				微調整ステート
 			"""
 			
-			frame = self.picam2.capture_array()
+			self.frame = self.picam2.capture_array()
 			self.frame2 = cv2.rotate(self.frame,cv2.ROTATE_90_CLOCKWISE)
 			self.height = self.frame2.shape[0]
 			self.width = self.frame2.shape[1]
 			self.gray = cv2.cvtColor(self.frame2, cv2.COLOR_BGR2GRAY) # グレースケールに変換
-			self.corners, self.ids, self.rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary)
+			self.corners, self.ids, self.rejectedImgPoints = aruco.detectMarkers(self.gray, self.dictionary)
 			self.cam_pint = 10.5
 			while self.cam_pint > 3.0: #pint change start
 				print("pint:",self.cam_pint)
@@ -748,9 +749,9 @@ class Cansat():
 					self.cam_pint -= 0.5
 					print("pint:",self.cam_pint)
 					self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
-					frame = self.picam2.capture_array()
-					gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # グレースケールに変換
-					corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary)
+					self.frame = self.picam2.capture_array()
+					self.gray = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY) # グレースケールに変換
+					self.corners, self.ids, self.rejectedImgPoints = aruco.detectMarkers(self.gray, self.dictionary)
 					
 				
 				else:
@@ -761,12 +762,15 @@ class Cansat():
 						if self.ids[i] in [0,1,2,3,4,5]:
 							rvec, tvec, _ = aruco.estimatePoseSingleMarkers(self.corners[i], self.marker_length, self.camera_matrix, self.distortion_coeff)
 							tvec = np.squeeze(tvec)
-							self.adjust_angle(tvec)
+							self.justAngle = self.adjust_angle(tvec)
 				
 
-			print("'\033[44m'","5-2.moving_release_position",'\033[0m')
-			time.sleep(5)
-			self.releasing_state = 3
+			print("'\033[44m'","5-2.moving_release_position", self.justAngle,'\033[0m')
+			if self.justAngle:
+				
+				print("\033[32m","just angle!!!!!!!!!!!!",self.nowangle,"\033[0m")
+				time.sleep(5)
+				self.releasing_state = 3
 			pass
     
 		elif self.releasing_state == 3:
@@ -1094,16 +1098,16 @@ class Cansat():
 		
 		else:
 		    if self.arg_diff <= 180 and self.arg_diff > 20:
-			    self.motor1.go(ct.const.RUNNING_MOTOR_VREF-15)
-			    self.motor2.go(ct.const.RUNNING_MOTOR_VREF)
+			    self.motor1.go(70)
+			    self.motor2.go(100)
 			
 		    elif self.arg_diff > 180 and self.arg_diff < 340:
-			    self.motor1.go(ct.const.RUNNING_MOTOR_VREF)
-			    self.motor2.go(ct.const.RUNNING_MOTOR_VREF-15)
+			    self.motor1.go(100)
+			    self.motor2.go(70)
 		    
 		    else:
-			    self.motor1.go(ct.const.RUNNING_MOTOR_VREF)
-			    self.motor2.go(ct.const.RUNNING_MOTOR_VREF)
+			    self.motor1.go(100)
+			    self.motor2.go(100)
 
 	def finish(self): # state = 8
 		if self.finishTime == 0:
@@ -1129,20 +1133,18 @@ class Cansat():
 			if self.nowangle >= 180:
 				return False
 			else:
-				self.nowangle += 10
+				self.nowangle += 5
 				self.servo.go_deg(self.nowangle)
-				# ~ print("servo: "+str(nowangle))
+				print("servo: "+str(self.nowangle),"B")
 		elif tvec[0] < -0.01:
 			if self.nowangle <= 0:
 				return False
 			else:
-				self.nowangle -= 10
+				self.nowangle -= 5
 				self.servo.go_deg(self.nowangle)
-				# ~ print("servo: "+str(nowangle))
+				print("servo: "+str(self.nowangle),"A")
 		else:
-			print("just angle!!!!!!!!!!!!",self.nowangle)
 			return True
-			pass
 
 	def keyboardinterrupt(self): #キーボードインタラプト入れた場合に発動する関数
 		self.motor1.stop()
