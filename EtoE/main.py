@@ -17,7 +17,7 @@ try:
 		cansat .sequence()
 		if cansat.state > end_state:
 			print("Finished")
-		time.sleep(0.2)
+		time.sleep(0.1)
 		
 except KeyboardInterrupt:
     print("Finished")

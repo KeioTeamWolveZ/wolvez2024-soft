@@ -301,7 +301,7 @@ class Cansat():
 		
 		# ==========================================================
 		if self.flag_AR:
-			print("\033[43m","AR:",self.flag_AR,,"\nx:",tvec[0],"y:",tvec[1],":",tvec[2],"\033[0m")
+			print("\033[43m","AR:",self.flag_AR,f" r={self.distanceAR}","\nx:",self.tvec[0],"y:",self.tvec[1],":",self.tvec[2],"\033[0m")
 		else:
 			print("\033[43m","AR:","\033[0m",self.flag_AR)
 		
@@ -315,6 +315,8 @@ class Cansat():
 		print("control_log2 : ",self.control_log2)
 		print("control_log_rv :",self.control_log_rv) 
 		print("control_log_lv :",self.control_log_lv) 
+		print("yunosu_pos : ",self.yunosu_pos)
+		print("last_pos : ",self.last_pos)
 	
 		
 		
@@ -620,6 +622,7 @@ class Cansat():
 						polar_exchange = self.ar.polar_change(tvec)
 						# ~ print(f"yunosu_function_{ids[i]}:",polar_exchange)
 						distance_of_marker = polar_exchange[0] #r
+						self.distanceAR = distance_of_marker
 						angle_of_marker = polar_exchange[1] #theta
 						# ~ print("======",distance_of_marker)
 						
@@ -721,6 +724,8 @@ class Cansat():
 					else:
 						# ~ print(f"color:ARマーカー探してます(GO) (x={x})")
 						self.motor_control(50,50,0.5)
+				else:
+					self.control_log1 = "detect AR"
 						
 			elif self.yunosu_pos == "Left":
 				# ~ print("ARマーカー探してます(LEFT)")
@@ -818,13 +823,13 @@ class Cansat():
 		elif m1 == m2 and m1 < 0:
 			self.control_log2  = "go back"
 		elif m1 > m2 and m2 > 0:
-			self.control_log2  = "go left"
+			self.control_log2  = "go right"
 		elif m1 < m2 and m1 > 0:
-			self.control_log2  = "go right" 
+			self.control_log2  = "go left" 
 		elif m1 == -m2 and m1 > 0:
-			self.control_log2  = "turn left"
+			self.control_log2  = "turn right"
 		elif m1 == -m2 and m1 < 0:
-			self.control_log2  = "turn right" 
+			self.control_log2  = "turn left" 
 		elif m1 > m2 and m1 < 0:
 			self.control_log2  = "go back right"
 		elif m1 < m2 and m2 < 0:
@@ -832,8 +837,8 @@ class Cansat():
 		else:
 			self.control_log2  = "except" 
 		
-		self.control_log_rv = m1
-		self.control_log_lv = m2
+		self.control_log_rv = m2
+		self.control_log_lv = m1
 		self.rv, self.lv = m1, m2
 		
 		if m1>=0:
@@ -899,6 +904,7 @@ class Cansat():
 						polar_exchange = self.ar.polar_change(tvec)
 						# ~ print(f"yunosu_function_{ids[i]}:",polar_exchange)
 						distance_of_marker = polar_exchange[0] #r
+						self.distanceAR = distance_of_marker
 						angle_of_marker = polar_exchange[1] #theta
 						# ~ print("======",distance_of_marker)
 						self.control_log1 = "closing"
@@ -1003,6 +1009,9 @@ class Cansat():
 						else:
 							# ~ print(f"color:ARマーカー探してます(GO) (x={x})")
 							self.motor_control(50,50,0.5)
+					else:
+						self.control_log1 = "detect AR"
+						
 				elif self.yunosu_pos == "Left":
 					self.control_log1 = "explore"
 					# ~ print("ARマーカー探してます(LEFT)")
@@ -1208,7 +1217,9 @@ class Cansat():
 		    sys.exit()
 
 	def adjust_angle(self, tvec):
-		print(f"\033[33m", f"adjust angle : tvec = {tvec}", "\033[0m")		
+		print(f"\033[33m", f"adjust angle : tvec = {tvec}", "\033[0m")	
+
+		self.distanceAR = (tvec[0]**2+tvec[1]**2+tvec[2]**2)**(1/2)
 		if tvec[0] > 0.01:
 			if self.nowangle >= 180:
 				return False
