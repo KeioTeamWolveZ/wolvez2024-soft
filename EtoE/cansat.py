@@ -585,6 +585,7 @@ class Cansat():
 							# print("prev_length: ",len(prev))
 							TorF = self.ar.outlier(tvec, self.prev, self.ultra_count, 0.3) # true:correct, false:outlier
 							self.ultra_count += 1
+							TorF = True
 							if TorF: # detected AR marker is reliable
 								self.reject_count = 0
 								print("x : " + str(tvec[0]))
@@ -657,14 +658,14 @@ class Cansat():
 										self.yunosu_pos = "Right"
 										self.last_pos = "Plan_B"
 								
-							else: # detected AR marker is not reliable
-								print("state of marker is rejected")
-								self.find_marker = False
-								print(self.ultra_count)
-								self.reject_count += 1 # 拒否された回数をカウント
-								if self.reject_count > 10: # 拒否され続けたらリセットしてARマーカーの基準を上書き（再計算）
-									self.ultra_count = 0
-									self.reject_count = 0 #あってもなくても良い
+							# else: # detected AR marker is not reliable
+							# 	print("state of marker is rejected")
+							# 	self.find_marker = False
+							# 	print(self.ultra_count)
+							# 	self.reject_count += 1 # 拒否された回数をカウント
+							# 	if self.reject_count > 10: # 拒否され続けたらリセットしてARマーカーの基準を上書き（再計算）
+							# 		self.ultra_count = 0
+							# 		self.reject_count = 0 #あってもなくても良い
 
 						self.distance, self.angle = self.ar.Correct(tvec,self.VEC_GOAL)
 						polar_exchange = self.ar.polar_change(tvec)
@@ -680,42 +681,43 @@ class Cansat():
 							
 
 
-			elif self.last_pos == "Plan_A" :#and not find_marker: #ARマーカを認識していない時，認識するまでその場回転
-				self.lost_marker_cnt+=1
-			if self.lost_marker_cnt > 10: # kore iru?
-				if cX:
-					print("==========================\n==========================\n")
-					self.cam_pint = 10.5
-					while self.cam_pint > 3.0: #pint change start
-						if ids is None:
-							self.cam_pint -= 0.5
-							print("pint:",self.cam_pint)
-							self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
-							frame = self.picam2.capture_array()
-							gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # グレースケールに変換
-							corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary)
-						else:
-							break
-					if self.cam_pint <= 3.5:
-						x,y = width-cY,cX
-						
-						self.cam_pint = 5.5 #default pint
+			#elif self.last_pos == "Plan_A" :#and not find_marker: #ARマーカを認識していない時，認識するまでその場回転
+			#self.lost_marker_cnt+=1
+
+			#if self.lost_marker_cnt > 10: # kore iru?
+			elif cX and self.last_pos == "Plan_A" :
+				print("==========================\n==========================\n")
+				self.cam_pint = 10.5
+				while self.cam_pint > 3.0: #pint change start
+					if ids is None:
+						self.cam_pint -= 0.5
+						print("pint:",self.cam_pint)
 						self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
-						if x < width/2-100:
-							print(f"color:ARマーカー探してます(LEFT) (x={x})")
-							self.motor_control(-40,60,0.5)
-						elif x > width/2+100:
-							print(f"color:ARマーカー探してます(RIGHT) (x={x})")
-							self.motor_control(60,40,0.5)
-						else:
-							print(f"color:ARマーカー探してます(GO) (x={x})")
-							self.motor_control(50,50,0.5)
-				elif self.yunosu_pos == "Left":
-					print("ARマーカー探してます(LEFT)")
-					self.motor_control(-60,60,0.5)
-				elif self.yunosu_pos == "Right":
-					print("ARマーカー探してます(RIGHT)")
-					self.motor_control(60,-60,0.5)
+						frame = self.picam2.capture_array()
+						gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # グレースケールに変換
+						corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary)
+					else:
+						break
+				if self.cam_pint <= 3.5:
+					x,y = width-cY,cX
+					
+					self.cam_pint = 5.5 #default pint
+					self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
+					if x < width/2-100:
+						print(f"color:ARマーカー探してます(LEFT) (x={x})")
+						self.motor_control(-40,60,0.5)
+					elif x > width/2+100:
+						print(f"color:ARマーカー探してます(RIGHT) (x={x})")
+						self.motor_control(60,40,0.5)
+					else:
+						print(f"color:ARマーカー探してます(GO) (x={x})")
+						self.motor_control(50,50,0.5)
+			elif self.yunosu_pos == "Left":
+				print("ARマーカー探してます(LEFT)")
+				self.motor_control(-60,60,0.5)
+			elif self.yunosu_pos == "Right":
+				print("ARマーカー探してます(RIGHT)")
+				self.motor_control(60,-60,0.5)
 			   
 
 			elif self.last_pos == "Plan_B":
@@ -784,7 +786,7 @@ class Cansat():
 
 			"""
 			print("'\033[44m'","5-3.moving_release_position",'\033[0m')
-			self.separation(ct.const.SEPARATION_MOD2)
+			#self.separation(ct.const.SEPARATION_MOD2)
 			time.sleep(5)
 			self.state = 6
 			pass
