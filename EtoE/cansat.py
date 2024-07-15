@@ -556,8 +556,9 @@ class Cansat():
 			# 輪郭を抽出して最大の面積を算出し、線で囲む
 			mask_blue,cX,cY,max_contour_area = self.color.detect_color(mask_blue,ct.const.MAX_CONTOUR_THRESHOLD)
 			#print("cX:",cX,"cY:",cY,"max_contour_area:",max_contour_area)
-			if cX:
-				cv2.circle(self.frame2,(width-cY,cX),30,100,-1)
+			
+			# if cX:
+			# 	cv2.circle(self.frame2,(width-cY,cX),30,100,-1)
 			
 
 			if ids is not None:
@@ -700,7 +701,6 @@ class Cansat():
 						break
 				if self.cam_pint <= 3.5:
 					x,y = width-cY,cX
-					
 					self.cam_pint = 5.5 #default pint
 					self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
 					if x < width/2-100:
@@ -712,6 +712,7 @@ class Cansat():
 					else:
 						print(f"color:ARマーカー探してます(GO) (x={x})")
 						self.motor_control(50,50,0.5)
+						
 			elif self.yunosu_pos == "Left":
 				print("ARマーカー探してます(LEFT)")
 				self.motor_control(-60,60,0.5)
@@ -731,11 +732,11 @@ class Cansat():
 						gain1 = 0
 						gain2 = 30
 						
-						print("Plan_B now")
-						self.motor_control(70+gain1,70+gain2,2.5 + self.k)
-						self.last_pos = "Plan_A"
-						self.k += 1
-						print(self.k)
+					print("Plan_B now")
+					self.motor_control(70+gain1,70+gain2,2.5 + self.k)
+					self.last_pos = "Plan_A"
+					self.k += 1
+					print(self.k)
 			    
     
 		elif self.releasing_state == 2:
