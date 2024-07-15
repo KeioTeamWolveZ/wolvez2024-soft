@@ -41,7 +41,7 @@ from Wolvez2024_now.Ar_tools import Artools
 
 """
 class Cansat():
-	def __init__(self,state):
+	def __init__(self,state,sepa_mode):
 		
 		# ================================================ GPIO ================================================ 
 		GPIO.setwarnings(False)
@@ -114,6 +114,7 @@ class Cansat():
 		self.releasing_state = 1
 		self.closing_state = 1
 		self.justAngle = False
+		self.sepa_mode = sepa_mode
     
 		# =============================================== 時間記録 =============================================== 
 		self.preparingTime = 0 #
@@ -121,6 +122,7 @@ class Cansat():
 		self.landtime = 0
 		self.escapeTime = 0
 		self.runningTime = 0
+		self.finishTime = 0
 		
 		# =============================================== カウンタ =============================================== 
 		# センサ用
@@ -344,7 +346,7 @@ class Cansat():
 			if time.time() - self.preparingTime > ct.const.PREPARING_TIME_THRE:
 				self.startlon=np.mean(self.startgps_lon)
 				self.startlat=np.mean(self.startgps_lat)
-				# ~ self.state = 1
+				self.state = 1
 				self.laststate = 1
 		time.sleep(0.1)
 		self.RED_LED.led_off()
@@ -365,6 +367,7 @@ class Cansat():
 				time.sleep(3)
 			print("=====flying=====")
 		self.state = 2
+		self.writeMissionlog()
 		self.landtime = time.time()
 		time.sleep(0.2)
 		self.BLUE_LED.led_off()
@@ -1056,7 +1059,7 @@ class Cansat():
 				self.judge_cnt += 1
 			else:
 				time.sleep(3)
-				self.state = 7
+				self.state = 8
 			pass
 
 	def stuck_detection(self):
@@ -1100,13 +1103,16 @@ class Cansat():
 			self.mirror = False
 
 	def separation(self,pin):
-		GPIO.setup(pin,GPIO.OUT) #焼き切り用のピンの設定tv 
-		GPIO.output(pin,0) #焼き切りが危ないのでlowにしておく
-		# ~ GPIO.output(pin,1) #電圧をHIGHにして焼き切りを行う
-		time.sleep(6) #継続時間を指定
-		GPIO.output(pin,0) #電圧をLOWにして焼き切りを終了する
-		print("\n\n\==================n\nSeparation done\n\n==================\n\n")
-	
+		if self.sepa_mode:
+			print("\n\n\==================n\nSeparation done\n\n==================\n\n")
+			GPIO.setup(pin,GPIO.OUT) #焼き切り用のピンの設定tv 
+			GPIO.output(pin,0) #焼き切りが危ないのでlowにしておく
+			GPIO.output(pin,1) #電圧をHIGHにして焼き切りを行う
+			time.sleep(6) #継続時間を指定
+			GPIO.output(pin,0) #電圧をLOWにして焼き切りを終了する
+		else:
+			print("\n\n\==================n\nSeparation pass\n\n==================\n\n")
+		
 	def running(self): # state = 7
 		dlon = self.goallon - self.lon
 		# distance to the goal
@@ -1194,9 +1200,9 @@ class Cansat():
 	def keyboardinterrupt(self): #キーボードインタラプト入れた場合に発動する関数
 		self.motor1.stop()
 		self.motor2.stop()
-		GPIO.output(ct.const.SEPARATION_PARA,0) #焼き切りが危ないのでlowにしておく
-		GPIO.output(ct.const.SEPARATION_MOD1,0) #焼き切りが危ないのでlowにしておく
-		GPIO.output(ct.const.SEPARATION_MOD2,0) #焼き切りが危ないのでlowにしておく
+		# ~ GPIO.output(ct.const.SEPARATION_PARA,0) #焼き切りが危ないのでlowにしておく
+		# ~ GPIO.output(ct.const.SEPARATION_MOD1,0) #焼き切りが危ないのでlowにしておく
+		# ~ GPIO.output(ct.const.SEPARATION_MOD2,0) #焼き切りが危ないのでlowにしておく
 		self.RED_LED.led_off()
 		self.BLUE_LED.led_off()
 		self.GREEN_LED.led_off()

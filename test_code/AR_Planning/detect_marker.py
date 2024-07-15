@@ -24,7 +24,7 @@ elif int(camera) == 2:
     from picamera2 import Picamera2 #laptopでは使わないため
     from libcamera import controls #laptopでは使わないため
     picam2 = Picamera2()
-    size = (1800, 1200)
+    size = (2200, 2800)
     config = picam2.create_preview_configuration(
                 main={"format": 'XRGB8888', "size": size})
 
@@ -57,10 +57,11 @@ while True:
         frame = picam2.capture_array()
         print(lens)
         picam2.set_controls({"AfMode":0,"LensPosition":lens})
-    height = frame.shape[0]
-    width = frame.shape[1]
+    frame2 = cv2.rotate(frame,cv2.ROTATE_90_CLOCKWISE)
+    height = frame2.shape[0]
+    width = frame2.shape[1]
 
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # グレースケールに変換
+    gray = cv2.cvtColor(frame2, cv2.COLOR_BGR2GRAY) # グレースケールに変換
     corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, dictionary) # ARマーカーの検出
 
 
@@ -132,8 +133,8 @@ while True:
 
     # ====================================結果の表示===================================
     # #　画像のリサイズを行う
-    frame = cv2.resize(frame,None,fx=0.5,fy=0.5)
-    cv2.imshow('ARmarker', frame)
+    frame2 = cv2.resize(frame2,None,fx=0.2,fy=0.2)
+    cv2.imshow('ARmarker', frame2)
     key = cv2.waitKey(1)# キー入力の受付
     if key == 27:  # ESCキーで終了
         break
