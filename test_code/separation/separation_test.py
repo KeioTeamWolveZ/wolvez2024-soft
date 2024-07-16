@@ -17,6 +17,7 @@ try:
     time.sleep(7) #継続時間を指定
     GPIO.output(pin1,0) #電圧をLOWにして焼き切りを終了する
     GPIO.cleanup()
+    
     print("Separation done")
 
 except KeyboardInterrupt:

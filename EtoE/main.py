@@ -4,7 +4,7 @@ import time
 import RPi.GPIO as GPIO
 
 
-start_state = 2
+start_state = 5
 end_state = 8
 sepa_mode = False
 

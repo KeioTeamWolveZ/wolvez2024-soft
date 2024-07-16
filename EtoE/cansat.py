@@ -86,7 +86,7 @@ class Cansat():
 		self.find_marker = False
 		self.ar = Artools()
 		self.VEC_GOAL = [0.0,0.1968730025228114,0.3]
-		self.closing_threshold = 0.4
+		self.closing_threshold = 0.5
 		self.CLOSING_RANGE_THRE = 0.02
 		self.closing_threshold_2 = 0.2
 		self.CLOSING_RANGE_THRE_2 = 0.05
