@@ -663,7 +663,7 @@ class Cansat():
 						if distance_of_marker >= self.closing_threshold + self.CLOSING_RANGE_THRE:
 							if tvec[0] >= 0.05:
 								# ~ print("---右に曲がります---")
-								self.motor_control(70,60,0.5)
+								self.motor_control(50,40,0.5)
 							
 								
 							elif 0.05 > tvec[0] > -0.05:
@@ -674,7 +674,7 @@ class Cansat():
 							
 							else:
 								# ~ print("---左に曲がります---")
-								self.motor_control(60,70,0.5)
+								self.motor_control(40,50,0.5)
 								
 								
 
@@ -727,49 +727,53 @@ class Cansat():
 						polar_exchange = self.ar.polar_change(tvec)
 
 
-			#elif self.last_pos == "Plan_A" :#and not find_marker: #ARマーカを認識していない時，認識するまでその場回転
+			elif self.last_pos == "Plan_A" :#and not find_marker: #ARマーカを認識していない時，認識するまでその場回転
 			#self.lost_marker_cnt+=1
 
 			#if self.lost_marker_cnt > 10: # kore iru?
-			elif cX and self.last_pos == "Plan_A" :
-				# ~ print("==========================\n==========================\n")
-				self.cam_pint = 10.5
-				while self.cam_pint > 3.0: #pint change start
-					if ids is None:
-						self.cam_pint -= 0.5
-						print("pint:",self.cam_pint)
+				if cX:
+					# ~ print("==========================\n==========================\n")
+					self.cam_pint = 10.5
+					while self.cam_pint > 3.0: #pint change start
+						if ids is None:
+							self.cam_pint -= 0.5
+							print("pint:",self.cam_pint)
+							self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
+							frame = self.picam2.capture_array()
+							gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # グレースケールに変換
+							corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary)
+						else:
+							break
+					print("===============\nyunosuke\n==============")
+					if self.cam_pint <= 3.5:
+						print("===============\nyunosuke\n==============")
+						self.control_log1 = "closing"
+						x,y = width-cY,cX
+						self.cam_pint = 5.5 #default pint
 						self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
-						frame = self.picam2.capture_array()
-						gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # グレースケールに変換
-						corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary)
+						if x < width/2-100:
+							# ~ print(f"color:ARマーカー探してます(LEFT) (x={x})")
+							self.motor_control(-40,60,0.5)
+						elif x > width/2+100:
+							# ~ print(f"color:ARマーカー探してます(RIGHT) (x={x})")
+							self.motor_control(60,40,0.5)
+						else:
+							# ~ print(f"color:ARマーカー探してます(GO) (x={x})")
+							self.motor_control(50,50,0.5)
 					else:
-						break
-				if self.cam_pint <= 3.5:
-					self.control_log1 = "closing"
-					x,y = width-cY,cX
-					self.cam_pint = 5.5 #default pint
-					self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
-					if x < width/2-100:
-						# ~ print(f"color:ARマーカー探してます(LEFT) (x={x})")
-						self.motor_control(-40,60,0.5)
-					elif x > width/2+100:
-						# ~ print(f"color:ARマーカー探してます(RIGHT) (x={x})")
-						self.motor_control(60,40,0.5)
-					else:
-						# ~ print(f"color:ARマーカー探してます(GO) (x={x})")
-						self.motor_control(50,50,0.5)
-				else:
-					self.control_log1 = "detect AR"
-						
-			elif self.yunosu_pos == "Left":
-				# ~ print("ARマーカー探してます(LEFT)")
-				self.control_log1 = "explore"
-				self.motor_control(-60,60,0.5)
-			elif self.yunosu_pos == "Right":
-				# ~ print("ARマーカー探してます(RIGHT)")
-				self.motor_control(60,-60,0.5)
-				self.control_log1 = "explore"
-			   
+						self.control_log1 = "detect AR"
+							
+				elif self.yunosu_pos == "Left":
+					# ~ print("ARマーカー探してます(LEFT)")
+					self.control_log1 = "explore"
+					self.motor_control(-60,60,0.5)
+					print("???????????????????????")
+				elif self.yunosu_pos == "Right":
+					# ~ print("ARマーカー探してます(RIGHT)")
+					self.motor_control(60,-60,0.5)
+					self.control_log1 = "explore"
+					print("!!!!!!!!!!!!!!!!!!!!!!!")
+				   
 
 			elif self.last_pos == "Plan_B":
 				self.lost_marker_cnt+=1
@@ -846,8 +850,9 @@ class Cansat():
 			"""
 			print("'\033[44m'","5-3.moving_release_position",'\033[0m')
 			self.control_log1 = "releasing"
-			self.control_log2 = f"pin{ct.const.SEPARATION_MOD2}:HIGH"
-			self.separation(ct.const.SEPARATION_MOD2)
+			# self.control_log2 = f"pin{ct.const.SEPARATION_MOD2}:HIGH"
+			#### self.separation(ct.const.SEPARATION_MOD2)
+			print("ct.const.SEPARATION_MOD2 no settei ga hituyou")
 			self.writeMissionlog(5)
 			time.sleep(5)
 			self.state = 6
