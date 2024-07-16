@@ -1,13 +1,13 @@
 # 2023年機体で使用すること
 
-import motor_pico as motor 
+from Wolvez2024_now.motor_pico import motor as motor 
 import RPi.GPIO as GPIO
 import time 
 
 
 GPIO.setwarnings(False)
-Motor1 = motor.motor(dir=-1)
-Motor2 = motor.motor()
+Motor1 = motor(dir=-1)
+Motor2 = motor()
 
 try:
     print("motor run") 
@@ -20,7 +20,6 @@ try:
     #Motor2.back(90)
 #     time.sleep(1.08)
     time.sleep(1.5)
-    
 
     #Motor.back(100)
     #time.sleep(3)
