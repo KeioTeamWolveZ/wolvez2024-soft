@@ -39,8 +39,9 @@ if __name__ == '__main__':
     state = 1
     
     GPIO.setwarnings(False)
-    MotorR = motor.motor(6,5,13)
-    MotorL = motor.motor(20,16,12)
+    MotorR = motor.motor(dir=-1)
+    MotorL = motor.motor()
+
     # ~ MotorR.go(80)
     # ~ MotorL.back(80)
     
@@ -56,9 +57,15 @@ if __name__ == '__main__':
                                         # 引数はタイムゾーンの時差と出力フォーマット
     gps.setupGps()
     
+    state = False
     startTime_time = time.time()
+    pin1 = 8
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(pin1,GPIO.OUT) #焼き切り用のピンの設定
+    GPIO.output(pin1,0) #焼き切りが危ないのでlowにしておく
     while True:
         try:
+            
             # 各データの取得
             bno.bnoread()
             ax=round(bno.ax,3)
@@ -95,6 +102,29 @@ if __name__ == '__main__':
                 break
 
             time.sleep(0.5)
+            if time.time()-startTime_time > 20:
+                if not state:
+                    print("Separation...\n")
+                    time.sleep(2)
+                    GPIO.output(pin1,1) #電圧をHIGHにして焼き切りを行う
+                    time.sleep(7) #継続時間を指定
+                    GPIO.output(pin1,0) #電圧をLOWにして焼き切りを終了する
+
+                    print("Running Motor...\n")
+                    
+                    MotorR.go(100)
+                    MotorL.go(100)
+                    time.sleep(3)
+                    MotorR.stop()
+                    MotorL.stop()
+                    time.sleep(1)
+                    MotorR.go(50)
+                    MotorL.back(50)
+                    time.sleep(3)
+                    MotorR.stop()
+                    MotorL.stop()
+                    
+                    state = True
             
         except KeyboardInterrupt:
             MotorR.stop()

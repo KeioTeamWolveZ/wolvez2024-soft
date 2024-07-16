@@ -15,9 +15,10 @@ class motor():
         except:
             print('Motor controller not coneected')
 
-    def __init__(self, pin1=0, pin2=0, vref=0):
+    def __init__(self, pin1=0, pin2=0, vref=0, dir=1):
         self.velocity = 0
         self.id = motor.id
+        self.dir = dir
         print(motor.id)
         motor.id = motor.id + 1
         self.send("%d 0 0\n" % (self.id))
@@ -26,9 +27,9 @@ class motor():
         self.id = id
         
     def go(self, v):
-        self.velocity = v 
+        self.velocity = v
         v = v * 360.0 / 100.0
-        self.send("%d %d %d\n" % (self.id, 0, int(v)))
+        self.send("%d %d %d\n" % (self.id, 0, int(self.dir * v)))
 
     def go_deg_per_sec(self, v):
         self.velocity = v * 100.0 / 360.0
