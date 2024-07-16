@@ -761,11 +761,11 @@ class Cansat():
 				else:
 					self.control_log1 = "detect AR"
 						
-			elif self.yunosu_pos == "Left":
+			elif self.yunosu_pos == "Left" and self.last_pos == "Plan_A":
 				# ~ print("ARマーカー探してます(LEFT)")
 				self.control_log1 = "explore"
 				self.motor_control(-60,60,0.5)
-			elif self.yunosu_pos == "Right":
+			elif self.yunosu_pos == "Right" and self.last_pos == "Plan_A":
 				# ~ print("ARマーカー探してます(RIGHT)")
 				self.motor_control(60,-60,0.5)
 				self.control_log1 = "explore"
