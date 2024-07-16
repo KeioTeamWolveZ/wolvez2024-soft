@@ -4,9 +4,9 @@ import time
 import RPi.GPIO as GPIO
 
 
-start_state = 5
+start_state = 4
 end_state = 8
-sepa_mode = False
+sepa_mode = True
 
 try:	
 	cansat  = Cansat(start_state,sepa_mode)

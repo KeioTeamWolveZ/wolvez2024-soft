@@ -23,7 +23,9 @@ const.BLUE_LED_PIN = 9
 const.GREEN_LED_PIN = 11
 
 # Separation Pin
-
+const.SEPARATION_PARA = 8
+const.SEPARATION_MOD1 = 24
+const.SEPARATION_MOD2 = 25
 
 
 # Flight Pin

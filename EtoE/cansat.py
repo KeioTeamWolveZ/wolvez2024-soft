@@ -87,7 +87,7 @@ class Cansat():
 		self.ar = Artools()
 		self.VEC_GOAL = [0.0,0.1968730025228114,0.3]
 		self.closing_threshold = 0.5
-		self.CLOSING_RANGE_THRE = 0.02
+		self.CLOSING_RANGE_THRE = 0.05
 		self.closing_threshold_2 = 0.2
 		self.CLOSING_RANGE_THRE_2 = 0.05
 		
@@ -662,8 +662,9 @@ class Cansat():
 						self.control_log1 = "closing"
 						if distance_of_marker >= self.closing_threshold + self.CLOSING_RANGE_THRE:
 							if tvec[0] >= 0.05:
+								turn_gain = 5*((self.closing_threshold + self.CLOSING_RANGE_THRE)/(distance_of_marker))**2
 								# ~ print("---右に曲がります---")
-								self.motor_control(50,40,0.5)
+								self.motor_control(40 + turn_gain,40,0.5)
 							
 								
 							elif 0.05 > tvec[0] > -0.05:
@@ -673,8 +674,9 @@ class Cansat():
 							
 							
 							else:
+								turn_gain = 5*((self.closing_threshold + self.CLOSING_RANGE_THRE)/(distance_of_marker))**2
 								# ~ print("---左に曲がります---")
-								self.motor_control(40,50,0.5)
+								self.motor_control(40,40 + turn_gain,0.5)
 								
 								
 
@@ -850,8 +852,8 @@ class Cansat():
 			"""
 			print("'\033[44m'","5-3.moving_release_position",'\033[0m')
 			self.control_log1 = "releasing"
-			# self.control_log2 = f"pin{ct.const.SEPARATION_MOD2}:HIGH"
-			#### self.separation(ct.const.SEPARATION_MOD2)
+			self.control_log2 = f"pin{ct.const.SEPARATION_MOD2}:HIGH"
+			self.separation(ct.const.SEPARATION_MOD2)
 			print("ct.const.SEPARATION_MOD2 no settei ga hituyou")
 			self.writeMissionlog(5)
 			time.sleep(5)
