@@ -194,6 +194,8 @@ class Cansat():
 		
 		self.yunosu_pos = "Left"
 		self.last_pos = "Plan_A"
+		self.last_marker_num = 0
+
 		self.mkdir()
 
 		self.nowangle = 90  # サーボモータの角度
@@ -637,9 +639,12 @@ class Cansat():
 					self.state5_loopCount_color +=1
 			
 			if ids is not None:
-			# aruco.DetectedMarkers(frame, corners, ids)
+				if self.last_marker_num in ids:
+					ids = [self.last_marker_num]
+				else:
+					ids = ids[0]
 				for i in range(len(ids)):
-					if ids[i] in [3]:
+					if ids[i] in [1,2,3,4,5,6]:
 						
 						if self.state5_loopCount_ar == 1:
 							self.writeMissionlog(2)
@@ -841,8 +846,12 @@ class Cansat():
 					break
 					
 			if self.ids is not None:
+				if self.last_marker_num in self.ids:
+					self.ids = [self.last_marker_num]
+				else:
+					self.ids = self.ids[0]
 				for i in range(len(self.ids)):
-						if self.ids[i] in [0,1,2,3,4,5]:
+						if self.ids[i] in [1,2,3,4,5,6]:
 							self.flag_AR = True
 							rvec, tvec, _ = aruco.estimatePoseSingleMarkers(self.corners[i], self.marker_length, self.camera_matrix, self.distortion_coeff)
 							tvec = np.squeeze(tvec)
@@ -944,10 +953,12 @@ class Cansat():
 				self.flag_COLOR = True
 
 			if ids is not None:
-			# aruco.DetectedMarkers(frame, corners, ids)
+				if self.last_marker_num in ids:
+					ids = [self.last_marker_num]
+				else:
+					ids = ids[0]
 				for i in range(len(ids)):
-					
-					if ids[i] in [3]:
+					if ids[i] in [1,2,3,4,5,6]:
 						rvec, tvec, _ = aruco.estimatePoseSingleMarkers(corners[i], self.marker_length, self.camera_matrix, self.distortion_coeff)
 						tvec = np.squeeze(tvec)
 						rvec = np.squeeze(rvec)
@@ -1292,7 +1303,7 @@ class Cansat():
 		print(f"\033[33m", f"adjust angle : tvec = {tvec}", "\033[0m")	
 
 		self.distanceAR = (tvec[0]**2+tvec[1]**2+tvec[2]**2)**(1/2)
-		if tvec[0] > 0.01:
+		if tvec[0] > 0.015:
 			if self.nowangle >= 110:
 				print("=@=@=servo: "+str(self.nowangle),">110")
 				return False
@@ -1300,7 +1311,7 @@ class Cansat():
 				self.nowangle += 3
 				self.servo.go_deg(self.nowangle)
 				print("=@=@=servo: "+str(self.nowangle),"B")
-		elif tvec[0] < -0.01:
+		elif tvec[0] < -0.015:
 			if self.nowangle <= 60:
 				print("=@=@=servo: "+str(self.nowangle),"<=60")
 				return False
