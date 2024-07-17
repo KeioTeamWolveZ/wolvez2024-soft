@@ -219,10 +219,18 @@ class Cansat():
 	def writeData(self):
 		"""
   			データの記録
+			releasing_state: self.releasing_state = 1
+			self.closing_state = 1
+			print("control_log1 : ",self.control_log1)
+			print("control_log2 : ",self.control_log2)
+			print("control_log_rv :",self.control_log_rv) 
+			print("control_log_lv :",self.control_log_lv) 
   		"""
         
 		datalog = str(self.timer) + ","\
                   + "state:"+str(self.state) + ","\
+		  + "releasing_state:"+str(self.releasing_state) + ","\
+		  + "closing_state:"+str(self.closing_state) + ","\
                   + "Time:"+str(self.gps.Time) + ","\
                   + "Lat:"+str(self.gps.Lat).rjust(6) + ","\
                   + "Lng:"+str(self.gps.Lon).rjust(6) + ","\
@@ -231,7 +239,11 @@ class Cansat():
                   + "az:"+str(self.az).rjust(6) + ","\
                   + "q:"+str(self.ex).rjust(6) + ","\
                   + "pressure:"+str(self.pressure).rjust(6) + ","\
-                  + "cameraCount:"+str(self.cameraCount).rjust(6)
+                  + "cameraCount:"+str(self.cameraCount).rjust(6)\
+		  + "control_log1:"+str(self.control_log1).rjust(6) + ","\
+		  + "control_log2:"+str(self.control_log2).rjust(6) + ","\
+		  + "rv:"+str(self.control_log_rv).rjust(6) + ","\
+		  + "lv:"+str(self.control_log_lv).rjust(6)
 		print("-------",datalog,"\n-------")
 
 		with open(f'results/{self.startTime}/control_result.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
@@ -321,7 +333,7 @@ class Cansat():
 		
 		# ==========================================================
 		if self.flag_AR:
-			print("\033[43m","AR:",self.flag_AR,f" r={self.distanceAR}","\nx:",self.tvec[0],"y:",self.tvec[1],":",self.tvec[2],"\033[0m")
+			print("\033[43m","AR:",self.flag_AR,f" r={self.distanceAR}","\033[0m")
 		else:
 			print("\033[43m","AR:","\033[0m",self.flag_AR)
 		
@@ -681,11 +693,11 @@ class Cansat():
 								
 
 						elif distance_of_marker >= self.closing_threshold:
-							if tvec[0] >= 0.03:
+							if tvec[0] >= 0.02:
 								# ~ print("---時計周り---")
 								self.motor_control(65,-65,0.5)
 						
-							elif tvec[0] <= -0.03:
+							elif tvec[0] <= -0.05:
 								# ~ print("---反時計周り---")
 								self.motor_control(-65,65,0.5)
 							
@@ -697,11 +709,11 @@ class Cansat():
 
 						
 						elif self.closing_threshold >= distance_of_marker >= self.closing_threshold - self.CLOSING_RANGE_THRE:
-							if tvec[0] >= 0.03:
+							if tvec[0] >= 0.02:
 								# ~ print("---back 時計周り---")
 								self.motor_control(-55,-75,0.5)
 						
-							elif tvec[0] <= -0.03:
+							elif tvec[0] <= -0.05:
 								# ~ print("---back 反時計周り---")
 								self.motor_control(-75,-65,0.5)
 							
@@ -815,6 +827,7 @@ class Cansat():
 			while self.cam_pint > 3.0: #pint change start
 				# ~ print("pint:",self.cam_pint)
 				if self.ids is None:
+					self.flag_AR = False
 					self.cam_pint -= 0.5
 					# ~ print("pint:",self.cam_pint)
 					self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
@@ -824,11 +837,13 @@ class Cansat():
 					
 				
 				else:
+					self.flag_AR = True
 					break
 					
 			if self.ids is not None:
 				for i in range(len(self.ids)):
 						if self.ids[i] in [0,1,2,3,4,5]:
+							self.flag_AR = True
 							rvec, tvec, _ = aruco.estimatePoseSingleMarkers(self.corners[i], self.marker_length, self.camera_matrix, self.distortion_coeff)
 							tvec = np.squeeze(tvec)
 							self.justAngle = self.adjust_angle(tvec)
@@ -936,6 +951,7 @@ class Cansat():
 						rvec, tvec, _ = aruco.estimatePoseSingleMarkers(corners[i], self.marker_length, self.camera_matrix, self.distortion_coeff)
 						tvec = np.squeeze(tvec)
 						rvec = np.squeeze(rvec)
+						self.flag_AR = True
 						# 回転ベクトルからrodoriguesへ変換
 						rvec_matrix = cv2.Rodrigues(rvec)
 						rvec_matrix = rvec_matrix[0] # rodoriguesから抜き出し
@@ -1033,8 +1049,10 @@ class Cansat():
 				if cX:
 					print("==========================\n==========================\n")
 					self.cam_pint = 10.5
+					self.flag_COLOR = True
 					while self.cam_pint > 3.0: #pint change start
 						if ids is None:
+							self.flag_AR = False
 							self.cam_pint -= 0.5
 							print("pint:",self.cam_pint)
 							self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
@@ -1042,6 +1060,7 @@ class Cansat():
 							gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # グレースケールに変換
 							corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary)
 						else:
+							self.flag_AR = True
 							break
 					if self.cam_pint <= 3.5:
 						self.control_log1 = "closing"
@@ -1274,15 +1293,15 @@ class Cansat():
 
 		self.distanceAR = (tvec[0]**2+tvec[1]**2+tvec[2]**2)**(1/2)
 		if tvec[0] > 0.01:
-			if self.nowangle >= 160:
-				print("=@=@=servo: "+str(self.nowangle),">120")
+			if self.nowangle >= 110:
+				print("=@=@=servo: "+str(self.nowangle),">110")
 				return False
 			else:
 				self.nowangle += 3
 				self.servo.go_deg(self.nowangle)
 				print("=@=@=servo: "+str(self.nowangle),"B")
 		elif tvec[0] < -0.01:
-			if self.nowangle <= 30:
+			if self.nowangle <= 60:
 				print("=@=@=servo: "+str(self.nowangle),"<=60")
 				return False
 			else:
