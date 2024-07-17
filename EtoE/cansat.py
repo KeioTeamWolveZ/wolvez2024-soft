@@ -68,7 +68,7 @@ class Cansat():
 		self.servo.set_id(2)
 		# =============================================== カメラ =============================================== 
 		self.picam2 = Picamera2()
-		size = (1600, 2400)
+		size = (1800, 2400)
 		config = self.picam2.create_preview_configuration(
 		main={"format": 'XRGB8888', "size": size})
 		self.picam2.align_configuration(config)
@@ -87,9 +87,9 @@ class Cansat():
 		self.ar = Artools()
 		self.VEC_GOAL = [0.0,0.1968730025228114,0.3]
 		self.closing_threshold = 0.5
-		self.CLOSING_RANGE_THRE = 0.05
-		self.closing_threshold_2 = 0.2
-		self.CLOSING_RANGE_THRE_2 = 0.05
+		self.CLOSING_RANGE_THRE = 0.1
+		self.closing_threshold_2 = 0.25
+		self.CLOSING_RANGE_THRE_2 = 0.1
 		
 		# ================================================= LED ================================================= 
 		self.RED_LED = led(ct.const.RED_LED_PIN) # 
@@ -232,7 +232,7 @@ class Cansat():
                   + "q:"+str(self.ex).rjust(6) + ","\
                   + "pressure:"+str(self.pressure).rjust(6) + ","\
                   + "cameraCount:"+str(self.cameraCount).rjust(6)
-		print(datalog)
+		print("-------",datalog,"\n-------")
 
 		with open(f'results/{self.startTime}/control_result.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
 				test.write(datalog + '\n')
@@ -448,7 +448,7 @@ class Cansat():
 				self.cameraCount += 1
 				self.frame = self.picam2.capture_array()#0,self.results_img_dir+f'/{self.cameraCount}')
 				self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)	
-				cv2.imwrite(self.results_img_dir+f'/mission_{self.cameraCount}.jpg',self.frame2)
+				cv2.imwrite(self.results_img_dir+f'/right_{self.cameraCount}.jpg',self.frame2)
 				# 指定色のマスクを作成
 				mask_orange = self.color.mask_color(self.frame,ct.const.LOWER_ORANGE,ct.const.UPPER_ORANGE)
 				# 輪郭を抽出して最大の面積を算出し、線で囲む
@@ -460,7 +460,7 @@ class Cansat():
 				self.cameraCount += 1
 				self.frame = self.picam2.capture_array()#0,self.results_img_dir+f'/{self.cameraCount}')
 				self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
-				cv2.imwrite(self.results_img_dir+f'/mission_{self.cameraCount}.jpg',self.frame2)
+				cv2.imwrite(self.results_img_dir+f'/left_{self.cameraCount}.jpg',self.frame2)
 				# 指定色のマスクを作成
 				mask_orange = self.color.mask_color(self.frame,ct.const.LOWER_ORANGE,ct.const.UPPER_ORANGE)
 				# 輪郭を抽出して最大の面積を算出し、線で囲む
@@ -627,7 +627,7 @@ class Cansat():
 			if ids is not None:
 			# aruco.DetectedMarkers(frame, corners, ids)
 				for i in range(len(ids)):
-					if ids[i] in [0,1,2,3,4,5]:
+					if ids[i] in [3]:
 						
 						if self.state5_loopCount_ar == 1:
 							self.writeMissionlog(2)
@@ -664,7 +664,7 @@ class Cansat():
 							if tvec[0] >= 0.05:
 								turn_gain = 5*((self.closing_threshold + self.CLOSING_RANGE_THRE)/(distance_of_marker))**2
 								# ~ print("---右に曲がります---")
-								self.motor_control(40 + turn_gain,40,0.5)
+								self.motor_control(50 + turn_gain,60,0.5)
 							
 								
 							elif 0.05 > tvec[0] > -0.05:
@@ -676,18 +676,18 @@ class Cansat():
 							else:
 								turn_gain = 5*((self.closing_threshold + self.CLOSING_RANGE_THRE)/(distance_of_marker))**2
 								# ~ print("---左に曲がります---")
-								self.motor_control(40,40 + turn_gain,0.5)
+								self.motor_control(50,50 + turn_gain,0.5)
 								
 								
 
 						elif distance_of_marker >= self.closing_threshold:
 							if tvec[0] >= 0.03:
 								# ~ print("---時計周り---")
-								self.motor_control(45,-45,0.5)
+								self.motor_control(65,-65,0.5)
 						
 							elif tvec[0] <= -0.03:
 								# ~ print("---反時計周り---")
-								self.motor_control(-45,45,0.5)
+								self.motor_control(-65,65,0.5)
 							
 							else:
 								print("'\033[32m'---perfect REACHED---'\033[0m'")
@@ -699,15 +699,15 @@ class Cansat():
 						elif self.closing_threshold >= distance_of_marker >= self.closing_threshold - self.CLOSING_RANGE_THRE:
 							if tvec[0] >= 0.03:
 								# ~ print("---back 時計周り---")
-								self.motor_control(-35,-45,0.5)
+								self.motor_control(-55,-75,0.5)
 						
 							elif tvec[0] <= -0.03:
 								# ~ print("---back 反時計周り---")
-								self.motor_control(-45,-35,0.5)
+								self.motor_control(-75,-65,0.5)
 							
 							else:
 								# ~ print("---back---")
-								self.motor_control(-35,-35,0.5)
+								self.motor_control(-65,-65,0.5)
 						
 						elif distance_of_marker <= self.closing_threshold - self.CLOSING_RANGE_THRE:
 							self.control_log1 = "avoiding"
@@ -755,24 +755,24 @@ class Cansat():
 						self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
 						if x < width/2-100:
 							# ~ print(f"color:ARマーカー探してます(LEFT) (x={x})")
-							self.motor_control(-40,60,0.5)
+							self.motor_control(-60,80,0.5)
 						elif x > width/2+100:
 							# ~ print(f"color:ARマーカー探してます(RIGHT) (x={x})")
-							self.motor_control(60,40,0.5)
+							self.motor_control(80,-60,0.5)
 						else:
 							# ~ print(f"color:ARマーカー探してます(GO) (x={x})")
-							self.motor_control(50,50,0.5)
+							self.motor_control(60,60,0.5)
 					else:
 						self.control_log1 = "detect AR"
 							
 				elif self.yunosu_pos == "Left":
 					# ~ print("ARマーカー探してます(LEFT)")
 					self.control_log1 = "explore"
-					self.motor_control(-60,60,0.5)
+					self.motor_control(-70,70,0.4)
 					print("???????????????????????")
 				elif self.yunosu_pos == "Right":
 					# ~ print("ARマーカー探してます(RIGHT)")
-					self.motor_control(60,-60,0.5)
+					self.motor_control(70,-70,0.4)
 					self.control_log1 = "explore"
 					print("!!!!!!!!!!!!!!!!!!!!!!!")
 				   
@@ -780,7 +780,7 @@ class Cansat():
 			elif self.last_pos == "Plan_B":
 				self.lost_marker_cnt+=1
 				# ~ print("lost marker cnt +1")
-				self.control_log1 = "avoid"
+				self.control_log1 = "avoiding"
 				if self.lost_marker_cnt > 10:
 					if self.yunosu_pos == "Left":
 						gain1 = 30
@@ -931,7 +931,8 @@ class Cansat():
 			if ids is not None:
 			# aruco.DetectedMarkers(frame, corners, ids)
 				for i in range(len(ids)):
-					if ids[i] in [0,1,2,3,4,5]:
+					
+					if ids[i] in [3]:
 						rvec, tvec, _ = aruco.estimatePoseSingleMarkers(corners[i], self.marker_length, self.camera_matrix, self.distortion_coeff)
 						tvec = np.squeeze(tvec)
 						rvec = np.squeeze(rvec)
@@ -959,29 +960,29 @@ class Cansat():
 						if distance_of_marker >= self.closing_threshold_2 + self.CLOSING_RANGE_THRE_2:
 							if tvec[0] >= 0.05:
 								# ~ print("---右に曲がります---")
-								self.motor_control(70,60,0.3)
+								self.motor_control(80,65,0.4)
 							
 								
 							elif 0.05 > tvec[0] > -0.05:
 								go_ahead_gain = (distance_of_marker-self.closing_threshold_2) / self.closing_threshold_2
 								# ~ print("---motor GO AHEAD---")
-								self.motor_control(40+60*go_ahead_gain,40+60*go_ahead_gain,0.3)
+								self.motor_control(50+50*go_ahead_gain,50+0*go_ahead_gain,0.4)
 							
 							
 							else:
 								# ~ print("---左に曲がります---")
-								self.motor_control(60,70,0.3)
+								self.motor_control(65,80,0.4)
 								
 								
 
 						elif distance_of_marker >= self.closing_threshold_2:
 							if tvec[0] >= 0.03:
 								# ~ print("---時計周り---")
-								self.motor_control(45,-45,0.3)
+								self.motor_control(65,-65,0.4)
 						
 							elif tvec[0] <= -0.03:
 								# ~ print("---反時計周り---")
-								self.motor_control(-45,45,0.3)
+								self.motor_control(-65,65,0.4)
 							
 							else:
 								print("'\033[32m'---perfect REACHED 2---'\033[0m'")
@@ -995,28 +996,28 @@ class Cansat():
 						elif self.closing_threshold_2 >= distance_of_marker >= self.closing_threshold_2 - self.CLOSING_RANGE_THRE_2:
 							if tvec[0] >= 0.03:
 								# ~ print("---back 時計周り---")
-								self.motor_control(-35,-45,0.3)
+								self.motor_control(-65,-75,0.4)
 						
 							elif tvec[0] <= -0.03:
 								# ~ print("---back 反時計周り---")
-								self.motor_control(-45,-35,0.3)
+								self.motor_control(-75,-65,0.4)
 							
 							else:
 								# ~ print("---back---")
-								self.motor_control(-35,-35,0.3)
+								self.motor_control(-65,-65,0.4)
 						
 						elif distance_of_marker <= self.closing_threshold_2 - self.CLOSING_RANGE_THRE_2:
 							self.control_log1 = "avoiding"
 							if -50 <= angle_of_marker <= 0: #ARマーカがやや左から正面にある場合
 								# ~ print("時計周り")
-								self.motor_control(70,-70,0.2)
+								self.motor_control(70,-70,0.4)
 								yunosu_pos = "Left"
 								last_pos = "Plan_B"
 							
 							
 							elif 0 <= angle_of_marker <= 50: #ARマーカがやや右から正面にある場合
 								# ~ print("反時計周り")
-								self.motor_control(-70,70,0.2)
+								self.motor_control(-70,70,0.4)
 								yunosu_pos = "Right"
 								last_pos = "Plan_B"
 
@@ -1028,7 +1029,7 @@ class Cansat():
 
 			elif self.last_pos == "Plan_A" :#and not find_marker: #ARマーカを認識していない時，認識するまでその場回転
 				self.lost_marker_cnt+=1
-			if self.lost_marker_cnt > 10: # kore iru?
+			# ~ if self.lost_marker_cnt > 10: # kore iru?")
 				if cX:
 					print("==========================\n==========================\n")
 					self.cam_pint = 10.5
@@ -1050,30 +1051,30 @@ class Cansat():
 						self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
 						if x < width/2-100:
 							# ~ print(f"color:ARマーカー探してます(LEFT) (x={x})")
-							self.motor_control(-40,60,0.5)
+							self.motor_control(-60,80,0.5)
 						elif x > width/2+100:
 							# ~ print(f"color:ARマーカー探してます(RIGHT) (x={x})")
-							self.motor_control(60,40,0.5)
+							self.motor_control(80,-60,0.5)
 						else:
 							# ~ print(f"color:ARマーカー探してます(GO) (x={x})")
-							self.motor_control(50,50,0.5)
+							self.motor_control(70,70,0.5)
 					else:
 						self.control_log1 = "detect AR"
 						
 				elif self.yunosu_pos == "Left":
 					self.control_log1 = "explore"
 					# ~ print("ARマーカー探してます(LEFT)")
-					self.motor_control(-60,60,0.5)
+					self.motor_control(-70,70,0.5)
 				elif self.yunosu_pos == "Right":
 					self.control_log1 = "explore"
 					# ~ print("ARマーカー探してます(RIGHT)")
-					self.motor_control(60,-60,0.5)
+					self.motor_control(70,-70,0.5)
 				
 
 			elif self.last_pos == "Plan_B":
 				self.lost_marker_cnt+=1
 				# ~ print("lost marker cnt +1")
-				self.control_log1 = "avoid"
+				self.control_log1 = "avoiding"
 				if self.lost_marker_cnt > 10:
 					if self.yunosu_pos == "Left":
 						gain1 = 30
@@ -1096,7 +1097,6 @@ class Cansat():
 			self.cameraCount += 1
 			self.frame = self.picam2.capture_array()
 			self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
-			cv2.imwrite(self.results_img_dir+f'/mission_{self.cameraCount}.jpg',self.frame2)
 			height = self.frame2.shape[0]
 			width = self.frame2.shape[1]
 			
@@ -1123,11 +1123,13 @@ class Cansat():
 					if contours_blue:
 						max_contour = max(contours_blue, key=cv2.contourArea)
 						hull = cv2.convexHull(max_contour)
+						cv2.drawContours(self.frame2, [hull], -1, (0, 0, 255), 3)
 
 					contours_red, _ = cv2.findContours(mask_red, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 					if contours_red:
 						max_contour = max(contours_red, key=cv2.contourArea)
 						if cv2.contourArea(max_contour) > ct.const.MAX_CONTOUR_THRESHOLD//10:  # 面積が1000より大きい場合のみ描画
+							cv2.drawContours(self.frame2, [max_contour], -1, (0, 255, 0), 3)
 							M = cv2.moments(max_contour)
 							if M["m00"] != 0:
 								cX = int(M["m10"] / M["m00"])
@@ -1140,12 +1142,14 @@ class Cansat():
 										print("\033[33m~~~ OUTSIDE ~~~\033[0m")
 								except :
 									pass
-				self.motor_control(-50,-50,0.5)
+				self.motor_control(-70,-70,0.5)
 				time.sleep(1)
 				self.judge_cnt += 1
 			else:
 				time.sleep(3)
-				self.state = 8
+				self.state = 7
+			
+			cv2.imwrite(self.results_img_dir+f'/mission_{self.cameraCount}.jpg',self.frame2)
 			pass
 
 	def stuck_detection(self):
@@ -1270,19 +1274,21 @@ class Cansat():
 
 		self.distanceAR = (tvec[0]**2+tvec[1]**2+tvec[2]**2)**(1/2)
 		if tvec[0] > 0.01:
-			if self.nowangle >= 180:
+			if self.nowangle >= 160:
+				print("=@=@=servo: "+str(self.nowangle),">120")
 				return False
 			else:
-				self.nowangle += 5
+				self.nowangle += 3
 				self.servo.go_deg(self.nowangle)
-				print("servo: "+str(self.nowangle),"B")
+				print("=@=@=servo: "+str(self.nowangle),"B")
 		elif tvec[0] < -0.01:
-			if self.nowangle <= 0:
+			if self.nowangle <= 30:
+				print("=@=@=servo: "+str(self.nowangle),"<=60")
 				return False
 			else:
-				self.nowangle -= 5
+				self.nowangle -= 3
 				self.servo.go_deg(self.nowangle)
-				print("servo: "+str(self.nowangle),"A")
+				print("=@=@=servo: "+str(self.nowangle),"A")
 		else:
 			return True
 

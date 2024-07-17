@@ -13,7 +13,7 @@ elif int(camera) == 2:
     from picamera2 import Picamera2
     from libcamera import controls
     picam2 = Picamera2()
-    size = (1800, 1000)
+    size = (1800, 2400)
     config = picam2.create_preview_configuration(
                 main={"format": 'XRGB8888', "size": size})
     picam2.align_configuration(config)
@@ -37,8 +37,8 @@ while len(objpoints) < reference_img:
     if int(camera) == 1:
         ret, img = cap.read()
     elif int(camera) == 2:
-        img = picam2.capture_array()
-
+        frame = picam2.capture_array()
+    img = cv2.rotate(frame,cv2.ROTATE_90_CLOCKWISE)
     height = img.shape[0]
     width = img.shape[1]
 
@@ -69,8 +69,8 @@ if int(camera) == 1:
     np.save("mtx_laptop", mtx) # カメラ行列
     np.save("dist_laptop", dist.ravel()) # 歪みパラメータ
 elif int(camera) == 2:
-    np.save("mtx", mtx)
-    np.save("dist", dist.ravel())
+    np.save("mtx_new", mtx)
+    np.save("dist_new", dist.ravel())
 
 # 計算結果を表示
 print("RMS = ", ret)

@@ -12,8 +12,8 @@ from camera_rotation import camera_rotation
 dictionary = aruco.getPredefinedDictionary(aruco.DICT_ARUCO_ORIGINAL)
 # マーカーサイズの設定
 marker_length = 0.02  # マーカーの1辺の長さ（メートル）
-camera_matrix = np.load("mtx.npy")
-distortion_coeff = np.load("dist.npy")
+camera_matrix = np.load("mtx_new.npy")
+distortion_coeff = np.load("dist_new.npy")
 
 # ==============================カメラの設定==============================
 
@@ -24,7 +24,7 @@ elif int(camera) == 2:
     from picamera2 import Picamera2 #laptopでは使わないため
     from libcamera import controls #laptopでは使わないため
     picam2 = Picamera2()
-    size = (2200, 2800)
+    size = (1800, 2400)
     config = picam2.create_preview_configuration(
                 main={"format": 'XRGB8888', "size": size})
 
@@ -94,6 +94,7 @@ while True:
                         print("x : " + str(tvec[0]))
                         print("y : " + str(tvec[1]))
                         print("z : " + str(tvec[2]))
+                        print("norm : " + str((tvec[0]**2+tvec[1]**2+tvec[2]**2)**(1/2)))
                         # print("roll : " + str(euler_angle[0]))
                         # print("pitch: " + str(euler_angle[1]))
                         # print("yaw  : " + str(euler_angle[2]))

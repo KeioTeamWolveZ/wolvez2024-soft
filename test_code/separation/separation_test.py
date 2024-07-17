@@ -5,7 +5,7 @@ import time
 #pin2 = 24 center
 #pin3 = 8 left
 
-pin1 = 24
+pin1 = 8
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(pin1,GPIO.OUT) #焼き切り用のピンの設定tv 
