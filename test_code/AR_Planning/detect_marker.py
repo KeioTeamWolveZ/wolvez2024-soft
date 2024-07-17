@@ -24,7 +24,7 @@ elif int(camera) == 2:
     from picamera2 import Picamera2 #laptopでは使わないため
     from libcamera import controls #laptopでは使わないため
     picam2 = Picamera2()
-    size = (1800, 2400)
+    size = (1200, 2800)
     config = picam2.create_preview_configuration(
                 main={"format": 'XRGB8888', "size": size})
 

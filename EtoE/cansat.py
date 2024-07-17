@@ -642,7 +642,8 @@ class Cansat():
 				if self.last_marker_num in ids:
 					ids = [self.last_marker_num]
 				else:
-					ids = ids[0]
+					ids = [ids[0]]
+					self.last_marker_num = ids[0]
 				for i in range(len(ids)):
 					if ids[i] in [1,2,3,4,5,6]:
 						
@@ -849,7 +850,8 @@ class Cansat():
 				if self.last_marker_num in self.ids:
 					self.ids = [self.last_marker_num]
 				else:
-					self.ids = self.ids[0]
+					self.ids = [self.ids[0]]
+					self.last_marker_num = self.ids[0]
 				for i in range(len(self.ids)):
 						if self.ids[i] in [1,2,3,4,5,6]:
 							self.flag_AR = True
@@ -956,7 +958,8 @@ class Cansat():
 				if self.last_marker_num in ids:
 					ids = [self.last_marker_num]
 				else:
-					ids = ids[0]
+					ids = [ids[0]]
+					self.last_marker_num = ids[0]
 				for i in range(len(ids)):
 					if ids[i] in [1,2,3,4,5,6]:
 						rvec, tvec, _ = aruco.estimatePoseSingleMarkers(corners[i], self.marker_length, self.camera_matrix, self.distortion_coeff)

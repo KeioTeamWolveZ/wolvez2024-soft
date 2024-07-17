@@ -62,7 +62,7 @@ const.UPPER_ORANGE = np.array([55, 255, 255])
 const.LOWER_BLUE = np.array([105, 56, 0])
 const.UPPER_BLUE = np.array([150, 255, 255])
 
-const.MAX_CONTOUR_THRESHOLD = 1000
+const.MAX_CONTOUR_THRESHOLD = 100
 
 const.SEPARATION_TIME_THRE = 5 #焼き切り時間
 const.LANDING_MOTOR_TIME_THRE = 10 #分離シートから離れるためにモータを回転させる時間

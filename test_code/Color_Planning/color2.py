@@ -49,8 +49,8 @@ TorF = True
 # ar = Artools()
 
 # ==============================オレンジ色検出のためのHSV値の設定==============================
-lower_orange = np.array([0, 220, 158])
-upper_orange = np.array([55, 255, 255])
+lower_orange = np.array([105, 56, 0])
+upper_orange = np.array([150, 250, 250])
 
 # ==============================Tkinter GUIの設定==============================
 def update_values():

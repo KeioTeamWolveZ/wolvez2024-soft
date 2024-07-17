@@ -1,10 +1,10 @@
 import pigpio
-from cansat import Cansat 
+from cansat2 import Cansat 
 import time 
 import RPi.GPIO as GPIO
 
 
-start_state = 5
+start_state = 0
 end_state = 8
 sepa_mode = False
 
