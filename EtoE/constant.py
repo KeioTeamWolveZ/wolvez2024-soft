@@ -59,8 +59,8 @@ const.PARA_ESCAPE_TIME_THRE = 10
 
 const.LOWER_ORANGE = np.array([0, 220, 158])
 const.UPPER_ORANGE = np.array([55, 255, 255])
-const.LOWER_BLUE = np.array([105, 56, 0])
-const.UPPER_BLUE = np.array([150, 255, 255])
+const.LOWER_BLUE = np.array([90, 96, 90])
+const.UPPER_BLUE = np.array([137, 225, 255])
 
 const.MAX_CONTOUR_THRESHOLD = 100
 

@@ -80,7 +80,7 @@ class Cansat():
 		# =============================================== ARマーカ ===============================================
 		self.dictionary = aruco.getPredefinedDictionary(aruco.DICT_ARUCO_ORIGINAL)
 		# マーカーサイズの設定
-		self.marker_length = 0.0215  # マーカーの1辺の長さ（メートル）
+		self.marker_length = 0.017  # マーカーの1辺の長さ（メートル）
 		self.camera_matrix = np.load("mtx.npy")
 		self.distortion_coeff = np.load("dist.npy")
 		self.find_marker = False
@@ -362,6 +362,7 @@ class Cansat():
 		self.bno055.bnoInitial()
 		self.lora.sendDevice.setup_lora()
 		#self.arm.setup()
+		self.servo.go_deg(self.nowangle)
 		if self.bno055.begin() is not True:
 			print("Error initializing device")
 			exit()
@@ -622,7 +623,7 @@ class Cansat():
 			self.cameraCount += 1
 			self.frame = self.picam2.capture_array()
 			self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
-			cv2.imwrite(self.results_img_dir+f'/{self.cameraCount}.jpg',self.frame2)
+			
 			height = self.frame2.shape[0]
 			width = self.frame2.shape[1]
 			gray = cv2.cvtColor(self.frame2, cv2.COLOR_BGR2GRAY) # グレースケールに変換
@@ -633,6 +634,24 @@ class Cansat():
 			# 輪郭を抽出して最大の面積を算出し、線で囲む
 			mask_blue,cX,cY,max_contour_area = self.color.detect_color(mask_blue,ct.const.MAX_CONTOUR_THRESHOLD)
 			#print("cX:",cX,"cY:",cY,"max_contour_area:",max_contour_area)
+			
+			lower_blue = np.array([90, 40, 26])
+			upper_blue = np.array([135, 250, 250])
+
+			hsv = cv2.cvtColor(self.frame2, cv2.COLOR_BGR2HSV)
+			mask_blue2 = cv2.inRange(hsv, lower_blue, upper_blue)
+			# 形態学的処理（膨張と収縮）を追加
+			kernel = np.ones((10,10), np.uint8)
+			mask_blue2 = cv2.morphologyEx(mask_blue2, cv2.MORPH_OPEN, kernel)
+			mask_blue2 = cv2.morphologyEx(mask_blue2, cv2.MORPH_CLOSE, kernel)
+
+			# 輪郭を抽出して最大の面積を算出し、線で囲む
+			contours_blue, _ = cv2.findContours(mask_blue2, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+			if contours_blue:
+				max_contour = max(contours_blue, key=cv2.contourArea)
+				hull = cv2.convexHull(max_contour)
+				cv2.drawContours(self.frame2, [hull], -1, (0, 0, 255), 3)
+			cv2.imwrite(self.results_img_dir+f'/{self.cameraCount}.jpg',self.frame2)
 			
 			if cX: # color:true
 				self.flag_COLOR = True
@@ -715,30 +734,30 @@ class Cansat():
 							if tvec[0] >= 0.05:
 								turn_gain = 5*((self.closing_threshold + self.CLOSING_RANGE_THRE)/(distance_of_marker))**2
 								# ~ print("---右に曲がります---")
-								self.motor_control(50 + turn_gain,60,0.5)
+								self.motor_control(65 + turn_gain,65,0.5)
 							
 								
 							elif 0.05 > tvec[0] > -0.13:
 								go_ahead_gain = (distance_of_marker-self.closing_threshold) / self.closing_threshold
 								# ~ print("---motor GO AHEAD---")
-								self.motor_control(40+60*go_ahead_gain,40+60*go_ahead_gain,0.5)
+								self.motor_control(50+50*go_ahead_gain,50+50*go_ahead_gain,0.5)
 							
 							
 							else:
 								turn_gain = 5*((self.closing_threshold + self.CLOSING_RANGE_THRE)/(distance_of_marker))**2
 								# ~ print("---左に曲がります---")
-								self.motor_control(50,50 + turn_gain,0.5)
+								self.motor_control(65,65 + turn_gain,0.5)
 								
 								
 
 						elif distance_of_marker >= self.closing_threshold:
 							if tvec[0] >= 0.05:
 								# ~ print("---時計周り---")
-								self.motor_control(65,-65,0.5)
+								self.motor_control(65,-65,0.4)
 						
 							elif tvec[0] <= -0.13:
 								# ~ print("---反時計周り---")
-								self.motor_control(-65,65,0.5)
+								self.motor_control(-65,65,0.4)
 							
 							else:
 								print("'\033[32m'---perfect REACHED---'\033[0m'")
@@ -750,15 +769,15 @@ class Cansat():
 						elif self.closing_threshold >= distance_of_marker >= self.closing_threshold - self.CLOSING_RANGE_THRE:
 							if tvec[0] >= 0.05:
 								# ~ print("---back 時計周り---")
-								self.motor_control(-55,-75,0.5)
+								self.motor_control(-55,-70,0.4)
 						
 							elif tvec[0] <= -0.13:
 								# ~ print("---back 反時計周り---")
-								self.motor_control(-75,-65,0.5)
+								self.motor_control(-70,-55,0.4)
 							
 							else:
 								# ~ print("---back---")
-								self.motor_control(-65,-65,0.5)
+								self.motor_control(-60,-60,0.4)
 						
 						elif distance_of_marker <= self.closing_threshold - self.CLOSING_RANGE_THRE:
 							self.control_log1 = "avoiding"
@@ -788,13 +807,13 @@ class Cansat():
 						self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
 						if x < width/2-100:
 							# ~ print(f"color:ARマーカー探してます(LEFT) (x={x})")
-							self.motor_control(-60,80,0.5)
+							self.motor_control(-55,70,0.5)
 						elif x > width/2+100:
 							# ~ print(f"color:ARマーカー探してます(RIGHT) (x={x})")
-							self.motor_control(80,-60,0.5)
+							self.motor_control(70,-55,0.5)
 						else:
 							# ~ print(f"color:ARマーカー探してます(GO) (x={x})")
-							self.motor_control(60,60,0.5)
+							self.motor_control(65,65,0.5)
 					else:
 						if self.yunosu_pos == "Left":
 							# ~ print("ARマーカー探してます(LEFT)")
@@ -951,7 +970,7 @@ class Cansat():
 			self.cameraCount += 1
 			self.frame = self.picam2.capture_array()
 			self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
-			cv2.imwrite(self.results_img_dir+f'/{self.cameraCount}.jpg',self.frame2)
+			
 			height = self.frame2.shape[0]
 			width = self.frame2.shape[1]
 			gray = cv2.cvtColor(self.frame2, cv2.COLOR_BGR2GRAY) # グレースケールに変換
@@ -962,6 +981,24 @@ class Cansat():
 			# 輪郭を抽出して最大の面積を算出し、線で囲む
 			mask_blue,cX,cY,max_contour_area = self.color.detect_color(mask_blue,ct.const.MAX_CONTOUR_THRESHOLD)
 			#print("cX:",cX,"cY:",cY,"max_contour_area:",max_contour_area)
+			
+			lower_blue = np.array([90, 90, 109])
+			upper_blue = np.array([135, 220, 250])
+
+			hsv = cv2.cvtColor(self.frame2, cv2.COLOR_BGR2HSV)
+			mask_blue2 = cv2.inRange(hsv, lower_blue, upper_blue)
+			# 形態学的処理（膨張と収縮）を追加
+			kernel = np.ones((10,10), np.uint8)
+			mask_blue2 = cv2.morphologyEx(mask_blue2, cv2.MORPH_OPEN, kernel)
+			mask_blue2 = cv2.morphologyEx(mask_blue2, cv2.MORPH_CLOSE, kernel)
+
+			# 輪郭を抽出して最大の面積を算出し、線で囲む
+			contours_blue, _ = cv2.findContours(mask_blue2, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+			if contours_blue:
+				max_contour = max(contours_blue, key=cv2.contourArea)
+				hull = cv2.convexHull(max_contour)
+				cv2.drawContours(self.frame2, [hull], -1, (0, 0, 255), 3)
+			cv2.imwrite(self.results_img_dir+f'/{self.cameraCount}.jpg',self.frame2)
 			
 			if cX: # color:true
 				self.flag_COLOR = True
@@ -1043,30 +1080,30 @@ class Cansat():
 							if tvec[0] >= 0.05:
 								turn_gain = 5*((self.closing_threshold + self.CLOSING_RANGE_THRE)/(distance_of_marker))**2
 								# ~ print("---右に曲がります---")
-								self.motor_control(50 + turn_gain,60,0.5)
+								self.motor_control(60 + turn_gain,60,0.4)
 							
 								
 							elif 0.1 > tvec[0] > -0.1:
 								go_ahead_gain = (distance_of_marker-self.closing_threshold) / self.closing_threshold
 								# ~ print("---motor GO AHEAD---")
-								self.motor_control(40+60*go_ahead_gain,40+60*go_ahead_gain,0.5)
+								self.motor_control(60+60*go_ahead_gain,60+60*go_ahead_gain,0.4)
 							
 							
 							else:
 								turn_gain = 5*((self.closing_threshold + self.CLOSING_RANGE_THRE)/(distance_of_marker))**2
 								# ~ print("---左に曲がります---")
-								self.motor_control(50,50 + turn_gain,0.5)
+								self.motor_control(50,50 + turn_gain,0.4)
 								
 								
 
 						elif distance_of_marker >= 0.18:
 							if tvec[0] >= 0.05:
 								# ~ print("---時計周り---")
-								self.motor_control(65,-65,0.5)
-						
+								self.motor_control(65,-65,0.4)
+					
 							elif tvec[0] <= -0.05:
 								# ~ print("---反時計周り---")
-								self.motor_control(-65,65,0.5)
+								self.motor_control(-65,65,0.4)
 							
 							else:
 								print("'\033[32m'---perfect REACHED---'\033[0m'")
@@ -1077,7 +1114,7 @@ class Cansat():
 						elif  18 >= distance_of_marker >= 0.18 - self.CLOSING_RANGE_THRE:
 							if tvec[0] >= 0.05:
 								# ~ print("---back 時計周り---")
-								self.motor_control(-55,-75,0.5)
+								self.motor_control(-55,-75,0.4)
 						
 							elif tvec[0] <= -0.05:
 								# ~ print("---back 反時計周り---")
@@ -1085,21 +1122,21 @@ class Cansat():
 							
 							else:
 								# ~ print("---back---")
-								self.motor_control(-65,-65,0.5)
+								self.motor_control(-65,-65,0.4)
 						
 						elif distance_of_marker <= 0.18 - self.CLOSING_RANGE_THRE:
 							print(f"=={distance_of_marker} <= 18 - {self.CLOSING_RANGE_THRE}")
 							self.control_log1 = "avoiding"
 							if -50 <= angle_of_marker <= 0: #ARマーカがやや左から正面にある場合
 								# ~ print("時計周り")
-								self.motor_control(70,-70,0.3)
+								self.motor_control(70,-70,0.35)
 								self.yunosu_pos = "Left"
 								self.last_pos = "Plan_B"
 							
 							
 							elif 0 <= angle_of_marker <= 50: #ARマーカがやや右から正面にある場合
 								# ~ print("反時計周り")
-								self.motor_control(-70,70,0.3)
+								self.motor_control(-70,70,0.35)
 								self.yunosu_pos = "Right"
 								self.last_pos = "Plan_B"
 						
@@ -1116,21 +1153,21 @@ class Cansat():
 						self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
 						if x < width/2-100:
 							# ~ print(f"color:ARマーカー探してます(LEFT) (x={x})")
-							self.motor_control(-60,80,0.5)
+							self.motor_control(-60,80,0.4)
 						elif x > width/2+100:
 							# ~ print(f"color:ARマーカー探してます(RIGHT) (x={x})")
-							self.motor_control(80,-60,0.5)
+							self.motor_control(80,-60,0.4)
 						else:
 							# ~ print(f"color:ARマーカー探してます(GO) (x={x})")
-							self.motor_control(60,60,0.5)
+							self.motor_control(60,60,0.4)
 					else:
 						if self.yunosu_pos == "Left":
 							# ~ print("ARマーカー探してます(LEFT)")
 							self.control_log1 = "explore"
-							self.motor_control(-70,70,0.4)
+							self.motor_control(-70,70,0.35)
 						else:
 							# ~ print("ARマーカー探してます(RIGHT)")
-							self.motor_control(70,-70,0.4)
+							self.motor_control(70,-70,0.35)
 							self.control_log1 = "explore"
 						pass
 
