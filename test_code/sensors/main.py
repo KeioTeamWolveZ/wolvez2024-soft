@@ -29,6 +29,7 @@ def logging(states):
                   + "ax:"+str(round(ax,6)).rjust(6) + ","\
                   + "ay:"+str(round(ay,6)).rjust(6) + ","\
                   + "az:"+str(round(az,6)).rjust(6) + ","\
+                  + "gz:"+str(round(gz,6)).rjust(6) + ","\
                   + "q:" + str(ex).rjust(6) + ","\
                   + "rV:" + str(round(MotorR.velocity,2)).rjust(4) + ","\
                   + "lV:" + str(round(MotorL.velocity,2)).rjust(4) + ","\
@@ -64,6 +65,7 @@ if __name__ == '__main__':
             ax=round(bno.ax,3)
             ay=round(bno.ay,3)
             az=round(bno.az,3)
+            gz = round(bno.gz,3)
             ex=round(bno.ex,3)
             bno_data = [ax,ay,az]
             gps_data = gps.gpsread()
