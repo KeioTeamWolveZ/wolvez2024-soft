@@ -33,8 +33,8 @@ const.FLIGHTPIN_PIN = 4
 
 ## Variables
 # Goal information
-const.GPS_GOAL_LAT = 40.142614  # 南緯は負の値で与える
-const.GPS_GOAL_LON = 139.987489 # 西経は負の値で与える
+const.GPS_GOAL_LAT = 35.55500000  # 南緯は負の値で与える
+const.GPS_GOAL_LON = 139.65600000 # 西経は負の値で与える
 const.GOAL_DISTANCE_THRE = 0.0005 # [km] (50 [cm])
 
 # # Motor VREF
@@ -78,7 +78,7 @@ const.AVOID_COLOR_THRE = 20 #色認識されなかった合計回数の閾値
 const.EARTH_RADIUS = 6378.137 # [km]
 
 # # Stack
-const.STUCK_ACC_THRE = 0.7
-const.STUCK_COUNT_THRE = 7
+const.STUCK_ACC_THRE = 0.75
+const.STUCK_COUNT_THRE = 5
 const.MIRRER_COUNT_THRE = 10
 const.VANISH_BY_STUCK_THRE = 240 # ステート6で長時間何も見えなかった場合
