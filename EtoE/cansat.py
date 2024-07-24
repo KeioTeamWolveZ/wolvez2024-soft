@@ -1189,10 +1189,10 @@ class Cansat():
 		print(self.ax**2+self.ay**2)
 		if (self.ax**2+self.ay**2) <= ct.const.STUCK_ACC_THRE**2 or (self.ax**2+self.ay**2) > 8:
 			print("stack??")
-			if self.stuckTime == 0:
-				self.stuckTime = time.time()
+			# if self.stuckTime == 0: # kore iru ?????
+				# self.stuckTime = time.time()
 			
-			if self.countstuckLoop > ct.const.STUCK_COUNT_THRE or self.state == 1 or self.state >= 6 or self.mirror_count > 10: #加速度が閾値以下になるケースがある程度続いたらスタックと判定
+			if self.countstuckLoop > ct.const.STUCK_COUNT_THRE or self.mirror_count > 10 or self.state >= 7: #加速度が閾値以下になるケースがある程度続いたらスタックと判定
 				#トルネード実施
 				print("===================stuck====================")
 				self.motor1.back(ct.const.STUCK_MOTOR_VREF)
@@ -1209,16 +1209,19 @@ class Cansat():
 				self.lv = -ct.const.STUCK_MOTOR_VREF
 				self.countstuckLoop = 0
 				self.stuckTime = 0
+				if self.state == 1
+					self.escapeTime -= 5
 
 			self.countstuckLoop+= 1
 
 		else:
-			# ~ self.countstuckLoop = 0 # change 0 when state chenge
+			self.countstuckLoop = 0 # change 0 when state chenge
 			self.stuckTime = 0
 				
 	def upsidedown_checker(self):
 		# 逆さまの検知（着地時に実施を想定）
-		if self.gz < 5: # gz?が閾値以下で逆さまと判定
+		print("mirror:",self.mirror_count)
+		if self.gz < 3: # gz?が閾値以下で逆さまと判定
 			self.mirror_count += 1
 			self.mirror = True
 		else:
