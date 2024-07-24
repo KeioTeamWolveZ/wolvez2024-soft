@@ -195,6 +195,7 @@ class Cansat():
 		self.yunosu_pos = "Left"
 		self.last_pos = "Plan_A"
 		self.last_marker_num = 0
+		self.past_flag = False
 
 		self.mkdir()
 
@@ -663,6 +664,7 @@ class Cansat():
 						euler_angle = cv2.decomposeProjectionMatrix(proj_matrix)[6]  # オイラー角への変換[deg]
 						self.prev = list(self.prev)
 						self.lost_marker_cnt = 0
+						self.past_flag == True
 
 						
 						self.reject_count = 0
@@ -683,6 +685,7 @@ class Cansat():
 								turn_gain = 5*((self.closing_threshold + self.CLOSING_RANGE_THRE)/(distance_of_marker))**2
 								# ~ print("---右に曲がります---")
 								self.motor_control(50 + turn_gain,60,0.5)
+								self.yunosu_pos == "Left"
 							
 								
 							elif 0.05 > tvec[0] > -0.05:
@@ -695,6 +698,7 @@ class Cansat():
 								turn_gain = 5*((self.closing_threshold + self.CLOSING_RANGE_THRE)/(distance_of_marker))**2
 								# ~ print("---左に曲がります---")
 								self.motor_control(50,50 + turn_gain,0.5)
+								self.yunosu_pos == "Right"
 								
 								
 
@@ -784,15 +788,23 @@ class Cansat():
 						self.control_log1 = "detect AR"
 							
 				elif self.yunosu_pos == "Left":
-					# ~ print("ARマーカー探してます(LEFT)")
-					self.control_log1 = "explore"
-					self.motor_control(-70,70,0.4)
-					print("???????????????????????")
+					if self.past_flag == True:
+						self.control_log1 = "explore"
+						self.motor_control(-60,60,0.3)
+					else:
+						# ~ print("ARマーカー探してます(LEFT)")
+						self.control_log1 = "explore"
+						self.motor_control(-70,70,0.4)
+						print("???????????????????????")
 				elif self.yunosu_pos == "Right":
-					# ~ print("ARマーカー探してます(RIGHT)")
-					self.motor_control(70,-70,0.4)
-					self.control_log1 = "explore"
-					print("!!!!!!!!!!!!!!!!!!!!!!!")
+					if self.past_flag == True:
+						self.control_log1 = "explore"
+						self.motor_control(60,-60,0.3)
+					else:
+						# ~ print("ARマーカー探してます(RIGHT)")
+						self.motor_control(70,-70,0.4)
+						self.control_log1 = "explore"
+						print("!!!!!!!!!!!!!!!!!!!!!!!")
 				   
 
 			elif self.last_pos == "Plan_B":
