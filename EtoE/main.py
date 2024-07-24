@@ -4,8 +4,8 @@ import time
 import RPi.GPIO as GPIO
 
 
-start_state = 3
-end_state = 4
+start_state = 5
+end_state = 8
 sepa_mode = False
 
 try:	
@@ -24,3 +24,4 @@ except KeyboardInterrupt:
     print(cansat.startTime)
     print(cansat.keyboardinterrupt)
     GPIO.cleanup()
+

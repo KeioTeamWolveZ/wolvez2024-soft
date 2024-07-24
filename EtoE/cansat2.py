@@ -86,8 +86,8 @@ class Cansat():
 		self.find_marker = False
 		self.ar = Artools()
 		self.VEC_GOAL = [0.0,0.1968730025228114,0.3]
-		self.closing_threshold = 0.5
-		self.CLOSING_RANGE_THRE = 0.1
+		self.closing_threshold = 0.4
+		self.CLOSING_RANGE_THRE = 0.05
 		self.closing_threshold_2 = 0.25
 		self.CLOSING_RANGE_THRE_2 = 0.1
 		
@@ -194,6 +194,7 @@ class Cansat():
 		
 		self.yunosu_pos = "Left"
 		self.last_pos = "Plan_A"
+		self.past_flag = False
 		self.last_marker_num = 0
 		self.distanceAR = 999
 
@@ -352,6 +353,7 @@ class Cansat():
 		print("control_log_lv :",self.control_log_lv) 
 		print("yunosu_pos : ",self.yunosu_pos)
 		print("last_pos : ",self.last_pos)
+		print("pst_flag:",self.past_flag)
 	
 		
 		
@@ -655,6 +657,7 @@ class Cansat():
 			
 			if cX: # color:true
 				self.flag_COLOR = True
+				self.GREEN_LED.led_on()
 				if self.state5_loopCount_color == 1:
 					self.writeMissionlog()
 					self.state5_loopCount_color +=1
@@ -690,6 +693,7 @@ class Cansat():
 						
 			
 			if ids is not None:
+				self.BLUE_LED.led_on()
 				if self.last_marker_num in ids:
 					ids = [self.last_marker_num]
 				else:
@@ -701,11 +705,15 @@ class Cansat():
 						if self.state5_loopCount_ar == 1:
 							self.writeMissionlog(2)
 							self.state5_loopCount_ar +=1
-						
+						self.past_flag = True
 						self.flag_AR = True
 						rvec, tvec, _ = aruco.estimatePoseSingleMarkers(corners[i], self.marker_length, self.camera_matrix, self.distortion_coeff)
 						tvec = np.squeeze(tvec)
 						rvec = np.squeeze(rvec)
+						if tvec[0] > 0:
+							self.yunosu_pos = "Right"
+						else:
+							self.yunosu_pos = "Left"
 						# 回転ベクトルからrodoriguesへ変換
 						rvec_matrix = cv2.Rodrigues(rvec)
 						rvec_matrix = rvec_matrix[0] # rodoriguesから抜き出し
@@ -732,18 +740,23 @@ class Cansat():
 						self.control_log1 = "closing"
 						if distance_of_marker >= self.closing_threshold + self.CLOSING_RANGE_THRE:
 							if tvec[0] >= 0.05:
+								self.yunosu_pos = "Right"
 								turn_gain = 5*((self.closing_threshold + self.CLOSING_RANGE_THRE)/(distance_of_marker))**2
 								# ~ print("---右に曲がります---")
 								self.motor_control(65 + turn_gain,65,0.5)
 							
 								
 							elif 0.05 > tvec[0] > -0.13:
+								if tvec[0] >= 0:
+									self.yunosu_pos = "Right"
+								else:
+									self.yunosu_pos = "Left"
 								go_ahead_gain = (distance_of_marker-self.closing_threshold) / self.closing_threshold
 								# ~ print("---motor GO AHEAD---")
 								self.motor_control(50+50*go_ahead_gain,50+50*go_ahead_gain,0.5)
 							
-							
 							else:
+								self.yunosu_pos = "Left"
 								turn_gain = 5*((self.closing_threshold + self.CLOSING_RANGE_THRE)/(distance_of_marker))**2
 								# ~ print("---左に曲がります---")
 								self.motor_control(65,65 + turn_gain,0.5)
@@ -753,17 +766,17 @@ class Cansat():
 						elif distance_of_marker >= self.closing_threshold:
 							if tvec[0] >= 0.05:
 								# ~ print("---時計周り---")
+								self.yunosu_pos = "Right"
 								self.motor_control(65,-65,0.4)
-						
 							elif tvec[0] <= -0.13:
 								# ~ print("---反時計周り---")
+								self.yunosu_pos = "Left"
 								self.motor_control(-65,65,0.4)
-							
 							else:
 								print("'\033[32m'---perfect REACHED---'\033[0m'")
 								time.sleep(1)
 								self.writeMissionlog(3)
-								self.releasing_state = 2
+								#self.releasing_state = 2
 
 						
 						elif self.closing_threshold >= distance_of_marker >= self.closing_threshold - self.CLOSING_RANGE_THRE:
@@ -778,29 +791,40 @@ class Cansat():
 							else:
 								# ~ print("---back---")
 								self.motor_control(-60,-60,0.4)
+								if tvec[0] >= 0:
+									self.yunosu_pos = "Right"
+								else:
+									self.yunosu_pos = "Left"
+								self.BLUE_LED.led_off()
 						
 						elif distance_of_marker <= self.closing_threshold - self.CLOSING_RANGE_THRE:
+							self.RED_LED.led_on()
 							self.control_log1 = "avoiding"
 							if -50 <= angle_of_marker <= 0: #ARマーカがやや左から正面にある場合
 								# ~ print("時計周り")
-								self.motor_control(70,-70,0.3)
 								self.yunosu_pos = "Left"
+								self.motor_control(70,-70,0.3)
 								self.last_pos = "Plan_B"
 							
 							
 							elif 0 <= angle_of_marker <= 50: #ARマーカがやや右から正面にある場合
 								# ~ print("反時計周り")
-								self.motor_control(-70,70,0.3)
 								self.yunosu_pos = "Right"
+								self.motor_control(-70,70,0.3)
 								self.last_pos = "Plan_B"
+							self.RED_LED.led_off()
+							self.BLUE_LED.led_off()
 						
-							
+						else:
+							print("========\n=========\n\n\nyahhoi_yunosuke\n\n\n=======\n========")
 						self.distance, self.angle = self.ar.Correct(tvec,self.VEC_GOAL)
-						polar_exchange = self.ar.polar_change(tvec)
+					
+						polar_exchange = self.ar.polar_change(tvec)	
 				pass
 			else:
 				if self.last_pos == "Plan_A" :#and not find_marker: #ARマーカを認識していない時，認識するまでその場回転
 					if cX:
+						
 						self.control_log1 = "closing"
 						x,y = width-cY,cX
 						self.cam_pint = 5.5 #default pint
@@ -814,22 +838,35 @@ class Cansat():
 						else:
 							# ~ print(f"color:ARマーカー探してます(GO) (x={x})")
 							self.motor_control(65,65,0.5)
+						
 					else:
 						if self.yunosu_pos == "Left":
-							# ~ print("ARマーカー探してます(LEFT)")
-							self.control_log1 = "explore"
-							self.motor_control(-70,70,0.4)
-						else:
-							# ~ print("ARマーカー探してます(RIGHT)")
-							self.motor_control(70,-70,0.4)
-							self.control_log1 = "explore"
-						pass
+							if self.past_flag == True:
+								self.control_log1 = "explore"
+								self.motor_control(-60,60,0.4)
+							else:
+								# ~ print("ARマーカー探してます(LEFT)")
+								self.control_log1 = "explore"
+								self.motor_control(-65,65,0.4)
+								print("???????????????????????")
+						elif self.yunosu_pos == "Right":
+							if self.past_flag == True:
+								self.control_log1 = "explore"
+								self.motor_control(60,-60,0.4)
+							else:
+								# ~ print("ARマーカー探してます(RIGHT)")
+								self.motor_control(65,-65,0.4)
+								self.control_log1 = "explore"
+								print("!!!!!!!!!!!!!!!!!!!!!!!")
+
+
 
 				elif self.last_pos == "Plan_B":
 					self.lost_marker_cnt+=1
 					print("lost marker cnt +1")
 					self.control_log1 = "avoiding"
-					if self.lost_marker_cnt > 10:
+					if self.lost_marker_cnt > 3:
+						self.RED_LED.led_on()
 						if self.yunosu_pos == "Left":
 							gain1 = 30
 							gain2 = 0
@@ -842,6 +879,10 @@ class Cansat():
 						self.last_pos = "Plan_A"
 						self.k += 1
 						# ~ print(self.k)
+						self.RED_LED.led_off()
+			
+			self.BLUE_LED.led_off()
+			self.GREEN_LED.led_off()
 			    
     
 		elif self.releasing_state == 2:
