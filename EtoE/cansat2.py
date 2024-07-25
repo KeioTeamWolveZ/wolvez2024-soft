@@ -80,13 +80,13 @@ class Cansat():
 		# =============================================== ARマーカ ===============================================
 		self.dictionary = aruco.getPredefinedDictionary(aruco.DICT_ARUCO_ORIGINAL)
 		# マーカーサイズの設定
-		self.marker_length = 0.017  # マーカーの1辺の長さ（メートル）
+		self.marker_length = 0.0165  # マーカーの1辺の長さ（メートル）
 		self.camera_matrix = np.load("mtx.npy")
 		self.distortion_coeff = np.load("dist.npy")
 		self.find_marker = False
 		self.ar = Artools()
 		self.VEC_GOAL = [0.0,0.1968730025228114,0.3]
-		self.closing_threshold = 0.4
+		self.closing_threshold = 0.5
 		self.CLOSING_RANGE_THRE = 0.05
 		self.closing_threshold_2 = 0.25
 		self.CLOSING_RANGE_THRE_2 = 0.1
@@ -143,6 +143,9 @@ class Cansat():
 		# AR
 		self.ultra_count = 0
 		self.reject_count = 0 # 拒否された回数をカウントするための変数
+		self.LostMarkerCount = 0
+		# servo
+		self.unable_rotation_count = 0
 		#loop
 		self.state5_loopCount_color = 1	
 		self.state5_loopCount_ar = 1
@@ -776,7 +779,7 @@ class Cansat():
 								print("'\033[32m'---perfect REACHED---'\033[0m'")
 								time.sleep(1)
 								self.writeMissionlog(3)
-								#self.releasing_state = 2
+								self.releasing_state = 2
 
 						
 						elif self.closing_threshold >= distance_of_marker >= self.closing_threshold - self.CLOSING_RANGE_THRE:
@@ -911,9 +914,12 @@ class Cansat():
 					self.frame = self.picam2.capture_array()
 					self.gray = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY) # グレースケールに変換
 					self.corners, self.ids, self.rejectedImgPoints = aruco.detectMarkers(self.gray, self.dictionary)
+					self.LostMarkerCount += 1
+					if self.LostMarkerCount > ct.const.LOST_MARKER_THRE: 
+						self.releasing_state = 1
 					
-				
 				else:
+					self.LostMarkerCount = 0
 					self.flag_AR = True
 					break
 					
@@ -934,12 +940,12 @@ class Cansat():
 			if self.justAngle:
 				
 				print("\033[32m","just angle!!!!!!!!!!!!",self.nowangle,"\033[0m")
-				time.sleep(5)
+				time.sleep(2)
 				self.writeMissionlog(4)
 				self.frame = self.picam2.capture_array()
 				self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
 				cv2.imwrite(self.results_img_dir+f'/mission_{self.cameraCount}.jpg',self.frame2)
-				self.releasing_state = 3
+				# ~ self.releasing_state = 3
 			pass
     
 		elif self.releasing_state == 3:
@@ -958,48 +964,7 @@ class Cansat():
 			pass
 		
 
-	def motor_control(self,m1,m2,t):
-		# m1:右モーターの速度
-		# m2:左モーターの速度
-		# time:モーターを動かす時間
-		
-		if m1 == m2 and m1 > 0:
-			self.control_log2  = "go straight"
-		elif m1 == m2 and m1 < 0:
-			self.control_log2  = "go back"
-		elif m1 > m2 and m2 > 0:
-			self.control_log2  = "go right"
-		elif m1 < m2 and m1 > 0:
-			self.control_log2  = "go left" 
-		elif m1 == -m2 and m1 > 0:
-			self.control_log2  = "turn right"
-		elif m1 == -m2 and m1 < 0:
-			self.control_log2  = "turn left" 
-		elif m1 > m2 and m1 < 0:
-			self.control_log2  = "go back right"
-		elif m1 < m2 and m2 < 0:
-			self.control_log2  = "go back left" 
-		else:
-			self.control_log2  = "except" 
-		
-		self.control_log_rv = m2
-		self.control_log_lv = m1
-		self.rv, self.lv = m1, m2
-		
-		if m1>=0:
-			self.motor1.go(m1)
-		else:
-			m1 = abs(m1)
-			self.motor1.back(m1)
-		if m2>=0:
-			self.motor2.go(m2)
-		else:
-			m2 = abs(m2)
-			self.motor2.back(m2)
-		time.sleep(t)
-		self.motor1.stop()
-		self.motor2.stop()
-		
+	
 
 	def judgement(self): # state = 6
 		"""
@@ -1292,6 +1257,48 @@ class Cansat():
 			
 			cv2.imwrite(self.results_img_dir+f'/mission_{self.cameraCount}.jpg',self.frame2)
 			pass
+	def motor_control(self,m1,m2,t):
+		# m1:右モーターの速度
+		# m2:左モーターの速度
+		# time:モーターを動かす時間
+		
+		if m1 == m2 and m1 > 0:
+			self.control_log2  = "go straight"
+		elif m1 == m2 and m1 < 0:
+			self.control_log2  = "go back"
+		elif m1 > m2 and m2 > 0:
+			self.control_log2  = "go right"
+		elif m1 < m2 and m1 > 0:
+			self.control_log2  = "go left" 
+		elif m1 == -m2 and m1 > 0:
+			self.control_log2  = "turn right"
+		elif m1 == -m2 and m1 < 0:
+			self.control_log2  = "turn left" 
+		elif m1 > m2 and m1 < 0:
+			self.control_log2  = "go back right"
+		elif m1 < m2 and m2 < 0:
+			self.control_log2  = "go back left" 
+		else:
+			self.control_log2  = "except" 
+		
+		self.control_log_rv = m2
+		self.control_log_lv = m1
+		self.rv, self.lv = m1, m2
+		
+		if m1>=0:
+			self.motor1.go(m1)
+		else:
+			m1 = abs(m1)
+			self.motor1.back(m1)
+		if m2>=0:
+			self.motor2.go(m2)
+		else:
+			m2 = abs(m2)
+			self.motor2.back(m2)
+		time.sleep(t)
+		self.motor1.stop()
+		self.motor2.stop()
+		
 
 	def stuck_detection(self):
 		print(self.ax**2+self.ay**2)
@@ -1300,7 +1307,7 @@ class Cansat():
 			if self.stuckTime == 0:
 				self.stuckTime = time.time()
 			
-			if self.countstuckLoop > ct.const.STUCK_COUNT_THRE or self.state == 1 or self.state >= 6 or self.mirror_count > 10: #加速度が閾値以下になるケースがある程度続いたらスタックと判定
+			if self.countstuckLoop > ct.const.STUCK_COUNT_THRE or self.mirror_count > 10 or self.state >= 7: #加速度が閾値以下になるケースがある程度続いたらスタックと判定
 				#トルネード実施
 				print("===================stuck====================")
 				self.motor1.back(ct.const.STUCK_MOTOR_VREF)
@@ -1321,12 +1328,12 @@ class Cansat():
 			self.countstuckLoop+= 1
 
 		else:
-			# ~ self.countstuckLoop = 0 # change 0 when state chenge
+			self.countstuckLoop = 0 # change 0 when state chenge
 			self.stuckTime = 0
 				
 	def upsidedown_checker(self):
 		# 逆さまの検知（着地時に実施を想定）
-		if self.gz < 5: # gz?が閾値以下で逆さまと判定
+		if self.gz < 3: # gz?が閾値以下で逆さまと判定
 			self.mirror_count += 1
 			self.mirror = True
 		else:
@@ -1414,9 +1421,18 @@ class Cansat():
 		print(f"\033[33m", f"adjust angle : tvec = {tvec}", "\033[0m")	
 
 		self.distanceAR = (tvec[0]**2+tvec[1]**2+tvec[2]**2)**(1/2)
+			
+		
 		if tvec[0] > 0.015:
-			if self.nowangle >= 160:
-				print("=@=@=servo: "+str(self.nowangle),">110")
+			if self.nowangle >= 100:
+				print("=@=@=servo: "+str(self.nowangle),">160")
+				self.unable_rotation_count += 1
+				print("\033[44m ===== +1 ===== \033[0m")
+				if self.unable_rotation_count > 2:
+					self.motor_control(70,-70,0.3)
+					time.sleep(1)
+					print("\033[44m ===== servo ===== \033[0m")
+					self.unable_rotation_count = 0
 				return False
 			else:
 				self.nowangle += 3
@@ -1424,7 +1440,14 @@ class Cansat():
 				print("=@=@=servo: "+str(self.nowangle),"B")
 		elif tvec[0] < -0.015:
 			if self.nowangle <= 20:
-				print("=@=@=servo: "+str(self.nowangle),"<=60")
+				print("=@=@=servo: "+str(self.nowangle),"<=30")
+				self.unable_rotation_count += 1
+				print("\033[44m ===== +1 ===== \033[0m")
+				if self.unable_rotation_count > 2:
+					self.motor_control(-70,70,0.3)
+					time.sleep(1)
+					print("\033[44m ===== servo ===== \033[0m")
+					self.unable_rotation_count = 0
 				return False
 			else:
 				self.nowangle -= 3

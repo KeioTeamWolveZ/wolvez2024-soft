@@ -72,6 +72,7 @@ const.LANDING_MOTOR_TIME_THRE = 10 #分離シートから離れるためにモ�
 
 # const.ARM_CALIB_POSITION = 0
 
+const.LOST_MARKER_THRE = 30
 const.AVOID_COLOR_THRE = 20 #色認識されなかった合計回数の閾値
 
 # const.CONNECTED_HEIGHT_THRE = 700 #アームを上げた場合に接続できていることを確認する時の色の高さの閾値
