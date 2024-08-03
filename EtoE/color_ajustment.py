@@ -60,7 +60,7 @@ def load_values_from_file(filename):
             return lower_orange, upper_orange
     else:
         # Default values if file doesn't exist
-        return np.array([105, 56, 0]), np.array([150, 250, 250])
+        return np.array([158, 85, 70]), np.array([179, 250, 250])
 
 def save_values_to_file(filename):
     """Save HSV values to a text file."""

@@ -144,6 +144,7 @@ class Cansat():
 		self.countFlyLoop = 0
 		# AR
 		self.ultra_count = 0
+		self.previous_pint = 0
 		self.reject_count = 0 # 拒否された回数をカウントするための変数
 		self.LostMarkerCount = 0
 		# servo
@@ -258,47 +259,56 @@ class Cansat():
 		with open(f'results/{self.startTime}/control_result.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
 				test.write(datalog + '\n')
             
-	def writeMissionlog(self,sub=1):
-	    mission_log = str(self.timer) + ","\
-		    + "state:"+str(self.state) 
-	    if self.state == 1:
-		    mission_log = mission_log + "," + "Flight_PIN:" + "True" # フライトピン
-	    if self.state == 2:
-		    if sub == 1:
-			    mission_log = mission_log + ","\
-			    + "Casat_Landing:" + str(self.trigger) # 着地判定
-		    if sub == 2:
-			    mission_log = mission_log + ","\
-			    + "Casat_rotation_camera:" + self.rot_cam # 着地判定
-	    if self.state == 3:
-		    mission_log = mission_log + ","\
-		    + "Para_distancing:" + str(self.distancing_finish) # パラから距離を取る
-	    if self.state == 4:
-	        mission_log = mission_log + ","\
-	            + "Releasing_01:"  + "True" # 電池モジュール焼き切り
-	    if self.state == 5:
-	        if sub == 1:
-	            mission_log = mission_log + ","\
-	            + "color_detected:" + "True" # color
-	        if sub == 2:
-	            mission_log = mission_log + ","\
-	            + "ar_detected:" + "True" # ar
-	        if sub == 3:
-	            mission_log = mission_log + ","\
-	            + "reaching:" + "True" # ar
-	        if sub == 4:
-	            mission_log = mission_log + ","\
-	            + "just_angle:" + "True" # ar
-	        if sub == 5:
-	            mission_log = mission_log + ","\
-	            + "Releasing_02:" + "True" # ar
-	    if self.state == 8:
-	        mission_log = mission_log + ","\
-	            + "Finish:" + "True"
-
-	    with open(f'results/{self.startTime}/mission_log.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
+	def writeMissionlog_2(self, msg):
+		mission_log = f"time:{self.timer}, " + f"state:{self.state}, " + msg
+		# ex) msg = "separation done"
+		
+		with open(f'results/{self.startTime}/mission_log2.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
 		    test.write(mission_log + '\n')
 		    pass
+		
+		
+	# ~ def writeMissionlog(self,sub=1):
+	    # ~ mission_log = str(self.timer) + ","\
+		    # ~ + "state:"+str(self.state) 
+	    # ~ if self.state == 1:
+		    # ~ mission_log = mission_log + "," + "Flight_PIN:" + "True" # フライトピン
+	    # ~ if self.state == 2:
+		    # ~ if sub == 1:
+			    # ~ mission_log = mission_log + ","\
+			    # ~ + "Casat_Landing:" + str(self.trigger) # 着地判定
+		    # ~ if sub == 2:
+			    # ~ mission_log = mission_log + ","\
+			    # ~ + "Casat_rotation_camera:" + self.rot_cam # 着地判定
+	    # ~ if self.state == 3:
+		    # ~ mission_log = mission_log + ","\
+		    # ~ + "Para_distancing:" + str(self.distancing_finish) # パラから距離を取る
+	    # ~ if self.state == 4:
+	        # ~ mission_log = mission_log + ","\
+	            # ~ + "Releasing_01:"  + "True" # 電池モジュール焼き切り
+	    # ~ if self.state == 5:
+	        # ~ if sub == 1:
+	            # ~ mission_log = mission_log + ","\
+	            # ~ + "color_detected:" + "True" # color
+	        # ~ if sub == 2:
+	            # ~ mission_log = mission_log + ","\
+	            # ~ + "ar_detected:" + "True" # ar
+	        # ~ if sub == 3:
+	            # ~ mission_log = mission_log + ","\
+	            # ~ + "reaching:" + "True" # ar
+	        # ~ if sub == 4:
+	            # ~ mission_log = mission_log + ","\
+	            # ~ + "just_angle:" + "True" # ar
+	        # ~ if sub == 5:
+	            # ~ mission_log = mission_log + ","\
+	            # ~ + "Releasing_02:" + "True" # ar
+	    # ~ if self.state == 8:
+	        # ~ mission_log = mission_log + ","\
+	            # ~ + "Finish:" + "True"
+
+	    # ~ with open(f'results/{self.startTime}/mission_log.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
+		    # ~ test.write(mission_log + '\n')
+		    # ~ pass
 		
 	# =================== mission sequence ===================
 	def sequence(self):
@@ -306,6 +316,7 @@ class Cansat():
   			ミッションシーケンスを管理する
 			main.pyで毎周期実行される。
   		"""
+		self.timer = time.time()
 		self.flag_AR = False
 		self.flag_COLOR = False
 		self.control_log1 = "---" # approach position or escape
@@ -445,7 +456,9 @@ class Cansat():
 				self.countFlyLoop = 0 #何故かLOWだったときカウントをリセット
 				time.sleep(3)
 			print("=====flying=====")
-		self.writeMissionlog()
+		
+		self.writeMissionlog_2("flying")
+		# ~ self.writeMissionlog()
 		self.state = 2
 		self.landtime = time.time()
 		time.sleep(0.2)
@@ -459,7 +472,7 @@ class Cansat():
 		self.trigger = self.judge_arrival(self.landtime, self.ax, self.ay, self.az, self.pressure)
 		if self.trigger:
 			
-			self.writeMissionlog()
+			# ~ self.writeMissionlog()
 			# para separation
 			time.sleep(3)
 			self.separation(ct.const.SEPARATION_PARA)
@@ -477,7 +490,7 @@ class Cansat():
 				# 輪郭を抽出して最大の面積を算出し、線で囲む
 				mask_orange,cX,cY,max_contour_area = self.color.detect_color(mask_orange,ct.const.MAX_CONTOUR_THRESHOLD)
 				cX_right.append(cX)
-				print("-")
+			self.writeMissionlog_2("camera_rotation right done")
 			self.servo.go_deg(70)
 			for i in range(5):
 				self.cameraCount += 1
@@ -489,17 +502,18 @@ class Cansat():
 				# 輪郭を抽出して最大の面積を算出し、線で囲む
 				mask_orange,cX,cY,max_contour_area = self.color.detect_color(mask_orange,ct.const.MAX_CONTOUR_THRESHOLD)
 				cX_left.append(cX)
-				print("-")
+			self.writeMissionlog_2("camera_rotation left done")
 			# カメラ回転機構の正常動作の判定
 			self.servo.go_deg(90)
 			try :         
 				if abs(np.array(cX_right).mean() - np.array(cX_left).mean()) > ct.const.CAMERA_ROTATION_THRE:
 					print("\033[33m","MISSION : ","\033[33m", "camera rotation success!")
 					self.rot_cam = True
-					self.writeMissionlog(2)
+					# ~ self.writeMissionlog(2)
+					
 				else:
 					print("\033[33m","MISSION : ","\033[33m", "camera rotation failure")
-					self.writeMissionlog(2)
+					# ~ self.writeMissionlog(2)
 			except:
 				print("failure")
 			
@@ -512,6 +526,7 @@ class Cansat():
 	        # 時間の判定
 	        if time.time() - t > self.TIME_THRESHOLD: # TIME_THRESHOLD
 	            self.time_tf =True
+	            
 	        else:
 	            self.time_tf = False
 	        # 加速度の判定
@@ -534,6 +549,7 @@ class Cansat():
 	            self.press_tf = False
 	        if self.time_tf and self.acc_tf and self.press_tf:
 	            print("\033[32m","--<Successful landing>--","\033[0m")
+	            self.writeMissionlog_2("landing success")
 	            time.sleep(3)
 	            self.state = 3
 	            return True
@@ -580,7 +596,6 @@ class Cansat():
 				self.motor1.stop()
 				self.motor2.stop()
 				if self.mirror_count > 10:
-					print("here")
 					self.stuck_detection() # 止まっているときにやることで強制的にぐるぐるさせる
 					self.mirror_count = 0
 					# self.pre_motorTime = time.time() # 去年はこの変数を色んなステートで再利用していた？
@@ -592,9 +607,10 @@ class Cansat():
 					self.motor2.stop()
 					# time.sleep()がいるかも？
 				self.distancing_finish = True
-				self.writeMissionlog()
+				# ~ self.writeMissionlog()
 				self.state = 4
 				print("==============finish================")
+				self.writeMissionlog_2("para escaping success")
 		else: # パラシュートが見えているとき -> 回避
 			self.escapeTime = 0
 			print("\033[43m", "=====orange=====","\033[0m")
@@ -614,10 +630,11 @@ class Cansat():
 	def first_releasing(self): # state = 4
 		print("'\033[44m'","4.first_releasing",'\033[0m')
 		self.separation(ct.const.SEPARATION_MOD1)
-		self.writeMissionlog()
+		# ~ self.writeMissionlog()
 		# 焼き切り放出
 		time.sleep(5)
 		self.state = 5
+		self.writeMissionlog_2("first releaseing done")
 		pass
 
 	def moving_release_position(self): # state = 5
@@ -665,21 +682,54 @@ class Cansat():
 				self.flag_COLOR = True
 				self.GREEN_LED.led_on()
 				if self.state5_loopCount_color == 1:
-					self.writeMissionlog()
+					# ~ self.writeMissionlog()
 					self.state5_loopCount_color +=1
+				# ~ if ids is None: # color:true ar:false
+					# ~ self.cam_pint = 10.5
+					# ~ while self.cam_pint > 3.0: #pint change start
+						# ~ if ids is None: # color:true ar:false
+							# ~ self.cam_pint -= 0.5
+							# ~ print("pint:",self.cam_pint)
+							# ~ self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
+							# ~ frame = self.picam2.capture_array()
+							# ~ gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # グレースケールに変換
+							# ~ corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary)
+						# ~ else:# color:true ar:true
+							# ~ self.flag_AR = True
+							# ~ break
+				
+				min_pint = 3.0
+				max_pint = 10.5
+				step = 0.5  # ピント値を増減させるステップサイズ
+
+				# 範囲をリストに格納
+				pint_list = []
+				pints = list(np.arange(min_pint, max_pint + step, step))
+
+				# 順序を交互に追加
+				for offset in range(int((max_pint - min_pint) / step) + 1):
+					if self.previous_pint + offset * step <= max_pint:
+						pint_list.append(self.previous_pint + offset * step)
+					if self.previous_pint - offset * step >= min_pint and offset != 0:
+						pint_list.append(self.previous_pint - offset * step)
+						
 				if ids is None: # color:true ar:false
-					self.cam_pint = 10.5
-					while self.cam_pint > 3.0: #pint change start
+					cnt = 0
+					for pint in pint_list: #pint change start
 						if ids is None: # color:true ar:false
-							self.cam_pint -= 0.5
+							self.cam_pint = pint
 							print("pint:",self.cam_pint)
 							self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
 							frame = self.picam2.capture_array()
 							gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # グレースケールに変換
 							corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary)
+							cnt += 1
+							self.previous_pint = pint
 						else:# color:true ar:true
 							self.flag_AR = True
+							cnt = 0
 							break
+					cnt = 0
 				
 							
 			# ~ else: # color:false
@@ -709,7 +759,7 @@ class Cansat():
 					if ids[i] in [1,2,3,4,5,6]:
 						
 						if self.state5_loopCount_ar == 1:
-							self.writeMissionlog(2)
+							# ~ self.writeMissionlog(2)
 							self.state5_loopCount_ar +=1
 						self.past_flag = True
 						self.flag_AR = True
@@ -780,8 +830,18 @@ class Cansat():
 								self.motor_control(-65,65,0.4)
 							else:
 								print("'\033[32m'---perfect REACHED---'\033[0m'")
-								time.sleep(1)
-								self.writeMissionlog(3)
+								self.writeMissionlog_2("perfect reached to releasing position")
+								for i in range(10):
+									self.BLUE_LED.led_on()
+									time.sleep(0.05)
+									self.BLUE_LED.led_off()
+									self.RED_LED.led_on()
+									time.sleep(0.05)
+									self.RED_LED.led_off()
+									self.GREEN_LED.led_on()
+									time.sleep(0.05)
+									self.GREEN_LED.led_off()
+								# ~ self.writeMissionlog(3)
 								self.releasing_state = 2
 
 						
@@ -928,6 +988,7 @@ class Cansat():
 					self.LostMarkerCount += 1
 					if self.LostMarkerCount > ct.const.LOST_MARKER_THRE: 
 						self.releasing_state = 1
+						self.writeMissionlog_2("state back to look for AR")
 					
 				else:
 					self.LostMarkerCount = 0
@@ -951,10 +1012,20 @@ class Cansat():
 				
 
 			if self.justAngle:
-				
+				for i in range(10):
+					self.BLUE_LED.led_on()
+					time.sleep(0.05)
+					self.BLUE_LED.led_off()
+					self.RED_LED.led_on()
+					time.sleep(0.05)
+					self.RED_LED.led_off()
+					self.GREEN_LED.led_on()
+					time.sleep(0.05)
+					self.GREEN_LED.led_off()
 				print("\033[32m","just angle!!!!!!!!!!!!",self.nowangle,"\033[0m")
+				self.writeMissionlog_2("just angle")
 				time.sleep(2)
-				self.writeMissionlog(4)
+				# ~ self.writeMissionlog(4)
 				self.frame = self.picam2.capture_array()
 				self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
 				cv2.imwrite(self.results_img_dir+f'/mission_{self.cameraCount}.jpg',self.frame2)
@@ -966,12 +1037,19 @@ class Cansat():
 				物資モジュール投射
 
 			"""
+			self.BLUE_LED.led_on()
+			self.RED_LED.led_on()
+			self.GREEN_LED.led_on()
 			print("'\033[44m'","5-3.moving_release_position",'\033[0m')
 			self.control_log1 = "releasing"
 			self.control_log2 = f"pin{ct.const.SEPARATION_MOD2}:HIGH"
 			self.separation(ct.const.SEPARATION_MOD2,True)
-			self.writeMissionlog(5)
+			# ~ self.writeMissionlog(5)
+			self.writeMissionlog_2("2nd module released")
 			time.sleep(5)
+			self.BLUE_LED.led_off()
+			self.RED_LED.led_off()
+			self.GREEN_LED.led_off()
 			self.state = 6
 			pass
 		
@@ -1016,23 +1094,57 @@ class Cansat():
 			cv2.imwrite(self.results_img_dir+f'/{self.cameraCount}.jpg',self.frame2)
 			
 			if cX: # color:true
+				self.GREEN_LED.led_on()
 				self.flag_COLOR = True
 				if self.state5_loopCount_color == 1:
-					self.writeMissionlog()
+					# ~ self.writeMissionlog()
 					self.state5_loopCount_color +=1
+				# ~ if ids is None: # color:true ar:false
+					# ~ self.cam_pint = 10.5
+					# ~ while self.cam_pint > 3.0: #pint change start
+						# ~ if ids is None: # color:true ar:false
+							# ~ self.cam_pint -= 0.5
+							# ~ print("pint:",self.cam_pint)
+							# ~ self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
+							# ~ frame = self.picam2.capture_array()
+							# ~ gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # グレースケールに変換
+							# ~ corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary)
+						# ~ else:# color:true ar:true
+							# ~ self.flag_AR = True
+							# ~ break
+						
+				min_pint = 3.0
+				max_pint = 10.5
+				step = 0.5  # ピント値を増減させるステップサイズ
+
+				# 範囲をリストに格納
+				pint_list = []
+				pints = list(np.arange(min_pint, max_pint + step, step))
+
+				# 順序を交互に追加
+				for offset in range(int((max_pint - min_pint) / step) + 1):
+					if self.previous_pint + offset * step <= max_pint:
+						pint_list.append(self.previous_pint + offset * step)
+					if self.previous_pint - offset * step >= min_pint and offset != 0:
+						pint_list.append(self.previous_pint - offset * step)
+						
 				if ids is None: # color:true ar:false
-					self.cam_pint = 10.5
-					while self.cam_pint > 3.0: #pint change start
+					cnt = 0
+					for pint in pint_list: #pint change start
 						if ids is None: # color:true ar:false
-							self.cam_pint -= 0.5
+							self.cam_pint = pint
 							print("pint:",self.cam_pint)
 							self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
 							frame = self.picam2.capture_array()
 							gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # グレースケールに変換
 							corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary)
+							cnt += 1
+							self.previous_pint = pint
 						else:# color:true ar:true
 							self.flag_AR = True
+							cnt = 0
 							break
+					cnt = 0
 				
 							
 			# ~ else: # color:false
@@ -1052,6 +1164,7 @@ class Cansat():
 						
 			
 			if ids is not None:
+				self.BLUE_LED.led_on()
 				if self.last_marker_num in ids:
 					ids = [self.last_marker_num]
 				else:
@@ -1061,7 +1174,7 @@ class Cansat():
 					if ids[i] in [1,2,3,4,5,6]:
 						
 						if self.state5_loopCount_ar == 1:
-							self.writeMissionlog(2)
+							# ~ self.writeMissionlog(2)
 							self.state5_loopCount_ar +=1
 						
 						self.flag_AR = True
@@ -1122,6 +1235,7 @@ class Cansat():
 							
 							else:
 								print("'\033[32m'---perfect REACHED---'\033[0m'")
+								self.writeMissionlog_2("perfect reached for judgement")
 								time.sleep(1)
 								self.closing_state = 2
 
@@ -1205,6 +1319,8 @@ class Cansat():
 						self.last_pos = "Plan_A"
 						self.k += 1
 						# ~ print(self.k)
+			self.BLUE_LED.led_off()
+			self.GREEN_LED.led_off()
 		elif self.closing_state == 2:
 			"""
 				撮影・評価
@@ -1263,6 +1379,7 @@ class Cansat():
 				self.judge_cnt += 1
 			else:
 				time.sleep(3)
+				self.writeMissionlog_2("captured picture")
 				self.state = 7
 			
 			cv2.imwrite(self.results_img_dir+f'/mission_{self.cameraCount}.jpg',self.frame2)
@@ -1409,6 +1526,7 @@ class Cansat():
 		    self.running_finish = True
 		    print(f"Goal Time: {self.goaltime}")
 		    print("GOAAAAAAAAAL!!!!!")
+		    self.writeMissionlog_2("goal")
 		    self.state = 8
 		    self.laststate = 8
 		
@@ -1430,7 +1548,7 @@ class Cansat():
 		    self.finishTime = time.time()
 		    print("\n",self.startTime)
 		    print("\nFinished\n")
-		    self.writeMissionlog()
+		    # ~ self.writeMissionlog()
 		    self.motor1.stop()
 		    self.motor2.stop()
 		    # ~ GPIO.output(ct.const.SEPARATION_PARA,0) #焼き切りが危ないのでlowにしておく
@@ -1455,7 +1573,7 @@ class Cansat():
 				print("=@=@=servo: "+str(self.nowangle),">160")
 				self.unable_rotation_count += 1
 				print("\033[44m ===== +1 ===== \033[0m")
-				if self.unable_rotation_count > 2:
+				if self.unable_rotation_count > 1:
 					self.motor_control(70,-70,0.3)
 					time.sleep(1)
 					print("\033[44m ===== servo ===== \033[0m")
@@ -1470,7 +1588,7 @@ class Cansat():
 				print("=@=@=servo: "+str(self.nowangle),"<=30")
 				self.unable_rotation_count += 1
 				print("\033[44m ===== +1 ===== \033[0m")
-				if self.unable_rotation_count > 2:
+				if self.unable_rotation_count > 1:
 					self.motor_control(-70,70,0.3)
 					time.sleep(1)
 					print("\033[44m ===== servo ===== \033[0m")

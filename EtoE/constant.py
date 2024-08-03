@@ -3,6 +3,22 @@
 
 import const
 import numpy as np
+import os
+
+# load the latest color threshold
+def load_values_from_file(filename):
+    """Load HSV values from a text file."""
+    if os.path.exists(filename):
+        with open(filename, "r") as file:
+            lines = file.readlines()
+            lower_orange = np.array(eval(lines[0].split(":")[1].strip()))
+            upper_orange = np.array(eval(lines[1].split(":")[1].strip()))
+            return lower_orange, upper_orange
+    else:
+        # Default values if file doesn't exist
+        return np.array([158, 85, 70]), np.array([179, 250, 250])
+lower_red, upper_red = load_values_from_file("orange_hsv_values.txt")
+
 
 ## Pin Number
 # Motor
@@ -62,8 +78,8 @@ const.UPPER_ORANGE = np.array([55, 255, 255])
 const.LOWER_BLUE = np.array([90, 96, 90])
 const.UPPER_BLUE = np.array([137, 225, 255])
 
-const.LOWER_RED = np.array([158, 85, 70])
-const.UPPER_RED = np.array([179, 250, 250])
+const.LOWER_RED = lower_red #np.array([158, 85, 70])
+const.UPPER_RED = upper_red #np.array([179, 250, 250])
 
 const.MAX_CONTOUR_THRESHOLD = 100
 
