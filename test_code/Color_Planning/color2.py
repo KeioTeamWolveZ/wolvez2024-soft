@@ -51,6 +51,8 @@ TorF = True
 # ==============================オレンジ色検出のためのHSV値の設定==============================
 lower_orange = np.array([105, 56, 0])
 upper_orange = np.array([150, 250, 250])
+lower_orange = np.array([158, 95, 70])
+upper_orange = np.array([179, 250, 250])
 
 # ==============================Tkinter GUIの設定==============================
 def update_values():
@@ -111,6 +113,7 @@ def main_loop():
         contours, _ = cv2.findContours(mask_orange, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         if contours:
             max_contour = max(contours, key=cv2.contourArea)
+            print("\033[42m","max_contour:",cv2.contourArea(max_contour) ,"\033[0m")
             if cv2.contourArea(max_contour) > MAX_CONTOUR_THRESHOLD:  # 面積が1000より大きい場合のみ描画
                 cv2.drawContours(frame, [max_contour], -1, (0, 255, 0), 3)
                 M = cv2.moments(max_contour)

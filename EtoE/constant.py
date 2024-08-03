@@ -52,7 +52,7 @@ const.FLYING_FLIGHTPIN_COUNT_THRE = 10
 const.DROPPING_TIME_THRE = 30
 const.DROPPING_ACC_COUNT_THRE = 20
 const.DROPPING_ACC_THRE = 0.005 #加速度の値
-const.DROPPING_PRESS_THRE = 99887 # 気圧センサのカウンタ
+const.DROPPING_PRESS_THRE = 99087 # 気圧センサのカウンタ
 const.DROPPING_PRESS_COUNT_THRE = 20 # 気圧センサのカウンタ
 
 const.PARA_ESCAPE_TIME_THRE = 10
@@ -61,6 +61,9 @@ const.LOWER_ORANGE = np.array([0, 220, 158])
 const.UPPER_ORANGE = np.array([55, 255, 255])
 const.LOWER_BLUE = np.array([90, 96, 90])
 const.UPPER_BLUE = np.array([137, 225, 255])
+
+const.LOWER_RED = np.array([158, 85, 70])
+const.UPPER_RED = np.array([179, 250, 250])
 
 const.MAX_CONTOUR_THRESHOLD = 100
 
@@ -79,7 +82,7 @@ const.AVOID_COLOR_THRE = 20 #色認識されなかった合計回数の閾値
 const.EARTH_RADIUS = 6378.137 # [km]
 
 # # Stack
-const.STUCK_ACC_THRE = 0.75
-const.STUCK_COUNT_THRE = 5
+const.STUCK_ACC_THRE = 0.5
+const.STUCK_COUNT_THRE = 7
 const.MIRRER_COUNT_THRE = 10
 const.VANISH_BY_STUCK_THRE = 240 # ステート6で長時間何も見えなかった場合

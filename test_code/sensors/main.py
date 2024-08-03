@@ -4,6 +4,7 @@ import time
 import cv2
 import RPi.GPIO as GPIO
 
+
 import motor_pico as motor
 import gps
 import micropyGPS
