@@ -1,5 +1,7 @@
+from numpy.typing import _128Bit
 import pigpio
 import RPi.GPIO as GPIO
+from scipy.optimize import fsolve # 付け足した
 
 import sys
 import cv2
@@ -177,6 +179,8 @@ class Cansat():
 		self.gy= 0 #
 		self.gz= 0 #
 		self.ex= 0 #
+		self.ey= 0 # 付け足した
+		self.ez= 0 # 付け足した
 		self.lat = 0 #
 		self.lon = 0 #
 		
@@ -398,6 +402,8 @@ class Cansat():
 		self.gy=round(self.bno055.gy,3)
 		self.gz=round(self.bno055.gz,3)
 		self.ex=round(self.bno055.ex,3)
+		self.ey=round(self.bno055.ey,3) # 付け足した
+		self.ez=round(self.bno055.ez,3) # 付け足した
 		self.lat = round(float(self.gps.Lat),5)
 		self.lon = round(float(self.gps.Lon),5)
 		
@@ -1008,6 +1014,9 @@ class Cansat():
 							self.flag_AR = True
 							rvec, tvec, _ = aruco.estimatePoseSingleMarkers(self.corners[i], self.marker_length, self.camera_matrix, self.distortion_coeff)
 							tvec = np.squeeze(tvec)
+# 付け足した
+							self.posture_judgement = self.posture_judge(tvec, self.ex, self.ez)
+##
 							self.justAngle = self.adjust_angle(tvec)
 				
 
@@ -1601,7 +1610,30 @@ class Cansat():
 		else:
 			print("~~~~~~~~~")
 			return True
+# 付け足した		
+	def posture_judge(self, tvec, ex, ez):
+		print(f"\033[33m", "posture judge", "\033[0m")
+		def position(t, ex, ez):
+			x = (ct.const.U[0] + (ct.const.m * ct.const.g / ct.const.k) * np.cos(ex) * np.sin(ez)) * (t + (ct.const.m / ct.const.k) * (1 - np.exp(-ct.const.k * t / ct.const.m))) + ct.const.x0
+			y = (ct.const.m / ct.const.k) * (-ct.const.V0 * np.sin(ct.const.theta) - ct.const.U[1] - (ct.const.m * ct.const.g / ct.const.k) * np.cos(ex) * np.cos(ez)) * (1 - np.exp(-ct.const.k * t / ct.const.m)) + (ct.const.U[1] + (ct.const.m * ct.const.g / ct.const.k) * np.cos(ex) * np.cos(ez)) * t + ct.const.y0
+			z = (ct.const.m / ct.const.k) * (ct.const.V0 * np.cos(ct.const.theta) - ct.const.U[2] + (ct.const.m * ct.const.g / ct.const.k) * np.sin(ex)) * (1 - np.exp(-ct.const.k * t / ct.const.m)) + (ct.const.U[2] - (ct.const.m * ct.const.g / ct.const.k) * np.sin(ex)) * t + ct.const.z0
+			return x, y, z
 
+		def find_t(t, ex, ez, yg):
+			_, y, _ = position(t, ex, ez)
+			return y - yg
+		
+		t_initial_guess = 0.5 # 初期推定値
+		t_solution = fsolve(find_t, t_initial_guess, args=(ex, ez, tvec[1]))[0] # y = ygとなるtを求める
+		_, _, z = position(t_solution, ex, ez) # 求めたtでのx, y, zを算出
+		if z > tvec[2] + ct.const.tolerance:
+			self.motor_control(-70, -70, 0.3)
+		elif z < tvec[2] - ct.const.tolerance:
+			self.motor_control(70, 70, 0.3)
+		else:
+			print("\033[32m", "perfect posture!!!!", "\033[0m")
+			return True
+##
 	def keyboardinterrupt(self): #キーボードインタラプト入れた場合に発動する関数
 		self.motor1.stop()
 		self.motor2.stop()

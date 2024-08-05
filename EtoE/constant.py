@@ -102,3 +102,13 @@ const.STUCK_ACC_THRE = 0.5
 const.STUCK_COUNT_THRE = 7
 const.MIRRER_COUNT_THRE = 10
 const.VANISH_BY_STUCK_THRE = 240 # ステート6で長時間何も見えなかった場合
+
+# 運動方程式の各パラメータ（posture_judgement）
+const.tolerance = 1  # 落下許容エリアの半径
+const.m = 0.005  # 物資ジュール質量
+const.g = 9.81  # 重力加速度
+const.k = 0.05  # 空気抵抗係数
+const.V0 = 4.684517487133138  # 物資モジュールの初速度
+const.theta = np.deg2rad(45)  # 放出角度（ラジアン）
+const.U = np.array([0, 0, 0])  # 風速ベクトル
+const.x0, const.y0, const.z0 = 0.0, -0.02, -0.03  # 物資モジュールの初期位置（カメラに対する投射機構先端の位置）
