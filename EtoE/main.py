@@ -6,7 +6,7 @@ import RPi.GPIO as GPIO
 
 
 start_state = 5
-end_state = 8
+end_state = 6
 sepa_mode  = False
 
 try:	
