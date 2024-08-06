@@ -19,6 +19,18 @@ def load_values_from_file(filename):
         return np.array([158, 85, 70]), np.array([179, 250, 250])
 lower_red, upper_red = load_values_from_file("orange_hsv_values.txt")
 
+# load the latest pressure threshold
+def load_pressure_from_file(filename):
+    if os.path.exists(filename):
+        with open(filename, "r") as file:
+            lines = file.readlines()
+            press = float(lines[0])
+            return press
+    else:
+        # Default values if file doesn't exist
+        return 100000.00
+latest_pressure = load_pressure_from_file("pressure_threshold.txt")
+
 
 ## Pin Number
 # Motor
@@ -29,6 +41,9 @@ const.RIGHT_MOTOR_VREF_PIN = 13
 const.LEFT_MOTOR_IN1_PIN = 20
 const.LEFT_MOTOR_IN2_PIN = 16
 const.LEFT_MOTOR_VREF_PIN = 12
+
+# MARKER
+const.MARKER_LENGTH = 0.0165  # マーカーの1辺の長さ（メートル）
 
 # Servo motor
 const.SERVO_PIN = 23
@@ -59,16 +74,18 @@ const.RELEASING_MOTOR_VREF = 50
 const.RUNNING_MOTOR_VREF = 100
 const.STUCK_MOTOR_VREF = 100
 
+const.SURFACE_GAIN = 1.2
+
 # # State Threshold
 const.PREPARING_GPS_COUNT_THRE= 30
 const.PREPARING_TIME_THRE = 10
 
 const.FLYING_FLIGHTPIN_COUNT_THRE = 10
 
-const.DROPPING_TIME_THRE = 30
+const.DROPPING_TIME_THRE = 10 #60
 const.DROPPING_ACC_COUNT_THRE = 20
-const.DROPPING_ACC_THRE = 0.005 #加速度の値
-const.DROPPING_PRESS_THRE = 99087 # 気圧センサのカウンタ
+const.DROPPING_ACC_THRE = 0.008 #加速度の値 0.005
+const.DROPPING_PRESS_THRE = 99087 # 気圧センサのカウンタ latest_pressure + 5m
 const.DROPPING_PRESS_COUNT_THRE = 20 # 気圧センサのカウンタ
 
 const.PARA_ESCAPE_TIME_THRE = 10
@@ -82,6 +99,11 @@ const.LOWER_RED = lower_red #np.array([158, 85, 70])
 const.UPPER_RED = upper_red #np.array([179, 250, 250])
 
 const.MAX_CONTOUR_THRESHOLD = 100
+
+const.CLOSING_THRE = 0.5
+const.CLOSING_RANGE_THRE = 0.05
+ct.const.CLOSING_RANGE_THRE2 = 0.3
+const.CLOSING_RANGE_THRE_2 = 0.1
 
 const.SEPARATION_TIME_THRE = 5 #焼き切り時間
 const.LANDING_MOTOR_TIME_THRE = 10 #分離シートから離れるためにモータを回転させる時間
