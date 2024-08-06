@@ -766,6 +766,12 @@ class Cansat():
 						rvec, tvec, _ = aruco.estimatePoseSingleMarkers(corners[i], self.marker_length, self.camera_matrix, self.distortion_coeff)
 						tvec = np.squeeze(tvec)
 						rvec = np.squeeze(rvec)
+						
+						if ids[i] == 3:
+							tvec = self.shift_marker(tvec,rvec,3)
+						elif ids[i] == 5:
+							tvec = self.shift_marker(tvec,rvec,5)
+						
 						if tvec[0] > 0:
 							self.yunosu_pos = "Right"
 						else:
@@ -1008,6 +1014,12 @@ class Cansat():
 							self.flag_AR = True
 							rvec, tvec, _ = aruco.estimatePoseSingleMarkers(self.corners[i], self.marker_length, self.camera_matrix, self.distortion_coeff)
 							tvec = np.squeeze(tvec)
+							rvec = np.squeeze(rvec)
+							
+							if self.ids[i] == 3:
+								tvec = self.shift_marker(tvec,rvec,3)
+							elif self.ids[i] == 5:
+								tvec = self.shift_marker(tvec,rvec,5)
 							self.justAngle = self.adjust_angle(tvec)
 				
 
@@ -1029,7 +1041,7 @@ class Cansat():
 				self.frame = self.picam2.capture_array()
 				self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
 				cv2.imwrite(self.results_img_dir+f'/mission_{self.cameraCount}.jpg',self.frame2)
-				self.releasing_state = 3
+				# ~ self.releasing_state = 3
 			pass
     
 		elif self.releasing_state == 3:
@@ -1181,6 +1193,12 @@ class Cansat():
 						rvec, tvec, _ = aruco.estimatePoseSingleMarkers(corners[i], self.marker_length, self.camera_matrix, self.distortion_coeff)
 						tvec = np.squeeze(tvec)
 						rvec = np.squeeze(rvec)
+						
+						if ids[i] == 3:
+							tvec = self.shift_marker(tvec,rvec,3)
+						elif ids[i] == 5:
+							tvec = self.shift_marker(tvec,rvec,5)
+						
 						# 回転ベクトルからrodoriguesへ変換
 						rvec_matrix = cv2.Rodrigues(rvec)
 						rvec_matrix = rvec_matrix[0] # rodoriguesから抜き出し
@@ -1466,7 +1484,27 @@ class Cansat():
 		else:
 			self.mirror_count = 0
 			self.mirror = False
+	def shift_marker(self,tvec,rvec, marker_id):
+		# Convert rotation vector to rotation matrix
+		rvec_matrix, _ = cv2.Rodrigues(rvec)
 
+		# Define a shift of 5 cm to the right in the marker's plane
+		if marker_id ==3:
+			a = -1
+		else:
+			a = 1
+		shift_vector = np.array([a*0.065, 0, 0])  # 5 cm shift to the right
+		shift_vector_marker_plane = rvec_matrix @ shift_vector  # Transform shift to world coordinates
+
+		# Adjust the translation vector
+		tvec_shifted = tvec + shift_vector_marker_plane
+
+		print("Original tvec:", tvec)
+		print("Shifted tvec:", tvec_shifted)
+
+		# Use tvec_shifted for further processing
+		tvec = tvec_shifted
+		return tvec
 	def separation(self,pin,cap=False):
 		GPIO.setup(pin,GPIO.OUT) #焼き切り用のピンの設定tv
 		GPIO.output(pin,0) #焼き切りが危ないのでlowにしておく
@@ -1568,7 +1606,7 @@ class Cansat():
 		self.distanceAR = (tvec[0]**2+tvec[1]**2+tvec[2]**2)**(1/2)
 			
 		
-		if tvec[0] > 0.025:
+		if tvec[0] > 0.03:
 			if self.nowangle >= 100:
 				print("=@=@=servo: "+str(self.nowangle),">160")
 				self.unable_rotation_count += 1
@@ -1583,7 +1621,7 @@ class Cansat():
 				self.nowangle += 3
 				self.servo.go_deg(self.nowangle)
 				print("=@=@=servo: "+str(self.nowangle),"B")
-		elif tvec[0] < -0.025:
+		elif tvec[0] < -0.03:
 			if self.nowangle <= 20:
 				print("=@=@=servo: "+str(self.nowangle),"<=30")
 				self.unable_rotation_count += 1
