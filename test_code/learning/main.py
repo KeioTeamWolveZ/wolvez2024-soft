@@ -75,8 +75,7 @@ class ML_position:
         resized_frame = cv2.resize(img, None, fx=0.3, fy=0.3)
         cv2.imshow("resized_frame", resized_frame)
 
-        return datalog
-
+        
     def detect_marker(self, img):
         # Detect ArUco markers in the image
         corners, ids, rejected = aruco.detectMarkers(img, self.dictionary)
@@ -98,7 +97,7 @@ class ML_position:
                     rvecs.append(rvec)
                     centers.append(marker_center)
 
-            return tvecs, rvecs, center
+            return tvecs, rvecs, centers
         # Return default values if no markers are detected
         return [[0, 0, 0]], [[0, 0, 0]], [[0, 0]]
 
