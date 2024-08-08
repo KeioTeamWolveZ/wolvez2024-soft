@@ -1626,14 +1626,27 @@ class Cansat():
 		t_initial_guess = 0.5 # 初期推定値
 		t_solution = fsolve(find_t, t_initial_guess, args=(ex, ez, tvec[1]))[0] # y = ygとなるtを求める
 		_, _, z = position(t_solution, ex, ez) # 求めたtでのx, y, zを算出
-		if z > tvec[2] + ct.const.tolerance:
-			self.motor_control(-70, -70, 0.3)
-		elif z < tvec[2] - ct.const.tolerance:
-			self.motor_control(70, 70, 0.3)
+		
+		## ここから追加
+		common_min = max(z - mu , tvec[2] - tolerance)
+		common_max = min(z + mu , tvec[2] + tolerance)
+		if common_min <= common_max:
+			prob_upper = norm.cdf(min(z + mu, zg + tolerance)*100, mu, std)
+			probability = prob_upper - prob_lower
+		else:
+			probability = 0
+		print(f"{probability * 100:.0f}%")
+
+		if probability < low_prob:
+		## ここまで追加
+			if z > tvec[2] + ct.const.tolerance:
+				self.motor_control(-70, -70, 0.3)
+			elif z < tvec[2] - ct.const.tolerance:
+				self.motor_control(70, 70, 0.3)
 		else:
 			print("\033[32m", "perfect posture!!!!", "\033[0m")
 			return True
-##
+
 	def keyboardinterrupt(self): #キーボードインタラプト入れた場合に発動する関数
 		self.motor1.stop()
 		self.motor2.stop()
