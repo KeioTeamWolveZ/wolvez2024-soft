@@ -1,4 +1,3 @@
-# from numpy.typing import _128Bit
 import pigpio
 import RPi.GPIO as GPIO
 from scipy.optimize import fsolve # 付け足した
