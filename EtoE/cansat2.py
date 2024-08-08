@@ -597,7 +597,6 @@ class Cansat():
 				self.motor2.stop()
 				if self.mirror_count > 10:
 					self.stuck_detection() # 止まっているときにやることで強制的にぐるぐるさせる
-					self.mirror_count = 0
 					# self.pre_motorTime = time.time() # 去年はこの変数を色んなステートで再利用していた？
 					# 反転を解決するために頑張る
 					self.motor1.go(ct.const.LANDING_MOTOR_VREF)
@@ -638,6 +637,9 @@ class Cansat():
 		pass
 
 	def moving_release_position(self): # state = 5
+		self.upsidedown_checker()
+		self.stuck_detection()
+		self.countstuckLoop = 0
 		
 		if self.releasing_state == 1 :# 接近
 			## 作戦１：放出モジュールが十分に遠いとき
@@ -1446,9 +1448,11 @@ class Cansat():
 		
 
 	def stuck_detection(self):
+		if self.state == 5:
+			self.countstuckLoop = 0
 		print(self.ax**2+self.ay**2)
 		if (self.ax**2+self.ay**2) <= ct.const.STUCK_ACC_THRE**2 or (self.ax**2+self.ay**2) > 8:
-			print("stack??")
+			print("========================stack??==========================")
 			# if self.stuckTime == 0:
 				# self.stuckTime = time.time()
 			
@@ -1469,6 +1473,7 @@ class Cansat():
 				self.lv = -ct.const.STUCK_MOTOR_VREF
 				self.countstuckLoop = 0
 				self.stuckTime = 0
+				self.mirror_count = 0
 
 			self.countstuckLoop+= 1
 

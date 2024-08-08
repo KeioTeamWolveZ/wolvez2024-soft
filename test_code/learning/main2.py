@@ -40,6 +40,10 @@ class ML_position:
         # Write CSV header
         self.csv_writer.writerow(["tvec_x", "tvec_y", "tvec_z", "ax", "ay", "az", "gx", "gy", "gz", "center_x", "center_y"])
 
+        # Initialize timing variables
+        self.last_adjustment_time = time.time()
+        self.adjustment_interval = 10  # 10 seconds
+
     def capture(self):
         frame = self.picam2.capture_array()
         frame2 = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
@@ -54,10 +58,9 @@ class ML_position:
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         tvecs, rvecs, marker_centers = self.detect_marker(gray)
 
-        # Resize frame for display
         for i in range(len(tvecs)):
             cv2.circle(img, (int(marker_centers[i][0]), int(marker_centers[i][1])), 30, (0, 255, 0), 5)
-
+          
             # Read accelerometer values
             self.bno.bnoread()
             ax = round(self.bno.ax, 4)
@@ -66,12 +69,12 @@ class ML_position:
             gx = round(self.bno.gx, 4)
             gy = round(self.bno.gy, 4)
             gz = round(self.bno.gz, 4)
+            
             # Store data in a list, including image plane coordinates
-            for tvec, marker_center in zip(tvecs, marker_centers):
-                datalog = [tvec[0], tvec[1], tvec[2], ax, ay, az, gx, gy, gz, marker_center[0], marker_center[1]]
-                # Write datalog to CSV
-                self.csv_writer.writerow(datalog)
-
+            datalog = [tvecs[i][0], tvecs[i][1], tvecs[i][2], ax, ay, az, gx, gy, gz, marker_centers[i][0], marker_centers[i][1]]
+            # Write datalog to CSV
+            self.csv_writer.writerow(datalog)
+        
         resized_frame = cv2.resize(img, None, fx=0.3, fy=0.3)
         cv2.imshow("resized_frame", resized_frame)
 
@@ -89,18 +92,32 @@ class ML_position:
                     # Calculate the center of the marker in the image plane
                     corner_points = corners[i][0]
                     marker_center = np.mean(corner_points, axis=0)
+                    print(f"tvec: {tvec}, rvec: {rvec}, center: {marker_center}")
                     tvecs.append(tvec)
                     rvecs.append(rvec)
                     centers.append(marker_center)
 
             return tvecs, rvecs, centers
         # Return default values if no markers are detected
-        return [[0, 0, 0]], [[0, 0, 0]], [[0, 0]]
+        return [], [], []
 
     def run(self):
         try:
-            for lens_position in np.arange(14, 0, -0.5):  # Lens position from 10.5 to 0 with step 0.5
+            lens_position = 10  # Start lens position
+            while True:
+                current_time = time.time()
+                # Adjust lens position if 10 seconds have passed
                 self.logging(lens_position)
+                # Adjust lens position
+                if current_time - self.last_adjustment_time >= self.adjustment_interval:
+                    lens_position -= 0.5
+                    print("===============",lens_position,"===============")
+                    if lens_position < 3:
+                        lens_position = 10.5  # Reset lens position after reaching the end
+
+                    # Update the last adjustment time
+                    self.last_adjustment_time = current_time
+
                 key = cv2.waitKey(1)  # Key input reception
                 if key == 27:  # Exit on ESC key
                     break
