@@ -1,13 +1,13 @@
 import pigpio
-from cansat import Cansat 
+from cansat2 import Cansat 
 import time 
 import RPi.GPIO as GPIO
 
 
-start_state = 2
-end_state = 8
-sepa_mode = False
 
+start_state = 0
+end_state = 8
+sepa_mode  = True
 try:	
 	cansat  = Cansat(start_state,sepa_mode)
 	cansat.sensor_setup()
@@ -17,10 +17,11 @@ try:
 		cansat .sequence()
 		if cansat.state > end_state:
 			print("Finished")
-		time.sleep(0.1)
+		time.sleep(0.3)
 		
 except KeyboardInterrupt:
     print("Finished")
     print(cansat.startTime)
     print(cansat.keyboardinterrupt)
     GPIO.cleanup()
+

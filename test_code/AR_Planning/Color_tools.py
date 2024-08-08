@@ -13,7 +13,7 @@ class Color_tools:
         self.lower_orange = np.array([26, 15, 10])
         self.upper_orange = np.array([63, 255, 175])
 
-        self.MAX_CONTOUR_THRESHOLD = 500
+        self.MAX_CONTOUR_THRESHOLD = 1000
         self.cap = cv2.VideoCapture(1)
 
     def mask_color(self,frame,lower_orange,upper_orange):
@@ -109,8 +109,8 @@ class Color_tools:
                 break
 
 
-# if __name__ == '__main__':
-#     lower_orange = np.array([26, 15, 10])
-#     upper_orange = np.array([63, 255, 175])
-#     color_tools = Color_tools(lower_orange,upper_orange)
-#     color_tools.main_loop()
+if __name__ == '__main__':
+    lower_orange = np.array([26, 15, 10])
+    upper_orange = np.array([63, 255, 175])
+    color_tools = Color_tools(lower_orange,upper_orange)
+    color_tools.main_loop()

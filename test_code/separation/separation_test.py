@@ -5,7 +5,7 @@ import time
 #pin2 = 24 center
 #pin3 = 8 left
 
-pin1 = 24
+pin1 = 8
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(pin1,GPIO.OUT) #焼き切り用のピンの設定tv 
@@ -17,6 +17,7 @@ try:
     time.sleep(7) #継続時間を指定
     GPIO.output(pin1,0) #電圧をLOWにして焼き切りを終了する
     GPIO.cleanup()
+    
     print("Separation done")
 
 except KeyboardInterrupt:

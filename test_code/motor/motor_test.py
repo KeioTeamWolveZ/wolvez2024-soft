@@ -1,8 +1,8 @@
 # 2023年機体で使用すること
 
-import motor_pico as motor 
+import motor_pico as motor
 import RPi.GPIO as GPIO
-import time 
+import time
 
 
 GPIO.setwarnings(False)
@@ -17,9 +17,10 @@ try:
 #     Motor2.back(80)
 #     time.sleep(0.5)
  #   Motor2.back(80)
+ 
     #Motor2.back(90)
 #     time.sleep(1.08)
-    time.sleep(1.5)
+    time.sleep(3)
     
 
     #Motor.back(100)

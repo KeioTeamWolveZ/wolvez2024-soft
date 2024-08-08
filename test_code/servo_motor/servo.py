@@ -1,7 +1,7 @@
 import pigpio
 import time
 
-SERVO_PIN = 23
+SERVO_PIN = 18
 
 # pigpioを初期化
 pi = pigpio.pi()
@@ -18,20 +18,20 @@ def set_angle(angle):
     pi.set_servo_pulsewidth(SERVO_PIN, pulse_width)
 
 # 使用例
-set_angle(0) # サーボ設定
-time.sleep(1)
-print("0 deg")
+# set_angle(0) # サーボ設定
+# time.sleep(1)
+# print("0 deg")
 
 # 使用例
-#while True:
-#    set_angle(45) # サーボを90度に設定
-#    time.sleep(1)
-#    print("a")
-#    set_angle(90) # サーボを0度に設定
-#    time.sleep(1)
+while True:
+   set_angle(45) # サーボを90度に設定
+   time.sleep(1)
+   print("a")
+   set_angle(90) # サーボを0度に設定
+   time.sleep(1)
     
-#    set_angle(45) # サーボを90度に設定
-#    time.sleep(1)
+   set_angle(45) # サーボを90度に設定
+   time.sleep(1)
     
-#    set_angle(0) # サーボを180度に設定
-#    time.sleep(1)
+   set_angle(0) # サーボを180度に設定
+   time.sleep(1)
