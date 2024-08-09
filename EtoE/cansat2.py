@@ -1490,7 +1490,7 @@ class Cansat():
 			# if self.stuckTime == 0:
 				# self.stuckTime = time.time()
 			
-			if self.countstuckLoop > ct.const.STUCK_COUNT_THRE or self.mirror_count > 10 or self.state >= 7 or self.state = 5: #加速度が閾値以下になるケースがある程度続いたらスタックと判定
+			if self.countstuckLoop > ct.const.STUCK_COUNT_THRE or self.mirror_count > 10 or self.state == 7 or self.state == 5: #加速度が閾値以下になるケースがある程度続いたらスタックと判定
 				#トルネード実施
 				print("===================stuck====================")
 				self.motor1.back(ct.const.STUCK_MOTOR_VREF)
@@ -1612,19 +1612,21 @@ class Cansat():
 
 		if self.mirror:
 			# 逆さなら曲がる向きが反対になる
-			# print("cX:",cX)
+			print("cX:",cX)
 			motor_st_vref = - motor_st_vref
 			motor_tr_vref = - motor_tr_vref
 
 		if cX : # ごーるが見えている時 ->　追従
+			self.flag_COLOR = True
 			print("\033[43m", "=====goal_color=====","\033[0m")
 			if max_contour_area > ct.const.GOAL_COLOR_THRE:
 				self.motor1.stop()
-		    	self.motor2.stop()
+				self.motor2.stop()
 				self.goaltime = time.time()-self.runningTime
 				self.running_finish = True
 				print(f"Goal Time: {self.goaltime}")
-				print("GOAAAAAAAAAL!!!!!")
+				print("GOAAAAAAAAAL")
+				print("max_contour_area:",max_contour_area)
 				self.state = 8
 				self.laststate = 8
 			else:
@@ -1644,9 +1646,10 @@ class Cansat():
 					print("---motor go---")
 					self.motor1.go(motor_st_vref)
 					self.motor2.go(motor_st_vref)
-					self.stuck_detection()
+					#self.stuck_detection()
 			# 一定時間経過した後に次のステートに移行
 		else: # ゴールが見えていないとき -> GPS
+			self.flag_COLOR = False
 			if self.goaldis < ct.const.GOAL_DISTANCE_THRE:
 				# GPS的には近い位置だから旋回！今はその場回転
 				self.writeMissionlog_2("gps:goal")

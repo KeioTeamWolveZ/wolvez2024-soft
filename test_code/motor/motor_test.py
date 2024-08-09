@@ -20,6 +20,7 @@ try:
  
     #Motor2.back(90)
 #     time.sleep(1.08)
+
     time.sleep(3)
     
 
