@@ -1,6 +1,7 @@
 import pigpio
 import RPi.GPIO as GPIO
 from scipy.optimize import fsolve # 付け足した
+from scipy.stats import norm # 付け足した
 
 import sys
 import cv2
@@ -210,6 +211,8 @@ class Cansat():
 		self.mkdir()
 
 		self.nowangle = 90  # サーボモータの角度
+
+		self.incidence_prob = 0 # 付け足した
 		
 		
 		
@@ -1065,6 +1068,7 @@ class Cansat():
 			self.control_log1 = "releasing"
 			self.control_log2 = f"pin{ct.const.SEPARATION_MOD2}:HIGH"
 			self.separation(ct.const.SEPARATION_MOD2,True)
+			print(f"{self.incidence_prob * 100:.0f}%") # 付け足した
 			# ~ self.writeMissionlog(5)
 			self.writeMissionlog_2("2nd module released")
 			time.sleep(5)
@@ -1664,10 +1668,24 @@ class Cansat():
 		t_initial_guess = 0.5 # 初期推定値
 		t_solution = fsolve(find_t, t_initial_guess, args=(ex, ez, tvec[1]))[0] # y = ygとなるtを求める
 		_, _, z = position(t_solution, ex, ez) # 求めたtでのx, y, zを算出
-		if z > tvec[2] + ct.const.tolerance:
-			self.motor_control(-70, -70, 0.3)
-		elif z < tvec[2] - ct.const.tolerance:
-			self.motor_control(70, 70, 0.3)
+		
+		## ここから追加
+		common_min = max(z - ct.const.mu , tvec[2] - ct.const.tolerance)
+		common_max = min(z + ct.const.mu , tvec[2] + ct.const.tolerance)
+		if common_min <= common_max:
+			prob_upper = norm.cdf(min(z + ct.const.mu, tvec[2] + ct.const.tolerance)*100, ct.const.mu, ct.const.std)
+			prob_lower = norm.cdf(max(z - ct.const.mu, tvec[2] - ct.const.tolerance)*100, ct.const.mu, ct.const.std)
+			self.incidence_prob = prob_upper - prob_lower
+		else:
+			self.incidence_prob = 0
+		print(f"{self.incidence_prob * 100:.0f}%")
+
+		if self.incidence_prob < ct.const.prob_threshold:
+		## ここまで追加
+			if z > tvec[2]:
+				self.motor_control(-70, -70, 0.3)
+			elif z <= tvec[2]:
+				self.motor_control(70, 70, 0.3)
 		else:
 			print("\033[32m", "perfect posture!!!!", "\033[0m")
 			return True
