@@ -1053,7 +1053,7 @@ class Cansat():
 				self.frame = self.picam2.capture_array()
 				self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
 				cv2.imwrite(self.results_img_dir+f'/mission_{self.cameraCount}.jpg',self.frame2)
-				# ~ self.releasing_state = 3
+				self.releasing_state = 3
 			pass
     
 		elif self.releasing_state == 3:

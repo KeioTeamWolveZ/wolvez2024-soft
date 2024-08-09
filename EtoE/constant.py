@@ -137,7 +137,7 @@ const.U = np.array([0, 0, 0])  # 風速ベクトル
 const.x0, const.y0, const.z0 = 0.0, -0.02, -0.03  # 物資モジュールの初期位置（カメラに対する投射機構先端の位置）
 
 # 投射成功確率に用いるパラメータ（posture_judgement）
-data = pd.read_excel('uketome_distance.csv') # ファイルの読み込み
+data = pd.read_csv('uketome_distance.csv') # ファイルの読み込み
 distance_data = data['distance [cm]'].values # 飛距離のデータを抽出
 const.mu = np.mean(distance_data) # 飛距離の平均
 const.std = np.std(distance_data) # 飛距離の標準偏差
