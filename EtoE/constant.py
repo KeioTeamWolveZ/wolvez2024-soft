@@ -4,6 +4,7 @@
 import const
 import numpy as np
 import os
+import pandas as pd
 
 # load the latest color threshold
 def load_values_from_file(filename):
@@ -134,3 +135,10 @@ const.V0 = 4.684517487133138  # 物資モジュールの初速度
 const.theta = np.deg2rad(45)  # 放出角度（ラジアン）
 const.U = np.array([0, 0, 0])  # 風速ベクトル
 const.x0, const.y0, const.z0 = 0.0, -0.02, -0.03  # 物資モジュールの初期位置（カメラに対する投射機構先端の位置）
+
+# 投射成功確率に用いるパラメータ（posture_judgement）
+data = pd.read_excel('受け止めモジュールの飛距離.xlsx') # ファイルの読み込み
+distance_data = data['飛距離 [cm]'].values # 飛距離のデータを抽出
+const.mu = np.mean(distance_data) # 飛距離の平均
+const.std = np.std(distance_data) # 飛距離の標準偏差
+const.prob_threshold = 0.6 # 投射成功確率の閾値
