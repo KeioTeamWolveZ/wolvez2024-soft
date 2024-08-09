@@ -5,9 +5,9 @@ import RPi.GPIO as GPIO
 
 
 
-start_state = 0
-end_state = 8
-sepa_mode  = True
+start_state = 5
+end_state = 6
+sepa_mode  = False
 try:	
 	cansat  = Cansat(start_state,sepa_mode)
 	cansat.sensor_setup()
