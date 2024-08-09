@@ -2,6 +2,7 @@ import pigpio
 import RPi.GPIO as GPIO
 from scipy.optimize import fsolve # 付け足した
 from scipy.stats import norm # 付け足した
+import pandas as pd # 付け足した
 
 import sys
 import cv2
