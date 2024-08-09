@@ -1227,8 +1227,8 @@ class Cansat():
 				self.lv = -ct.const.STUCK_MOTOR_VREF
 				self.countstuckLoop = 0
 				self.stuckTime = 0
-				if self.state == 1:
-					self.escapeTime -= 5
+				if self.state == 3:
+					self.escapeTime += 5
 
 			self.countstuckLoop+= 1
 

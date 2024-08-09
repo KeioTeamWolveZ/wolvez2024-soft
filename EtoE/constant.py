@@ -68,6 +68,7 @@ const.FLIGHTPIN_PIN = 4
 const.GPS_GOAL_LAT = 35.55500000  # 南緯は負の値で与える
 const.GPS_GOAL_LON = 139.65600000 # 西経は負の値で与える
 const.GOAL_DISTANCE_THRE = 0.0005 # [km] (50 [cm])
+const.GOAL_COLOR_THRE = 100 # 色認識によって認識して，ゴール判定を行う面積（要調整）
 
 # # Motor VREF
 const.LANDING_MOTOR_VREF = 80
@@ -78,6 +79,10 @@ const.STUCK_MOTOR_VREF = 100
 const.SURFACE_GAIN = 1.2
 
 # # State Threshold
+const.TIME_CONSTANT_1 = 240
+const.TIME_CONSTANT_2 = 420
+const.TIME_CONSTANT_3 = 600
+
 const.PREPARING_GPS_COUNT_THRE= 30
 const.PREPARING_TIME_THRE = 10
 
