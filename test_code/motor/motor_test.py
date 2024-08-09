@@ -1,8 +1,8 @@
 # 2023年機体で使用すること
 
-import motor_pico as motor 
+import motor_pico as motor
 import RPi.GPIO as GPIO
-import time 
+import time
 
 
 GPIO.setwarnings(False)
