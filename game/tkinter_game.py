@@ -11,8 +11,8 @@ class Tkmain():
     __arm = True
     def __init__(self):
         GPIO.setwarnings(False)
-        self.motor1 = motor(dir = -1)
-		self.motor2 = motor()
+        self.MotorR = motor(dir = -1)
+        self.MotorL = motor()
         
         self.root = Tk()
         self.root.title('CONTROLLER')
@@ -219,7 +219,7 @@ class Tkmain():
             self.val_arm.set(1650)
         print('高さ:%4d' % self.val_arm.get())
         self.textbox["text"]='wait a second'
-        self.arm.move(self.val_arm.get())
+        # ~ self.arm.move(self.val_arm.get())
         self.textbox["text"]='高さ:%4d' % self.val_arm.get()
             
     def hdown(self):
@@ -229,7 +229,7 @@ class Tkmain():
             self.val_arm.set(950)
         print('高さ:%4d' % self.val_arm.get())
         self.textbox["text"]='wait a second'
-        self.arm.move(self.val_arm.get())
+        # ~ self.arm.move(self.val_arm.get())
         self.textbox["text"]='高さ:%4d' % self.val_arm.get()
 
     def hset(self,var):
@@ -238,7 +238,7 @@ class Tkmain():
         except ValueError:
             value=int(var[:3])
         self.val_arm.set(value)
-        self.arm.move(value)
+        # ~ self.arm.move(value)
         self.textbox["text"]='高さ:%4d' % self.val_arm.get()
 
     
@@ -253,9 +253,9 @@ class Tkmain():
             # self.arm.down()
         self.textbox["text"]='!ATTACK!'
         self.textbox.update()
-        self.arm.down()
-        time.sleep(1)
-        self.arm.up()
+        # ~ self.arm.down()
+        # ~ time.sleep(1)
+        # ~ self.arm.up()
         self.textbox["text"]='高さ:%4d' % self.val_arm.get()
 
     def __go(self):
@@ -272,50 +272,50 @@ class Tkmain():
             self.MotorL.stop()
             self.textbox["text"]='STOP!'
         # self.arm.up()
-        self.arm.move(self.val_arm.get())
+        # ~ self.arm.move(self.val_arm.get())
 
     def __go_a_little(self):
         print("RUN just a little bit!")
-        self.MotorR.go(60)
-        self.MotorL.go(60)
-        time.sleep(0.05)
+        self.MotorR.go(float(self.val.get())//1.2)
+        self.MotorL.go(float(self.val.get())//1.2)
+        time.sleep(0.5)
         self.MotorR.stop()
         self.MotorL.stop()
         # self.arm.up()
-        self.arm.move(self.val_arm.get())
+        # ~ self.arm.move(self.val_arm.get())
         self.textbox["text"]='少し走る'
 
     def __back(self):
         print("BACK!")
         self.MotorR.back(60)
         self.MotorL.back(60)
-        time.sleep(0.05)
+        time.sleep(0.5)
         self.MotorR.stop()
         self.MotorL.stop()
         # self.arm.up()
-        self.arm.move(self.val_arm.get())
+        # ~ self.arm.move(self.val_arm.get())
         self.textbox["text"]='うしろ'
 
     def __right(self):
         print("TURN RIGHT!")
         self.MotorR.back(float(self.val.get()))
         self.MotorL.go(float(self.val.get()))
-        time.sleep(0.05)
+        time.sleep(0.5)
         self.MotorR.stop()
         self.MotorL.stop()
         # self.arm.up()
-        self.arm.move(self.val_arm.get())
+        # ~ self.arm.move(self.val_arm.get())
         self.textbox["text"]='みぎ'
 
     def __left(self):
         print("TURN LEFT!")
         self.MotorR.go(float(self.val.get()))
         self.MotorL.back(float(self.val.get()))
-        time.sleep(0.05)
+        time.sleep(0.5)
         self.MotorR.stop()
         self.MotorL.stop()
         # self.arm.up()
-        self.arm.move(self.val_arm.get())
+        # ~ self.arm.move(self.val_arm.get())
         self.textbox["text"]='ひだり'
         
     def __finish(self):
@@ -323,30 +323,30 @@ class Tkmain():
         self.MotorR.stop()
         self.MotorL.stop()
         # self.arm.up()
-        self.arm.move(self.val_arm.get())
+        # ~ self.arm.move(self.val_arm.get())
         self.root.destroy()
         
     def __dance(self):
         print("ଘ (੭*ˊᵕˋ)੭*")
         self.textbox["text"]='ଘ (੭*ˊᵕˋ)੭*'
         self.textbox.update()
-        self.arm.down()
-        time.sleep(0.8)
+        # ~ self.arm.down()
+        # ~ time.sleep(0.8)
         print("٩(ˊᗜˋ*)و")
         self.textbox["text"]='٩(ˊᗜˋ*)و'
         self.textbox.update()
-        self.arm.up()
-        time.sleep(0.8)
+        # ~ self.arm.up()
+        # ~ time.sleep(0.8)
         print("ଘ (੭*ˊᵕˋ)੭*")
         self.textbox["text"]='ଘ (੭*ˊᵕˋ)੭*'
         self.textbox.update()
-        self.arm.down()
-        time.sleep(0.8)
+        # ~ self.arm.down()
+        # ~ time.sleep(0.8)
         print("٩(ˊᗜˋ*)و")
         self.textbox["text"]='٩(ˊᗜˋ*)و'
         self.textbox.update()
-        self.arm.up()
-        time.sleep(0.8)
+        # ~ self.arm.up()
+        # ~ time.sleep(0.8)
         print("(‘ω’ )三")
         self.textbox["text"]='(‘ω’ )三'
         self.textbox.update()
