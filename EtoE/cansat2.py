@@ -1,5 +1,7 @@
 import pigpio
 import RPi.GPIO as GPIO
+from scipy.optimize import fsolve # 付け足した
+from scipy.stats import norm # 付け足した
 
 import sys
 import cv2
@@ -51,11 +53,11 @@ class Cansat():
 		
 		# ============================================== constant ============================================== 
 		
-		self.TIME_THRESHOLD = 10 # ct.const.DROPPING_TIME_THRE
-		self.DROPPING_ACC_THRE = 0.005 # ct.const.DROPPING_ACC_THRE
-		self.DROPPING_PRESS_THRE = 99887 # ct.const.DROPPING_PRESS_THRE
-		self.DROPPING_ACC_COUNT_THRE = 20 # ct.const.DROPPING_ACC_COUNT_THRE
-		self.DROPPING_PRESS_COUNT_THRE = 20 # ct.const.DROPPING_PRESS_COUNT_THRE
+		self.TIME_THRESHOLD = ct.const.DROPPING_TIME_THRE
+		self.DROPPING_ACC_THRE = ct.const.DROPPING_ACC_THRE
+		self.DROPPING_PRESS_THRE = ct.const.DROPPING_PRESS_THRE
+		self.DROPPING_ACC_COUNT_THRE = ct.const.DROPPING_ACC_COUNT_THRE
+		self.DROPPING_PRESS_COUNT_THRE = ct.const.DROPPING_PRESS_COUNT_THRE
 		
 		# =============================================== モータ =============================================== 
 		# ~ GPIO.setwarnings(False)
@@ -76,20 +78,21 @@ class Cansat():
 		self.picam2.start()
 		# picam2.set_controls({"AfMode": controls.AfModeEnum.Continuous})
 		self.picam2.set_controls({"AfMode":0,"LensPosition":5.5})
+		
 
 		# =============================================== ARマーカ ===============================================
 		self.dictionary = aruco.getPredefinedDictionary(aruco.DICT_ARUCO_ORIGINAL)
 		# マーカーサイズの設定
-		self.marker_length = 0.017  # マーカーの1辺の長さ（メートル）
+		self.marker_length = ct.const.MARKER_LENGTH
 		self.camera_matrix = np.load("mtx.npy")
 		self.distortion_coeff = np.load("dist.npy")
 		self.find_marker = False
 		self.ar = Artools()
 		self.VEC_GOAL = [0.0,0.1968730025228114,0.3]
-		self.closing_threshold = 0.5
-		self.CLOSING_RANGE_THRE = 0.1
-		self.closing_threshold_2 = 0.25
-		self.CLOSING_RANGE_THRE_2 = 0.1
+		self.closing_threshold = ct.const.CLOSING_THRE
+		self.CLOSING_RANGE_THRE = ct.const.CLOSING_RANGE_THRE
+		self.closing_threshold_2 = ct.const.CLOSING_RANGE_THRE
+		self.CLOSING_RANGE_THRE_2 = ct.const.CLOSING_RANGE_THRE_2
 		
 		# ================================================= LED ================================================= 
 		self.RED_LED = led(ct.const.RED_LED_PIN) # 
@@ -123,6 +126,7 @@ class Cansat():
 		self.escapeTime = 0
 		self.runningTime = 0
 		self.finishTime = 0
+		self.max_contour = 0
 		
 		# =============================================== カウンタ =============================================== 
 		# センサ用
@@ -142,7 +146,11 @@ class Cansat():
 		self.countFlyLoop = 0
 		# AR
 		self.ultra_count = 0
+		self.previous_pint = 0
 		self.reject_count = 0 # 拒否された回数をカウントするための変数
+		self.LostMarkerCount = 0
+		# servo
+		self.unable_rotation_count = 0
 		#loop
 		self.state5_loopCount_color = 1	
 		self.state5_loopCount_ar = 1
@@ -171,6 +179,8 @@ class Cansat():
 		self.gy= 0 #
 		self.gz= 0 #
 		self.ex= 0 #
+		self.ey= 0 # 付け足した
+		self.ez= 0 # 付け足した
 		self.lat = 0 #
 		self.lon = 0 #
 		
@@ -194,12 +204,15 @@ class Cansat():
 		
 		self.yunosu_pos = "Left"
 		self.last_pos = "Plan_A"
+		self.past_flag = False
 		self.last_marker_num = 0
 		self.distanceAR = 999
 
 		self.mkdir()
 
 		self.nowangle = 90  # サーボモータの角度
+
+		self.incidence_prob = 0 # 付け足した
 		
 		
 		
@@ -252,47 +265,56 @@ class Cansat():
 		with open(f'results/{self.startTime}/control_result.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
 				test.write(datalog + '\n')
             
-	def writeMissionlog(self,sub=1):
-	    mission_log = str(self.timer) + ","\
-		    + "state:"+str(self.state) 
-	    if self.state == 1:
-		    mission_log = mission_log + "," + "Flight_PIN:" + "True" # フライトピン
-	    if self.state == 2:
-		    if sub == 1:
-			    mission_log = mission_log + ","\
-			    + "Casat_Landing:" + str(self.trigger) # 着地判定
-		    if sub == 2:
-			    mission_log = mission_log + ","\
-			    + "Casat_rotation_camera:" + self.rot_cam # 着地判定
-	    if self.state == 3:
-		    mission_log = mission_log + ","\
-		    + "Para_distancing:" + str(self.distancing_finish) # パラから距離を取る
-	    if self.state == 4:
-	        mission_log = mission_log + ","\
-	            + "Releasing_01:"  + "True" # 電池モジュール焼き切り
-	    if self.state == 5:
-	        if sub == 1:
-	            mission_log = mission_log + ","\
-	            + "color_detected:" + "True" # color
-	        if sub == 2:
-	            mission_log = mission_log + ","\
-	            + "ar_detected:" + "True" # ar
-	        if sub == 3:
-	            mission_log = mission_log + ","\
-	            + "reaching:" + "True" # ar
-	        if sub == 4:
-	            mission_log = mission_log + ","\
-	            + "just_angle:" + "True" # ar
-	        if sub == 5:
-	            mission_log = mission_log + ","\
-	            + "Releasing_02:" + "True" # ar
-	    if self.state == 8:
-	        mission_log = mission_log + ","\
-	            + "Finish:" + "True"
-
-	    with open(f'results/{self.startTime}/mission_log.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
+	def writeMissionlog_2(self, msg):
+		mission_log = f"time:{self.timer}, " + f"state:{self.state}, " + msg
+		# ex) msg = "separation done"
+		
+		with open(f'results/{self.startTime}/mission_log2.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
 		    test.write(mission_log + '\n')
 		    pass
+		
+		
+	# ~ def writeMissionlog(self,sub=1):
+	    # ~ mission_log = str(self.timer) + ","\
+		    # ~ + "state:"+str(self.state) 
+	    # ~ if self.state == 1:
+		    # ~ mission_log = mission_log + "," + "Flight_PIN:" + "True" # フライトピン
+	    # ~ if self.state == 2:
+		    # ~ if sub == 1:
+			    # ~ mission_log = mission_log + ","\
+			    # ~ + "Casat_Landing:" + str(self.trigger) # 着地判定
+		    # ~ if sub == 2:
+			    # ~ mission_log = mission_log + ","\
+			    # ~ + "Casat_rotation_camera:" + self.rot_cam # 着地判定
+	    # ~ if self.state == 3:
+		    # ~ mission_log = mission_log + ","\
+		    # ~ + "Para_distancing:" + str(self.distancing_finish) # パラから距離を取る
+	    # ~ if self.state == 4:
+	        # ~ mission_log = mission_log + ","\
+	            # ~ + "Releasing_01:"  + "True" # 電池モジュール焼き切り
+	    # ~ if self.state == 5:
+	        # ~ if sub == 1:
+	            # ~ mission_log = mission_log + ","\
+	            # ~ + "color_detected:" + "True" # color
+	        # ~ if sub == 2:
+	            # ~ mission_log = mission_log + ","\
+	            # ~ + "ar_detected:" + "True" # ar
+	        # ~ if sub == 3:
+	            # ~ mission_log = mission_log + ","\
+	            # ~ + "reaching:" + "True" # ar
+	        # ~ if sub == 4:
+	            # ~ mission_log = mission_log + ","\
+	            # ~ + "just_angle:" + "True" # ar
+	        # ~ if sub == 5:
+	            # ~ mission_log = mission_log + ","\
+	            # ~ + "Releasing_02:" + "True" # ar
+	    # ~ if self.state == 8:
+	        # ~ mission_log = mission_log + ","\
+	            # ~ + "Finish:" + "True"
+
+	    # ~ with open(f'results/{self.startTime}/mission_log.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
+		    # ~ test.write(mission_log + '\n')
+		    # ~ pass
 		
 	# =================== mission sequence ===================
 	def sequence(self):
@@ -300,6 +322,7 @@ class Cansat():
   			ミッションシーケンスを管理する
 			main.pyで毎周期実行される。
   		"""
+		self.timer = time.time()
 		self.flag_AR = False
 		self.flag_COLOR = False
 		self.control_log1 = "---" # approach position or escape
@@ -352,6 +375,7 @@ class Cansat():
 		print("control_log_lv :",self.control_log_lv) 
 		print("yunosu_pos : ",self.yunosu_pos)
 		print("last_pos : ",self.last_pos)
+		print("pst_flag:",self.past_flag)
 	
 		
 		
@@ -380,6 +404,8 @@ class Cansat():
 		self.gy=round(self.bno055.gy,3)
 		self.gz=round(self.bno055.gz,3)
 		self.ex=round(self.bno055.ex,3)
+		self.ey=round(self.bno055.ey,3) # 付け足した
+		self.ez=round(self.bno055.ez,3) # 付け足した
 		self.lat = round(float(self.gps.Lat),5)
 		self.lon = round(float(self.gps.Lon),5)
 		
@@ -438,7 +464,9 @@ class Cansat():
 				self.countFlyLoop = 0 #何故かLOWだったときカウントをリセット
 				time.sleep(3)
 			print("=====flying=====")
-		self.writeMissionlog()
+		
+		self.writeMissionlog_2("flying")
+		# ~ self.writeMissionlog()
 		self.state = 2
 		self.landtime = time.time()
 		time.sleep(0.2)
@@ -452,7 +480,7 @@ class Cansat():
 		self.trigger = self.judge_arrival(self.landtime, self.ax, self.ay, self.az, self.pressure)
 		if self.trigger:
 			
-			self.writeMissionlog()
+			# ~ self.writeMissionlog()
 			# para separation
 			time.sleep(3)
 			self.separation(ct.const.SEPARATION_PARA)
@@ -470,7 +498,7 @@ class Cansat():
 				# 輪郭を抽出して最大の面積を算出し、線で囲む
 				mask_orange,cX,cY,max_contour_area = self.color.detect_color(mask_orange,ct.const.MAX_CONTOUR_THRESHOLD)
 				cX_right.append(cX)
-				print("-")
+			self.writeMissionlog_2("camera_rotation right done")
 			self.servo.go_deg(70)
 			for i in range(5):
 				self.cameraCount += 1
@@ -482,17 +510,18 @@ class Cansat():
 				# 輪郭を抽出して最大の面積を算出し、線で囲む
 				mask_orange,cX,cY,max_contour_area = self.color.detect_color(mask_orange,ct.const.MAX_CONTOUR_THRESHOLD)
 				cX_left.append(cX)
-				print("-")
+			self.writeMissionlog_2("camera_rotation left done")
 			# カメラ回転機構の正常動作の判定
 			self.servo.go_deg(90)
 			try :         
 				if abs(np.array(cX_right).mean() - np.array(cX_left).mean()) > ct.const.CAMERA_ROTATION_THRE:
 					print("\033[33m","MISSION : ","\033[33m", "camera rotation success!")
 					self.rot_cam = True
-					self.writeMissionlog(2)
+					# ~ self.writeMissionlog(2)
+					
 				else:
 					print("\033[33m","MISSION : ","\033[33m", "camera rotation failure")
-					self.writeMissionlog(2)
+					# ~ self.writeMissionlog(2)
 			except:
 				print("failure")
 			
@@ -505,6 +534,7 @@ class Cansat():
 	        # 時間の判定
 	        if time.time() - t > self.TIME_THRESHOLD: # TIME_THRESHOLD
 	            self.time_tf =True
+	            
 	        else:
 	            self.time_tf = False
 	        # 加速度の判定
@@ -527,11 +557,13 @@ class Cansat():
 	            self.press_tf = False
 	        if self.time_tf and self.acc_tf and self.press_tf:
 	            print("\033[32m","--<Successful landing>--","\033[0m")
+	            self.writeMissionlog_2("landing success")
 	            time.sleep(3)
 	            self.state = 3
 	            return True
 	        else:
 	            print("\033[32m",f"time:{self.time_tf} ; acc:{self.acc_tf} ; pressure:{self.press_tf}\n{(ax**2 + ay**2 + az**2)} < {self.DROPPING_ACC_THRE**2}","\033[0m")
+	            print(f"PRESS : {press} > {self.DROPPING_PRESS_THRE-100}")
 	            return False
 		
 	def para_escaping(self): # state = 3
@@ -572,7 +604,6 @@ class Cansat():
 				self.motor1.stop()
 				self.motor2.stop()
 				if self.mirror_count > 10:
-					print("here")
 					self.stuck_detection() # 止まっているときにやることで強制的にぐるぐるさせる
 					self.mirror_count = 0
 					# self.pre_motorTime = time.time() # 去年はこの変数を色んなステートで再利用していた？
@@ -584,9 +615,10 @@ class Cansat():
 					self.motor2.stop()
 					# time.sleep()がいるかも？
 				self.distancing_finish = True
-				self.writeMissionlog()
+				# ~ self.writeMissionlog()
 				self.state = 4
 				print("==============finish================")
+				self.writeMissionlog_2("para escaping success")
 		else: # パラシュートが見えているとき -> 回避
 			self.escapeTime = 0
 			print("\033[43m", "=====orange=====","\033[0m")
@@ -606,10 +638,11 @@ class Cansat():
 	def first_releasing(self): # state = 4
 		print("'\033[44m'","4.first_releasing",'\033[0m')
 		self.separation(ct.const.SEPARATION_MOD1)
-		self.writeMissionlog()
+		# ~ self.writeMissionlog()
 		# 焼き切り放出
 		time.sleep(5)
 		self.state = 5
+		self.writeMissionlog_2("first releaseing done")
 		pass
 
 	def moving_release_position(self): # state = 5
@@ -630,47 +663,81 @@ class Cansat():
 			corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary) # ARマーカーの検出   
 
 			# オレンジ色のマスクを作成
-			mask_blue = self.color.mask_color(self.frame,ct.const.LOWER_BLUE,ct.const.UPPER_BLUE)
+			mask_red = self.color.mask_color(self.frame,ct.const.LOWER_RED,ct.const.UPPER_RED)
 			# 輪郭を抽出して最大の面積を算出し、線で囲む
-			mask_blue,cX,cY,max_contour_area = self.color.detect_color(mask_blue,ct.const.MAX_CONTOUR_THRESHOLD)
+			mask_red,cX,cY,max_contour_area = self.color.detect_color(mask_red,ct.const.MAX_CONTOUR_THRESHOLD)
 			#print("cX:",cX,"cY:",cY,"max_contour_area:",max_contour_area)
 			
 			lower_blue = np.array([90, 40, 26])
 			upper_blue = np.array([135, 250, 250])
 
 			hsv = cv2.cvtColor(self.frame2, cv2.COLOR_BGR2HSV)
-			mask_blue2 = cv2.inRange(hsv, lower_blue, upper_blue)
+			mask_red2 = cv2.inRange(hsv, ct.const.LOWER_RED,ct.const.UPPER_RED)
 			# 形態学的処理（膨張と収縮）を追加
 			kernel = np.ones((10,10), np.uint8)
-			mask_blue2 = cv2.morphologyEx(mask_blue2, cv2.MORPH_OPEN, kernel)
-			mask_blue2 = cv2.morphologyEx(mask_blue2, cv2.MORPH_CLOSE, kernel)
+			mask_red2 = cv2.morphologyEx(mask_red2, cv2.MORPH_OPEN, kernel)
+			# ~ mask_red2 = cv2.morphologyEx(mask_red2, cv2.MORPH_CLOSE, kernel)
 
 			# 輪郭を抽出して最大の面積を算出し、線で囲む
-			contours_blue, _ = cv2.findContours(mask_blue2, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-			if contours_blue:
-				max_contour = max(contours_blue, key=cv2.contourArea)
-				hull = cv2.convexHull(max_contour)
+			contours_red, _ = cv2.findContours(mask_red2, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+			if contours_red:
+				self.max_contour = max(contours_red, key=cv2.contourArea)
+				hull = cv2.convexHull(self.max_contour)
 				cv2.drawContours(self.frame2, [hull], -1, (0, 0, 255), 3)
 			cv2.imwrite(self.results_img_dir+f'/{self.cameraCount}.jpg',self.frame2)
 			
 			if cX: # color:true
 				self.flag_COLOR = True
+				self.GREEN_LED.led_on()
 				if self.state5_loopCount_color == 1:
-					self.writeMissionlog()
+					# ~ self.writeMissionlog()
 					self.state5_loopCount_color +=1
+				# ~ if ids is None: # color:true ar:false
+					# ~ self.cam_pint = 10.5
+					# ~ while self.cam_pint > 3.0: #pint change start
+						# ~ if ids is None: # color:true ar:false
+							# ~ self.cam_pint -= 0.5
+							# ~ print("pint:",self.cam_pint)
+							# ~ self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
+							# ~ frame = self.picam2.capture_array()
+							# ~ gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # グレースケールに変換
+							# ~ corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary)
+						# ~ else:# color:true ar:true
+							# ~ self.flag_AR = True
+							# ~ break
+				
+				min_pint = 3.0
+				max_pint = 10.5
+				step = 0.5  # ピント値を増減させるステップサイズ
+
+				# 範囲をリストに格納
+				pint_list = []
+				pints = list(np.arange(min_pint, max_pint + step, step))
+
+				# 順序を交互に追加
+				for offset in range(int((max_pint - min_pint) / step) + 1):
+					if self.previous_pint + offset * step <= max_pint:
+						pint_list.append(self.previous_pint + offset * step)
+					if self.previous_pint - offset * step >= min_pint and offset != 0:
+						pint_list.append(self.previous_pint - offset * step)
+						
 				if ids is None: # color:true ar:false
-					self.cam_pint = 10.5
-					while self.cam_pint > 3.0: #pint change start
+					cnt = 0
+					for pint in pint_list: #pint change start
 						if ids is None: # color:true ar:false
-							self.cam_pint -= 0.5
+							self.cam_pint = pint
 							print("pint:",self.cam_pint)
 							self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
 							frame = self.picam2.capture_array()
 							gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # グレースケールに変換
 							corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary)
+							cnt += 1
+							self.previous_pint = pint
 						else:# color:true ar:true
 							self.flag_AR = True
+							cnt = 0
 							break
+					cnt = 0
 				
 							
 			# ~ else: # color:false
@@ -690,6 +757,7 @@ class Cansat():
 						
 			
 			if ids is not None:
+				self.BLUE_LED.led_on()
 				if self.last_marker_num in ids:
 					ids = [self.last_marker_num]
 				else:
@@ -699,13 +767,23 @@ class Cansat():
 					if ids[i] in [1,2,3,4,5,6]:
 						
 						if self.state5_loopCount_ar == 1:
-							self.writeMissionlog(2)
+							# ~ self.writeMissionlog(2)
 							self.state5_loopCount_ar +=1
-						
+						self.past_flag = True
 						self.flag_AR = True
 						rvec, tvec, _ = aruco.estimatePoseSingleMarkers(corners[i], self.marker_length, self.camera_matrix, self.distortion_coeff)
 						tvec = np.squeeze(tvec)
 						rvec = np.squeeze(rvec)
+						
+						if ids[i] == 3:
+							tvec = self.shift_marker(tvec,rvec,3)
+						elif ids[i] == 5:
+							tvec = self.shift_marker(tvec,rvec,5)
+						
+						if tvec[0] > 0:
+							self.yunosu_pos = "Right"
+						else:
+							self.yunosu_pos = "Left"
 						# 回転ベクトルからrodoriguesへ変換
 						rvec_matrix = cv2.Rodrigues(rvec)
 						rvec_matrix = rvec_matrix[0] # rodoriguesから抜き出し
@@ -732,104 +810,151 @@ class Cansat():
 						self.control_log1 = "closing"
 						if distance_of_marker >= self.closing_threshold + self.CLOSING_RANGE_THRE:
 							if tvec[0] >= 0.05:
+								self.yunosu_pos = "Right"
 								turn_gain = 5*((self.closing_threshold + self.CLOSING_RANGE_THRE)/(distance_of_marker))**2
 								# ~ print("---右に曲がります---")
-								self.motor_control(65 + turn_gain,65,0.5)
+								self.motor_control((65 + turn_gain)*ct.const.SURFACE_GAIN,65*ct.const.SURFACE_GAIN,0.5)
 							
 								
 							elif 0.05 > tvec[0] > -0.13:
+								if tvec[0] >= 0:
+									self.yunosu_pos = "Right"
+								else:
+									self.yunosu_pos = "Left"
 								go_ahead_gain = (distance_of_marker-self.closing_threshold) / self.closing_threshold
 								# ~ print("---motor GO AHEAD---")
-								self.motor_control(50+50*go_ahead_gain,50+50*go_ahead_gain,0.5)
-							
+								self.motor_control((50+50*go_ahead_gain)*ct.const.SURFACE_GAIN,(50+50*go_ahead_gain)*ct.const.SURFACE_GAIN,0.5)
 							
 							else:
+								self.yunosu_pos = "Left"
 								turn_gain = 5*((self.closing_threshold + self.CLOSING_RANGE_THRE)/(distance_of_marker))**2
 								# ~ print("---左に曲がります---")
-								self.motor_control(65,65 + turn_gain,0.5)
+								self.motor_control(65*ct.const.SURFACE_GAIN,(65 + turn_gain)*ct.const.SURFACE_GAIN,0.5)
 								
 								
 
 						elif distance_of_marker >= self.closing_threshold:
 							if tvec[0] >= 0.05:
 								# ~ print("---時計周り---")
-								self.motor_control(65,-65,0.4)
-						
+								self.yunosu_pos = "Right"
+								self.motor_control(65*ct.const.SURFACE_GAIN,-65*ct.const.SURFACE_GAIN,0.4)
 							elif tvec[0] <= -0.13:
 								# ~ print("---反時計周り---")
-								self.motor_control(-65,65,0.4)
-							
+								self.yunosu_pos = "Left"
+								self.motor_control(-65*ct.const.SURFACE_GAIN,65*ct.const.SURFACE_GAIN,0.4)
 							else:
 								print("'\033[32m'---perfect REACHED---'\033[0m'")
-								time.sleep(1)
-								self.writeMissionlog(3)
+								self.writeMissionlog_2("perfect reached to releasing position")
+								for i in range(10):
+									self.BLUE_LED.led_on()
+									time.sleep(0.05)
+									self.BLUE_LED.led_off()
+									self.RED_LED.led_on()
+									time.sleep(0.05)
+									self.RED_LED.led_off()
+									self.GREEN_LED.led_on()
+									time.sleep(0.05)
+									self.GREEN_LED.led_off()
+								# ~ self.writeMissionlog(3)
 								self.releasing_state = 2
 
 						
 						elif self.closing_threshold >= distance_of_marker >= self.closing_threshold - self.CLOSING_RANGE_THRE:
 							if tvec[0] >= 0.05:
 								# ~ print("---back 時計周り---")
-								self.motor_control(-55,-70,0.4)
+								self.motor_control(-55*ct.const.SURFACE_GAIN,-70*ct.const.SURFACE_GAIN,0.4)
 						
 							elif tvec[0] <= -0.13:
 								# ~ print("---back 反時計周り---")
-								self.motor_control(-70,-55,0.4)
+								self.motor_control(-70*ct.const.SURFACE_GAIN,-55*ct.const.SURFACE_GAIN,0.4)
 							
 							else:
 								# ~ print("---back---")
-								self.motor_control(-60,-60,0.4)
+								self.motor_control(-60*ct.const.SURFACE_GAIN,-60*ct.const.SURFACE_GAIN,0.4)
+								if tvec[0] >= 0:
+									self.yunosu_pos = "Right"
+								else:
+									self.yunosu_pos = "Left"
+								self.BLUE_LED.led_off()
 						
 						elif distance_of_marker <= self.closing_threshold - self.CLOSING_RANGE_THRE:
+							self.RED_LED.led_on()
 							self.control_log1 = "avoiding"
 							if -50 <= angle_of_marker <= 0: #ARマーカがやや左から正面にある場合
 								# ~ print("時計周り")
-								self.motor_control(70,-70,0.3)
 								self.yunosu_pos = "Left"
+								self.motor_control(70*ct.const.SURFACE_GAIN,-70*ct.const.SURFACE_GAIN,0.3)
 								self.last_pos = "Plan_B"
 							
 							
 							elif 0 <= angle_of_marker <= 50: #ARマーカがやや右から正面にある場合
 								# ~ print("反時計周り")
-								self.motor_control(-70,70,0.3)
 								self.yunosu_pos = "Right"
+								self.motor_control(-70*ct.const.SURFACE_GAIN,70*ct.const.SURFACE_GAIN,0.3)
 								self.last_pos = "Plan_B"
+							self.RED_LED.led_off()
+							self.BLUE_LED.led_off()
 						
-							
+						else:
+							print("========\n=========\n\n\nyahhoi_yunosuke\n\n\n=======\n========")
 						self.distance, self.angle = self.ar.Correct(tvec,self.VEC_GOAL)
-						polar_exchange = self.ar.polar_change(tvec)
+					
+						polar_exchange = self.ar.polar_change(tvec)	
 				pass
 			else:
 				if self.last_pos == "Plan_A" :#and not find_marker: #ARマーカを認識していない時，認識するまでその場回転
 					if cX:
+						
 						self.control_log1 = "closing"
 						x,y = width-cY,cX
 						self.cam_pint = 5.5 #default pint
 						self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
-						if x < width/2-100:
-							# ~ print(f"color:ARマーカー探してます(LEFT) (x={x})")
-							self.motor_control(-55,70,0.5)
-						elif x > width/2+100:
-							# ~ print(f"color:ARマーカー探してます(RIGHT) (x={x})")
-							self.motor_control(70,-55,0.5)
-						else:
-							# ~ print(f"color:ARマーカー探してます(GO) (x={x})")
-							self.motor_control(65,65,0.5)
+						# ~ print(cv2.contourArea(max_contour))
+						try:
+							if cv2.contourArea(self.max_contour) > 170000.0:
+								self.motor_control(-90*ct.const.SURFACE_GAIN,-90*ct.const.SURFACE_GAIN,0.5)
+								self.control_log1 = "too close"
+								pass
+							elif x < width/2-100:
+								# ~ print(f"color:ARマーカー探してます(LEFT) (x={x})")
+								self.motor_control(-55*ct.const.SURFACE_GAIN,70*ct.const.SURFACE_GAIN,0.5)
+							elif x > width/2+100:
+								# ~ print(f"color:ARマーカー探してます(RIGHT) (x={x})")
+								self.motor_control(70*ct.const.SURFACE_GAIN,-55*ct.const.SURFACE_GAIN,0.5)
+							else:
+								# ~ print(f"color:ARマーカー探してます(GO) (x={x})")
+								self.motor_control(65*ct.const.SURFACE_GAIN,65*ct.const.SURFACE_GAIN,0.5)
+						except:
+							print("error")
+						
 					else:
 						if self.yunosu_pos == "Left":
-							# ~ print("ARマーカー探してます(LEFT)")
-							self.control_log1 = "explore"
-							self.motor_control(-70,70,0.4)
-						else:
-							# ~ print("ARマーカー探してます(RIGHT)")
-							self.motor_control(70,-70,0.4)
-							self.control_log1 = "explore"
-						pass
+							if self.past_flag == True:
+								self.control_log1 = "explore"
+								self.motor_control(-60*ct.const.SURFACE_GAIN,70*ct.const.SURFACE_GAIN,0.4)
+							else:
+								# ~ print("ARマーカー探してます(LEFT)")
+								self.control_log1 = "explore"
+								self.motor_control(-75*ct.const.SURFACE_GAIN,75*ct.const.SURFACE_GAIN,0.4)
+								print("???????????????????????")
+						elif self.yunosu_pos == "Right":
+							if self.past_flag == True:
+								self.control_log1 = "explore"
+								self.motor_control(70*ct.const.SURFACE_GAIN,-70*ct.const.SURFACE_GAIN,0.4)
+							else:
+								# ~ print("ARマーカー探してます(RIGHT)")
+								self.motor_control(75*ct.const.SURFACE_GAIN,-75*ct.const.SURFACE_GAIN,0.4)
+								self.control_log1 = "explore"
+								print("!!!!!!!!!!!!!!!!!!!!!!!")
+
+
 
 				elif self.last_pos == "Plan_B":
 					self.lost_marker_cnt+=1
 					print("lost marker cnt +1")
 					self.control_log1 = "avoiding"
-					if self.lost_marker_cnt > 10:
+					if self.lost_marker_cnt > 3:
+						self.RED_LED.led_on()
 						if self.yunosu_pos == "Left":
 							gain1 = 30
 							gain2 = 0
@@ -838,10 +963,14 @@ class Cansat():
 							gain2 = 30
 							
 						# ~ print("Plan_B now")
-						self.motor_control(70+gain1,70+gain2,2.5 + self.k)
+						self.motor_control((70+gain1)*ct.const.SURFACE_GAIN,(70+gain2)*ct.const.SURFACE_GAIN,2.5 + self.k)
 						self.last_pos = "Plan_A"
 						self.k += 1
 						# ~ print(self.k)
+						self.RED_LED.led_off()
+			
+			self.BLUE_LED.led_off()
+			self.GREEN_LED.led_off()
 			    
     
 		elif self.releasing_state == 2:
@@ -870,31 +999,57 @@ class Cansat():
 					self.frame = self.picam2.capture_array()
 					self.gray = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY) # グレースケールに変換
 					self.corners, self.ids, self.rejectedImgPoints = aruco.detectMarkers(self.gray, self.dictionary)
+					self.LostMarkerCount += 1
+					if self.LostMarkerCount > ct.const.LOST_MARKER_THRE: 
+						self.releasing_state = 1
+						self.writeMissionlog_2("state back to look for AR")
 					
-				
 				else:
+					self.LostMarkerCount = 0
 					self.flag_AR = True
 					break
 					
 			if self.ids is not None:
-				if self.last_marker_num in self.ids:
+				if self.last_marker_num in self.ids and self.last_marker_num in [1,2,4,5]:
 					self.ids = [self.last_marker_num]
+					print("flag_1")
 				else:
 					self.ids = [self.ids[0]]
 					self.last_marker_num = self.ids[0]
+					print("flag_2")
 				for i in range(len(self.ids)):
 						if self.ids[i] in [1,2,3,4,5,6]:
 							self.flag_AR = True
 							rvec, tvec, _ = aruco.estimatePoseSingleMarkers(self.corners[i], self.marker_length, self.camera_matrix, self.distortion_coeff)
 							tvec = np.squeeze(tvec)
+
+							self.posture_judgement = self.posture_judge(tvec, self.ex, self.ez)
+
+							rvec = np.squeeze(rvec)
+							
+							if self.ids[i] == 3:
+								tvec = self.shift_marker(tvec,rvec,3)
+							elif self.ids[i] == 5:
+								tvec = self.shift_marker(tvec,rvec,5)
+
 							self.justAngle = self.adjust_angle(tvec)
 				
 
 			if self.justAngle:
-				
+				for i in range(10):
+					self.BLUE_LED.led_on()
+					time.sleep(0.05)
+					self.BLUE_LED.led_off()
+					self.RED_LED.led_on()
+					time.sleep(0.05)
+					self.RED_LED.led_off()
+					self.GREEN_LED.led_on()
+					time.sleep(0.05)
+					self.GREEN_LED.led_off()
 				print("\033[32m","just angle!!!!!!!!!!!!",self.nowangle,"\033[0m")
-				time.sleep(5)
-				self.writeMissionlog(4)
+				self.writeMissionlog_2("just angle")
+				time.sleep(2)
+				# ~ self.writeMissionlog(4)
 				self.frame = self.picam2.capture_array()
 				self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
 				cv2.imwrite(self.results_img_dir+f'/mission_{self.cameraCount}.jpg',self.frame2)
@@ -906,17 +1061,361 @@ class Cansat():
 				物資モジュール投射
 
 			"""
+			self.BLUE_LED.led_on()
+			self.RED_LED.led_on()
+			self.GREEN_LED.led_on()
 			print("'\033[44m'","5-3.moving_release_position",'\033[0m')
 			self.control_log1 = "releasing"
 			self.control_log2 = f"pin{ct.const.SEPARATION_MOD2}:HIGH"
-			self.separation(ct.const.SEPARATION_MOD2)
-			print("ct.const.SEPARATION_MOD2 no settei ga hituyou")
-			self.writeMissionlog(5)
+			print(f"{self.incidence_prob * 100:.0f}%") # 付け足した
+			self.writeMissionlog_2(f"{self.incidence_prob * 100:.0f}%")
+			self.separation(ct.const.SEPARATION_MOD2,True)
+			# ~ self.writeMissionlog(5)
+			self.writeMissionlog_2("2nd module released")
 			time.sleep(5)
+			self.BLUE_LED.led_off()
+			self.RED_LED.led_off()
+			self.GREEN_LED.led_off()
 			self.state = 6
 			pass
 		
 
+	
+
+	def judgement(self): # state = 6
+		"""
+			物資モジュール確認
+
+		"""
+		if self.closing_state == 1:
+			print("'\033[44m'","6-1.Go to judgement",'\033[0m')
+			self.cameraCount += 1
+			self.frame = self.picam2.capture_array()
+			self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
+			
+			height = self.frame2.shape[0]
+			width = self.frame2.shape[1]
+			gray = cv2.cvtColor(self.frame2, cv2.COLOR_BGR2GRAY) # グレースケールに変換
+			corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary) # ARマーカーの検出   
+
+			# オレンジ色のマスクを作成
+			mask_red = self.color.mask_color(self.frame,ct.const.LOWER_RED,ct.const.UPPER_RED)
+			# 輪郭を抽出して最大の面積を算出し、線で囲む
+			mask_red,cX,cY,max_contour_area = self.color.detect_color(mask_red,ct.const.MAX_CONTOUR_THRESHOLD)
+			#print("cX:",cX,"cY:",cY,"max_contour_area:",max_contour_area)
+			
+			hsv = cv2.cvtColor(self.frame2, cv2.COLOR_BGR2HSV)
+			mask_red2 = cv2.inRange(hsv, ct.const.LOWER_RED , ct.const.UPPER_RED )
+			# 形態学的処理（膨張と収縮）を追加
+			kernel = np.ones((10,10), np.uint8)
+			mask_red2 = cv2.morphologyEx(mask_red2, cv2.MORPH_OPEN, kernel)
+			mask_red2 = cv2.morphologyEx(mask_red2, cv2.MORPH_CLOSE, kernel)
+
+			# 輪郭を抽出して最大の面積を算出し、線で囲む
+			contours_red, _ = cv2.findContours(mask_red2, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+			if contours_red:
+				self.max_contour = max(contours_red, key=cv2.contourArea)
+				hull = cv2.convexHull(self.max_contour)
+				cv2.drawContours(self.frame2, [hull], -1, (0, 0, 255), 3)
+			cv2.imwrite(self.results_img_dir+f'/{self.cameraCount}.jpg',self.frame2)
+			
+			if cX: # color:true
+				self.GREEN_LED.led_on()
+				self.flag_COLOR = True
+				if self.state5_loopCount_color == 1:
+					# ~ self.writeMissionlog()
+					self.state5_loopCount_color +=1
+				# ~ if ids is None: # color:true ar:false
+					# ~ self.cam_pint = 10.5
+					# ~ while self.cam_pint > 3.0: #pint change start
+						# ~ if ids is None: # color:true ar:false
+							# ~ self.cam_pint -= 0.5
+							# ~ print("pint:",self.cam_pint)
+							# ~ self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
+							# ~ frame = self.picam2.capture_array()
+							# ~ gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # グレースケールに変換
+							# ~ corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary)
+						# ~ else:# color:true ar:true
+							# ~ self.flag_AR = True
+							# ~ break
+						
+				min_pint = 3.0
+				max_pint = 10.5
+				step = 0.5  # ピント値を増減させるステップサイズ
+
+				# 範囲をリストに格納
+				pint_list = []
+				pints = list(np.arange(min_pint, max_pint + step, step))
+
+				# 順序を交互に追加
+				for offset in range(int((max_pint - min_pint) / step) + 1):
+					if self.previous_pint + offset * step <= max_pint:
+						pint_list.append(self.previous_pint + offset * step)
+					if self.previous_pint - offset * step >= min_pint and offset != 0:
+						pint_list.append(self.previous_pint - offset * step)
+						
+				if ids is None: # color:true ar:false
+					cnt = 0
+					for pint in pint_list: #pint change start
+						if ids is None: # color:true ar:false
+							self.cam_pint = pint
+							print("pint:",self.cam_pint)
+							self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
+							frame = self.picam2.capture_array()
+							gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # グレースケールに変換
+							corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary)
+							cnt += 1
+							self.previous_pint = pint
+						else:# color:true ar:true
+							self.flag_AR = True
+							cnt = 0
+							break
+					cnt = 0
+				
+							
+			# ~ else: # color:false
+				# ~ if ids is not None: # color:false ar:true
+					# ~ continue
+				# ~ else: # color:false ar:false
+					# ~ if self.last_pos == "Plan_A":
+						# ~ if self.yunosu_pos == "Left":
+							# ~ print("ARマーカー探してます(LEFT)")
+							# ~ self.control_log1 = "explore"
+							# ~ self.motor_control(-70,70,0.4)
+						# ~ else:
+							# ~ print("ARマーカー探してます(RIGHT)")
+							# ~ self.motor_control(70,-70,0.4)
+							# ~ self.control_log1 = "explore"
+						# ~ pass
+						
+			
+			if ids is not None:
+				self.BLUE_LED.led_on()
+				if self.last_marker_num in ids:
+					ids = [self.last_marker_num]
+				else:
+					ids = [ids[0]]
+					self.last_marker_num = ids[0]
+				for i in range(len(ids)):
+					if ids[i] in [1,2,3,4,5,6]:
+						
+						if self.state5_loopCount_ar == 1:
+							# ~ self.writeMissionlog(2)
+							self.state5_loopCount_ar +=1
+						
+						self.flag_AR = True
+						rvec, tvec, _ = aruco.estimatePoseSingleMarkers(corners[i], self.marker_length, self.camera_matrix, self.distortion_coeff)
+						tvec = np.squeeze(tvec)
+						rvec = np.squeeze(rvec)
+						
+						if ids[i] == 3:
+							tvec = self.shift_marker(tvec,rvec,3)
+						elif ids[i] == 5:
+							tvec = self.shift_marker(tvec,rvec,5)
+						
+						# 回転ベクトルからrodoriguesへ変換
+						rvec_matrix = cv2.Rodrigues(rvec)
+						rvec_matrix = rvec_matrix[0] # rodoriguesから抜き出し
+						transpose_tvec = tvec[np.newaxis, :].T # 並進ベクトルの転置
+						proj_matrix = np.hstack((rvec_matrix, transpose_tvec)) # 合成
+						euler_angle = cv2.decomposeProjectionMatrix(proj_matrix)[6]  # オイラー角への変換[deg]
+						self.prev = list(self.prev)
+						self.lost_marker_cnt = 0
+
+						
+						self.reject_count = 0
+						# ~ print("x : " + str(tvec[0]))
+						# ~ print("y : " + str(tvec[1]))
+						# ~ print("z : " + str(tvec[2]))
+						self.tvec = tvec
+						polar_exchange = self.ar.polar_change(tvec)
+						# ~ print(f"yunosu_function_{ids[i]}:",polar_exchange)
+						distance_of_marker = polar_exchange[0] #r
+						self.distanceAR = distance_of_marker
+						angle_of_marker = polar_exchange[1] #theta
+						# ~ print("======",distance_of_marker)
+						
+						self.control_log1 = "closing"
+						if distance_of_marker >= 0.30 + self.CLOSING_RANGE_THRE:
+							if tvec[0] >= 0.1:
+								turn_gain = 5*((self.closing_threshold + self.CLOSING_RANGE_THRE)/(distance_of_marker))**2
+								# ~ print("---右に曲がります---")
+								self.motor_control((60 + turn_gain)*ct.const.SURFACE_GAIN,60*ct.const.SURFACE_GAIN,0.3)
+							
+								
+							elif 0.1 > tvec[0] > -0.10:
+								go_ahead_gain = (distance_of_marker-self.closing_threshold) / self.closing_threshold
+								# ~ print("---motor GO AHEAD---")
+								self.motor_control((80+60*go_ahead_gain)*ct.const.SURFACE_GAIN,(80+60*go_ahead_gain)*ct.const.SURFACE_GAIN,0.3)
+							
+							
+							else:
+								turn_gain = 5*((self.closing_threshold + self.CLOSING_RANGE_THRE)/(distance_of_marker))**2
+								# ~ print("---左に曲がります---")
+								self.motor_control(60*ct.const.SURFACE_GAIN,(60 + turn_gain)*ct.const.SURFACE_GAIN,0.3)
+								
+								
+
+						elif distance_of_marker >= 0.2:
+							if tvec[0] >= 0.08:
+								# ~ print("---時計周り---")
+								self.motor_control(65*ct.const.SURFACE_GAIN,-65*ct.const.SURFACE_GAIN,0.4)
+					
+							elif tvec[0] <= -0.08:
+								# ~ print("---反時計周り---")
+								self.motor_control(-65*ct.const.SURFACE_GAIN,65*ct.const.SURFACE_GAIN,0.4)
+							
+							else:
+								print("'\033[32m'---perfect REACHED---'\033[0m'")
+								self.writeMissionlog_2("perfect reached for judgement")
+								time.sleep(1)
+								self.closing_state = 2
+
+						
+						elif  0.2 > distance_of_marker > 0.2 - self.CLOSING_RANGE_THRE:
+							if tvec[0] >= 0.05:
+								# ~ print("---back 時計周り---")
+								self.motor_control(-55*ct.const.SURFACE_GAIN,-75*ct.const.SURFACE_GAIN,0.4)
+						
+							elif tvec[0] <= -0.05:
+								# ~ print("---back 反時計周り---")
+								self.motor_control(-75*ct.const.SURFACE_GAIN,-65*ct.const.SURFACE_GAIN,0.5)
+							
+							else:
+								# ~ print("---back---")
+								self.motor_control(-65*ct.const.SURFACE_GAIN,-65*ct.const.SURFACE_GAIN,0.4)
+						
+						elif distance_of_marker <= 0.2 - self.CLOSING_RANGE_THRE:
+							print(f"=={distance_of_marker} <= 18 - {self.CLOSING_RANGE_THRE}")
+							self.control_log1 = "avoiding"
+							if -50 <= angle_of_marker <= 0: #ARマーカがやや左から正面にある場合
+								# ~ print("時計周り")
+								self.motor_control(70*ct.const.SURFACE_GAIN,-70*ct.const.SURFACE_GAIN,0.35)
+								self.yunosu_pos = "Left"
+								self.last_pos = "Plan_B"
+							
+							
+							elif 0 <= angle_of_marker <= 50: #ARマーカがやや右から正面にある場合
+								# ~ print("反時計周り")
+								self.motor_control(-70*ct.const.SURFACE_GAIN,70*ct.const.SURFACE_GAIN,0.35)
+								self.yunosu_pos = "Right"
+								self.last_pos = "Plan_B"
+						
+							
+						self.distance, self.angle = self.ar.Correct(tvec,self.VEC_GOAL)
+						polar_exchange = self.ar.polar_change(tvec)
+				pass
+			else:
+				time.sleep(1)
+				self.closing_state = 2
+				if self.last_pos == "Plan_A" :#and not find_marker: #ARマーカを認識していない時，認識するまでその場回転
+					if cX:
+						self.control_log1 = "closing"
+						x,y = width-cY,cX
+						self.cam_pint = 5.5 #default pint
+						self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
+						if x < width/2-100:
+							# ~ print(f"color:ARマーカー探してます(LEFT) (x={x})")
+							self.motor_control(-60*ct.const.SURFACE_GAIN,80*ct.const.SURFACE_GAIN,0.4)
+						elif x > width/2+100:
+							# ~ print(f"color:ARマーカー探してます(RIGHT) (x={x})")
+							self.motor_control(80*ct.const.SURFACE_GAIN,-60*ct.const.SURFACE_GAIN,0.4)
+						else:
+							# ~ print(f"color:ARマーカー探してます(GO) (x={x})")
+							self.motor_control(60*ct.const.SURFACE_GAIN,60*ct.const.SURFACE_GAIN,0.4)
+					else:
+						if self.yunosu_pos == "Left":
+							# ~ print("ARマーカー探してます(LEFT)")
+							self.control_log1 = "explore"
+							self.motor_control(-60*ct.const.SURFACE_GAIN,75*ct.const.SURFACE_GAIN,0.35)
+						else:
+							# ~ print("ARマーカー探してます(RIGHT)")
+							self.motor_control(75*ct.const.SURFACE_GAIN,-60*ct.const.SURFACE_GAIN,0.35)
+							self.control_log1 = "explore"
+						pass
+
+				elif self.last_pos == "Plan_B":
+					self.lost_marker_cnt+=1
+					print("lost marker cnt +1")
+					self.control_log1 = "avoiding"
+					if self.lost_marker_cnt > 10:
+						if self.yunosu_pos == "Left":
+							gain1 = 30
+							gain2 = 0
+						else:
+							gain1 = 0
+							gain2 = 30
+							
+						# ~ print("Plan_B now")
+						self.motor_control((70+gain1)*ct.const.SURFACE_GAIN,(70+gain2)*ct.const.SURFACE_GAIN,2.5 + self.k)
+						self.last_pos = "Plan_A"
+						self.k += 1
+						# ~ print(self.k)
+			self.BLUE_LED.led_off()
+			self.GREEN_LED.led_off()
+		elif self.closing_state == 2:
+			"""
+				撮影・評価
+
+			"""
+			print("'\033[44m'","6-2.judgement",'\033[0m')
+			self.cameraCount += 1
+			self.frame = self.picam2.capture_array()
+			self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
+			height = self.frame2.shape[0]
+			width = self.frame2.shape[1]
+			
+			if self.judge_cnt < 5:
+				if self.frame2 is not None:
+					lower_blue = ct.const.LOWER_RED
+					upper_blue = ct.const.UPPER_RED
+					lower_red = ct.const.LOWER_BLUE
+					upper_red = ct.const.UPPER_BLUE
+
+					hsv = cv2.cvtColor(self.frame2, cv2.COLOR_BGR2HSV)
+					mask_blue = cv2.inRange(hsv, lower_blue, upper_blue)
+					mask_red = cv2.inRange(hsv, lower_red, upper_red)
+					# 形態学的処理（膨張と収縮）を追加
+					kernel = np.ones((10,10), np.uint8)
+					mask_blue = cv2.morphologyEx(mask_blue, cv2.MORPH_OPEN, kernel)
+					mask_blue = cv2.morphologyEx(mask_blue, cv2.MORPH_CLOSE, kernel)
+					mask_red = cv2.morphologyEx(mask_red, cv2.MORPH_OPEN, kernel)
+					mask_red = cv2.morphologyEx(mask_red, cv2.MORPH_CLOSE, kernel)
+
+					# 輪郭を抽出して最大の面積を算出し、線で囲む
+					contours_blue, _ = cv2.findContours(mask_blue, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+					if contours_blue:
+						self.max_contour = max(contours_blue, key=cv2.contourArea)
+						hull = cv2.convexHull(self.max_contour)
+						cv2.drawContours(self.frame2, [hull], -1, (0, 0, 255), 3)
+
+					contours_red, _ = cv2.findContours(mask_red, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+					if contours_red:
+						self.max_contour = max(contours_red, key=cv2.contourArea)
+						if cv2.contourArea(self.max_contour) > ct.const.MAX_CONTOUR_THRESHOLD//10:  # 面積が1000より大きい場合のみ描画
+							cv2.drawContours(self.frame2, [self.max_contour], -1, (0, 255, 0), 3)
+							M = cv2.moments(self.max_contour)
+							if M["m00"] != 0:
+								cX = int(M["m10"] / M["m00"])
+								cY = int(M["m01"] / M["m00"])
+
+								try:
+									if cv2.pointPolygonTest(hull, (cX, cY), False) >= 0:
+										print("\033[33m~~~ INSIDE ~~~\033[0m")
+									else:
+										print("\033[33m~~~ OUTSIDE ~~~\033[0m")
+								except :
+									pass
+				self.motor_control(-70*ct.const.SURFACE_GAIN,-70*ct.const.SURFACE_GAIN,0.5)
+				time.sleep(1)
+				self.judge_cnt += 1
+			else:
+				time.sleep(3)
+				self.writeMissionlog_2("captured picture")
+				self.state = 7
+			
+			cv2.imwrite(self.results_img_dir+f'/mission_{self.cameraCount}.jpg',self.frame2)
+			pass
 	def motor_control(self,m1,m2,t):
 		# m1:右モーターの速度
 		# m2:左モーターの速度
@@ -960,306 +1459,14 @@ class Cansat():
 		self.motor2.stop()
 		
 
-	def judgement(self): # state = 6
-		"""
-			物資モジュール確認
-
-		"""
-		if self.closing_state == 1:
-			print("'\033[44m'","6-1.Go to judgement",'\033[0m')
-			self.cameraCount += 1
-			self.frame = self.picam2.capture_array()
-			self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
-			
-			height = self.frame2.shape[0]
-			width = self.frame2.shape[1]
-			gray = cv2.cvtColor(self.frame2, cv2.COLOR_BGR2GRAY) # グレースケールに変換
-			corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary) # ARマーカーの検出   
-
-			# オレンジ色のマスクを作成
-			mask_blue = self.color.mask_color(self.frame,ct.const.LOWER_BLUE,ct.const.UPPER_BLUE)
-			# 輪郭を抽出して最大の面積を算出し、線で囲む
-			mask_blue,cX,cY,max_contour_area = self.color.detect_color(mask_blue,ct.const.MAX_CONTOUR_THRESHOLD)
-			#print("cX:",cX,"cY:",cY,"max_contour_area:",max_contour_area)
-			
-			lower_blue = np.array([90, 90, 109])
-			upper_blue = np.array([135, 220, 250])
-
-			hsv = cv2.cvtColor(self.frame2, cv2.COLOR_BGR2HSV)
-			mask_blue2 = cv2.inRange(hsv, lower_blue, upper_blue)
-			# 形態学的処理（膨張と収縮）を追加
-			kernel = np.ones((10,10), np.uint8)
-			mask_blue2 = cv2.morphologyEx(mask_blue2, cv2.MORPH_OPEN, kernel)
-			mask_blue2 = cv2.morphologyEx(mask_blue2, cv2.MORPH_CLOSE, kernel)
-
-			# 輪郭を抽出して最大の面積を算出し、線で囲む
-			contours_blue, _ = cv2.findContours(mask_blue2, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-			if contours_blue:
-				max_contour = max(contours_blue, key=cv2.contourArea)
-				hull = cv2.convexHull(max_contour)
-				cv2.drawContours(self.frame2, [hull], -1, (0, 0, 255), 3)
-			cv2.imwrite(self.results_img_dir+f'/{self.cameraCount}.jpg',self.frame2)
-			
-			if cX: # color:true
-				self.flag_COLOR = True
-				if self.state5_loopCount_color == 1:
-					self.writeMissionlog()
-					self.state5_loopCount_color +=1
-				if ids is None: # color:true ar:false
-					self.cam_pint = 10.5
-					while self.cam_pint > 3.0: #pint change start
-						if ids is None: # color:true ar:false
-							self.cam_pint -= 0.5
-							print("pint:",self.cam_pint)
-							self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
-							frame = self.picam2.capture_array()
-							gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # グレースケールに変換
-							corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary)
-						else:# color:true ar:true
-							self.flag_AR = True
-							break
-				
-							
-			# ~ else: # color:false
-				# ~ if ids is not None: # color:false ar:true
-					# ~ continue
-				# ~ else: # color:false ar:false
-					# ~ if self.last_pos == "Plan_A":
-						# ~ if self.yunosu_pos == "Left":
-							# ~ print("ARマーカー探してます(LEFT)")
-							# ~ self.control_log1 = "explore"
-							# ~ self.motor_control(-70,70,0.4)
-						# ~ else:
-							# ~ print("ARマーカー探してます(RIGHT)")
-							# ~ self.motor_control(70,-70,0.4)
-							# ~ self.control_log1 = "explore"
-						# ~ pass
-						
-			
-			if ids is not None:
-				if self.last_marker_num in ids:
-					ids = [self.last_marker_num]
-				else:
-					ids = [ids[0]]
-					self.last_marker_num = ids[0]
-				for i in range(len(ids)):
-					if ids[i] in [1,2,3,4,5,6]:
-						
-						if self.state5_loopCount_ar == 1:
-							self.writeMissionlog(2)
-							self.state5_loopCount_ar +=1
-						
-						self.flag_AR = True
-						rvec, tvec, _ = aruco.estimatePoseSingleMarkers(corners[i], self.marker_length, self.camera_matrix, self.distortion_coeff)
-						tvec = np.squeeze(tvec)
-						rvec = np.squeeze(rvec)
-						# 回転ベクトルからrodoriguesへ変換
-						rvec_matrix = cv2.Rodrigues(rvec)
-						rvec_matrix = rvec_matrix[0] # rodoriguesから抜き出し
-						transpose_tvec = tvec[np.newaxis, :].T # 並進ベクトルの転置
-						proj_matrix = np.hstack((rvec_matrix, transpose_tvec)) # 合成
-						euler_angle = cv2.decomposeProjectionMatrix(proj_matrix)[6]  # オイラー角への変換[deg]
-						self.prev = list(self.prev)
-						self.lost_marker_cnt = 0
-
-						
-						self.reject_count = 0
-						# ~ print("x : " + str(tvec[0]))
-						# ~ print("y : " + str(tvec[1]))
-						# ~ print("z : " + str(tvec[2]))
-						self.tvec = tvec
-						polar_exchange = self.ar.polar_change(tvec)
-						# ~ print(f"yunosu_function_{ids[i]}:",polar_exchange)
-						distance_of_marker = polar_exchange[0] #r
-						self.distanceAR = distance_of_marker
-						angle_of_marker = polar_exchange[1] #theta
-						# ~ print("======",distance_of_marker)
-						
-						self.control_log1 = "closing"
-						if distance_of_marker >= 0.20 + self.CLOSING_RANGE_THRE:
-							if tvec[0] >= 0.05:
-								turn_gain = 5*((self.closing_threshold + self.CLOSING_RANGE_THRE)/(distance_of_marker))**2
-								# ~ print("---右に曲がります---")
-								self.motor_control(60 + turn_gain,60,0.4)
-							
-								
-							elif 0.1 > tvec[0] > -0.1:
-								go_ahead_gain = (distance_of_marker-self.closing_threshold) / self.closing_threshold
-								# ~ print("---motor GO AHEAD---")
-								self.motor_control(60+60*go_ahead_gain,60+60*go_ahead_gain,0.4)
-							
-							
-							else:
-								turn_gain = 5*((self.closing_threshold + self.CLOSING_RANGE_THRE)/(distance_of_marker))**2
-								# ~ print("---左に曲がります---")
-								self.motor_control(50,50 + turn_gain,0.4)
-								
-								
-
-						elif distance_of_marker >= 0.18:
-							if tvec[0] >= 0.05:
-								# ~ print("---時計周り---")
-								self.motor_control(65,-65,0.4)
-					
-							elif tvec[0] <= -0.05:
-								# ~ print("---反時計周り---")
-								self.motor_control(-65,65,0.4)
-							
-							else:
-								print("'\033[32m'---perfect REACHED---'\033[0m'")
-								time.sleep(1)
-								self.closing_state = 2
-
-						
-						elif  18 >= distance_of_marker >= 0.18 - self.CLOSING_RANGE_THRE:
-							if tvec[0] >= 0.05:
-								# ~ print("---back 時計周り---")
-								self.motor_control(-55,-75,0.4)
-						
-							elif tvec[0] <= -0.05:
-								# ~ print("---back 反時計周り---")
-								self.motor_control(-75,-65,0.5)
-							
-							else:
-								# ~ print("---back---")
-								self.motor_control(-65,-65,0.4)
-						
-						elif distance_of_marker <= 0.18 - self.CLOSING_RANGE_THRE:
-							print(f"=={distance_of_marker} <= 18 - {self.CLOSING_RANGE_THRE}")
-							self.control_log1 = "avoiding"
-							if -50 <= angle_of_marker <= 0: #ARマーカがやや左から正面にある場合
-								# ~ print("時計周り")
-								self.motor_control(70,-70,0.35)
-								self.yunosu_pos = "Left"
-								self.last_pos = "Plan_B"
-							
-							
-							elif 0 <= angle_of_marker <= 50: #ARマーカがやや右から正面にある場合
-								# ~ print("反時計周り")
-								self.motor_control(-70,70,0.35)
-								self.yunosu_pos = "Right"
-								self.last_pos = "Plan_B"
-						
-							
-						self.distance, self.angle = self.ar.Correct(tvec,self.VEC_GOAL)
-						polar_exchange = self.ar.polar_change(tvec)
-				pass
-			else:
-				if self.last_pos == "Plan_A" :#and not find_marker: #ARマーカを認識していない時，認識するまでその場回転
-					if cX:
-						self.control_log1 = "closing"
-						x,y = width-cY,cX
-						self.cam_pint = 5.5 #default pint
-						self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
-						if x < width/2-100:
-							# ~ print(f"color:ARマーカー探してます(LEFT) (x={x})")
-							self.motor_control(-60,80,0.4)
-						elif x > width/2+100:
-							# ~ print(f"color:ARマーカー探してます(RIGHT) (x={x})")
-							self.motor_control(80,-60,0.4)
-						else:
-							# ~ print(f"color:ARマーカー探してます(GO) (x={x})")
-							self.motor_control(60,60,0.4)
-					else:
-						if self.yunosu_pos == "Left":
-							# ~ print("ARマーカー探してます(LEFT)")
-							self.control_log1 = "explore"
-							self.motor_control(-70,70,0.35)
-						else:
-							# ~ print("ARマーカー探してます(RIGHT)")
-							self.motor_control(70,-70,0.35)
-							self.control_log1 = "explore"
-						pass
-
-				elif self.last_pos == "Plan_B":
-					self.lost_marker_cnt+=1
-					print("lost marker cnt +1")
-					self.control_log1 = "avoiding"
-					if self.lost_marker_cnt > 10:
-						if self.yunosu_pos == "Left":
-							gain1 = 30
-							gain2 = 0
-						else:
-							gain1 = 0
-							gain2 = 30
-							
-						# ~ print("Plan_B now")
-						self.motor_control(70+gain1,70+gain2,2.5 + self.k)
-						self.last_pos = "Plan_A"
-						self.k += 1
-						# ~ print(self.k)
-		elif self.closing_state == 2:
-			"""
-				撮影・評価
-
-			"""
-			print("'\033[44m'","6-2.judgement",'\033[0m')
-			self.cameraCount += 1
-			self.frame = self.picam2.capture_array()
-			self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
-			height = self.frame2.shape[0]
-			width = self.frame2.shape[1]
-			
-			if self.judge_cnt < 5:
-				if self.frame2 is not None:
-					# オレンジ色の検出
-					lower_blue = np.array([90, 40, 26])
-					upper_blue = np.array([135, 250, 250])
-					lower_red = np.array([165, 15, 10])
-					upper_red = np.array([179, 250, 250])
-
-					hsv = cv2.cvtColor(self.frame2, cv2.COLOR_BGR2HSV)
-					mask_blue = cv2.inRange(hsv, lower_blue, upper_blue)
-					mask_red = cv2.inRange(hsv, lower_red, upper_red)
-					# 形態学的処理（膨張と収縮）を追加
-					kernel = np.ones((10,10), np.uint8)
-					mask_blue = cv2.morphologyEx(mask_blue, cv2.MORPH_OPEN, kernel)
-					mask_blue = cv2.morphologyEx(mask_blue, cv2.MORPH_CLOSE, kernel)
-					mask_red = cv2.morphologyEx(mask_red, cv2.MORPH_OPEN, kernel)
-					mask_red = cv2.morphologyEx(mask_red, cv2.MORPH_CLOSE, kernel)
-
-					# 輪郭を抽出して最大の面積を算出し、線で囲む
-					contours_blue, _ = cv2.findContours(mask_blue, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-					if contours_blue:
-						max_contour = max(contours_blue, key=cv2.contourArea)
-						hull = cv2.convexHull(max_contour)
-						cv2.drawContours(self.frame2, [hull], -1, (0, 0, 255), 3)
-
-					contours_red, _ = cv2.findContours(mask_red, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-					if contours_red:
-						max_contour = max(contours_red, key=cv2.contourArea)
-						if cv2.contourArea(max_contour) > ct.const.MAX_CONTOUR_THRESHOLD//10:  # 面積が1000より大きい場合のみ描画
-							cv2.drawContours(self.frame2, [max_contour], -1, (0, 255, 0), 3)
-							M = cv2.moments(max_contour)
-							if M["m00"] != 0:
-								cX = int(M["m10"] / M["m00"])
-								cY = int(M["m01"] / M["m00"])
-
-								try:
-									if cv2.pointPolygonTest(hull, (cX, cY), False) >= 0:
-										print("\033[33m~~~ INSIDE ~~~\033[0m")
-									else:
-										print("\033[33m~~~ OUTSIDE ~~~\033[0m")
-								except :
-									pass
-				self.motor_control(-70,-70,0.5)
-				time.sleep(1)
-				self.judge_cnt += 1
-			else:
-				time.sleep(3)
-				self.state = 7
-			
-			cv2.imwrite(self.results_img_dir+f'/mission_{self.cameraCount}.jpg',self.frame2)
-			pass
-
 	def stuck_detection(self):
 		print(self.ax**2+self.ay**2)
 		if (self.ax**2+self.ay**2) <= ct.const.STUCK_ACC_THRE**2 or (self.ax**2+self.ay**2) > 8:
 			print("stack??")
-			if self.stuckTime == 0:
-				self.stuckTime = time.time()
+			# if self.stuckTime == 0:
+				# self.stuckTime = time.time()
 			
-			if self.countstuckLoop > ct.const.STUCK_COUNT_THRE or self.state == 1 or self.state >= 6 or self.mirror_count > 10: #加速度が閾値以下になるケースがある程度続いたらスタックと判定
+			if self.countstuckLoop > ct.const.STUCK_COUNT_THRE or self.mirror_count > 10 or self.state >= 7: #加速度が閾値以下になるケースがある程度続いたらスタックと判定
 				#トルネード実施
 				print("===================stuck====================")
 				self.motor1.back(ct.const.STUCK_MOTOR_VREF)
@@ -1280,28 +1487,65 @@ class Cansat():
 			self.countstuckLoop+= 1
 
 		else:
-			# ~ self.countstuckLoop = 0 # change 0 when state chenge
+			self.countstuckLoop = 0 # change 0 when state chenge
 			self.stuckTime = 0
 				
 	def upsidedown_checker(self):
 		# 逆さまの検知（着地時に実施を想定）
-		if self.gz < 5: # gz?が閾値以下で逆さまと判定
+		if self.gz < 3: # gz?が閾値以下で逆さまと判定
 			self.mirror_count += 1
 			self.mirror = True
 		else:
 			self.mirror_count = 0
 			self.mirror = False
+	def shift_marker(self,tvec,rvec, marker_id):
+		# Convert rotation vector to rotation matrix
+		rvec_matrix, _ = cv2.Rodrigues(rvec)
 
-	def separation(self,pin):
+		# Define a shift of 5 cm to the right in the marker's plane
+		if marker_id ==3:
+			a = -1
+		else:
+			a = 1
+		shift_vector = np.array([a*0.065, 0, 0])  # 5 cm shift to the right
+		shift_vector_marker_plane = rvec_matrix @ shift_vector  # Transform shift to world coordinates
+
+		# Adjust the translation vector
+		tvec_shifted = tvec + shift_vector_marker_plane
+
+		print("Original tvec:", tvec)
+		print("Shifted tvec:", tvec_shifted)
+
+		# Use tvec_shifted for further processing
+		tvec = tvec_shifted
+		return tvec
+	def separation(self,pin,cap=False):
+		GPIO.setup(pin,GPIO.OUT) #焼き切り用のピンの設定tv
+		GPIO.output(pin,0) #焼き切りが危ないのでlowにしておく
+		
 		if self.sepa_mode:
 			print("\n\n\==================n\nSeparation done\n\n==================\n\n")
-			GPIO.setup(pin,GPIO.OUT) #焼き切り用のピンの設定tv 
-			GPIO.output(pin,0) #焼き切りが危ないのでlowにしておく
 			GPIO.output(pin,1) #電圧をHIGHにして焼き切りを行う
-			time.sleep(6) #継続時間を指定
-			GPIO.output(pin,0) #電圧をLOWにして焼き切りを終了する
 		else:
 			print("\n\n\==================n\nSeparation pass\n\n==================\n\n")
+		
+		imgs = []
+		if cap:
+			st = time.time()
+			i=0
+			print("capture")
+			while time.time() - st < 6:	
+				self.frame = self.picam2.capture_array()
+				self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
+				imgs.append(self.frame2)
+				print("cap:",i)
+				i+=1
+			for i,frame in enumerate(imgs):
+				self.cameraCount += 1
+				cv2.imwrite(self.results_img_dir+f'/releace_{i}.jpg',frame)
+		else:
+			time.sleep(6) #継続時間を指定
+		GPIO.output(pin,0) #電圧をLOWにして焼き切りを終了する
 		
 	def running(self): # state = 7
 		dlon = self.goallon - self.lon
@@ -1334,6 +1578,7 @@ class Cansat():
 		    self.running_finish = True
 		    print(f"Goal Time: {self.goaltime}")
 		    print("GOAAAAAAAAAL!!!!!")
+		    self.writeMissionlog_2("goal")
 		    self.state = 8
 		    self.laststate = 8
 		
@@ -1355,7 +1600,7 @@ class Cansat():
 		    self.finishTime = time.time()
 		    print("\n",self.startTime)
 		    print("\nFinished\n")
-		    self.writeMissionlog()
+		    # ~ self.writeMissionlog()
 		    self.motor1.stop()
 		    self.motor2.stop()
 		    # ~ GPIO.output(ct.const.SEPARATION_PARA,0) #焼き切りが危ないのでlowにしておく
@@ -1373,23 +1618,77 @@ class Cansat():
 		print(f"\033[33m", f"adjust angle : tvec = {tvec}", "\033[0m")	
 
 		self.distanceAR = (tvec[0]**2+tvec[1]**2+tvec[2]**2)**(1/2)
-		if tvec[0] > 0.015:
-			if self.nowangle >= 160:
-				print("=@=@=servo: "+str(self.nowangle),">110")
+			
+		
+		if tvec[0] > 0.03:
+			if self.nowangle >= 100:
+				print("=@=@=servo: "+str(self.nowangle),">160")
+				self.unable_rotation_count += 1
+				print("\033[44m ===== +1 ===== \033[0m")
+				if self.unable_rotation_count > 1:
+					self.motor_control(70,-70,0.3)
+					time.sleep(1)
+					print("\033[44m ===== servo ===== \033[0m")
+					self.unable_rotation_count = 0
 				return False
 			else:
 				self.nowangle += 3
 				self.servo.go_deg(self.nowangle)
 				print("=@=@=servo: "+str(self.nowangle),"B")
-		elif tvec[0] < -0.015:
+		elif tvec[0] < -0.03:
 			if self.nowangle <= 20:
-				print("=@=@=servo: "+str(self.nowangle),"<=60")
+				print("=@=@=servo: "+str(self.nowangle),"<=30")
+				self.unable_rotation_count += 1
+				print("\033[44m ===== +1 ===== \033[0m")
+				if self.unable_rotation_count > 1:
+					self.motor_control(-70,70,0.3)
+					time.sleep(1)
+					print("\033[44m ===== servo ===== \033[0m")
+					self.unable_rotation_count = 0
 				return False
 			else:
 				self.nowangle -= 3
 				self.servo.go_deg(self.nowangle)
 				print("=@=@=servo: "+str(self.nowangle),"A")
 		else:
+			print("~~~~~~~~~")
+			return True
+    
+	def posture_judge(self, tvec, ex, ez):
+		print(f"\033[33m", "posture judge", "\033[0m")
+		def position(t, ex, ez):
+			x = (ct.const.U[0] + (ct.const.m * ct.const.g / ct.const.k) * np.cos(ex) * np.sin(ez)) * (t + (ct.const.m / ct.const.k) * (1 - np.exp(-ct.const.k * t / ct.const.m))) + ct.const.x0
+			y = (ct.const.m / ct.const.k) * (-ct.const.V0 * np.sin(ct.const.theta) - ct.const.U[1] - (ct.const.m * ct.const.g / ct.const.k) * np.cos(ex) * np.cos(ez)) * (1 - np.exp(-ct.const.k * t / ct.const.m)) + (ct.const.U[1] + (ct.const.m * ct.const.g / ct.const.k) * np.cos(ex) * np.cos(ez)) * t + ct.const.y0
+			z = (ct.const.m / ct.const.k) * (ct.const.V0 * np.cos(ct.const.theta) - ct.const.U[2] + (ct.const.m * ct.const.g / ct.const.k) * np.sin(ex)) * (1 - np.exp(-ct.const.k * t / ct.const.m)) + (ct.const.U[2] - (ct.const.m * ct.const.g / ct.const.k) * np.sin(ex)) * t + ct.const.z0
+			return x, y, z
+
+		def find_t(t, ex, ez, yg):
+			_, y, _ = position(t, ex, ez)
+			return y - yg
+		
+		t_initial_guess = 0.5 # 初期推定値
+		t_solution = fsolve(find_t, t_initial_guess, args=(ex, ez, tvec[1]))[0] # y = ygとなるtを求める
+		_, _, z = position(t_solution, ex, ez) # 求めたtでのx, y, zを算出
+		
+		## ここから追加
+		common_min = max(z - ct.const.mu , tvec[2] - ct.const.tolerance)
+		common_max = min(z + ct.const.mu , tvec[2] + ct.const.tolerance)
+		if common_min <= common_max:
+			prob_upper = norm.cdf(min(z + ct.const.mu, tvec[2] + ct.const.tolerance)*100, ct.const.mu, ct.const.std)
+			prob_lower = norm.cdf(max(z - ct.const.mu, tvec[2] - ct.const.tolerance)*100, ct.const.mu, ct.const.std)
+			self.incidence_prob = prob_upper - prob_lower
+		else:
+			self.incidence_prob = 0
+		print(f"{self.incidence_prob * 100:.0f}%")
+
+		if self.incidence_prob < ct.const.prob_threshold:
+		## ここまで追加
+			if z > tvec[2]:
+				self.motor_control(-70, -70, 0.3)
+			elif z <= tvec[2]:
+				self.motor_control(70, 70, 0.3)
+		else:
+			print("\033[32m", "perfect posture!!!!", "\033[0m")
 			return True
 
 	def keyboardinterrupt(self): #キーボードインタラプト入れた場合に発動する関数

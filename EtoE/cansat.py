@@ -352,6 +352,7 @@ class Cansat():
 		print("control_log_lv :",self.control_log_lv) 
 		print("yunosu_pos : ",self.yunosu_pos)
 		print("last_pos : ",self.last_pos)
+		print("past_flag :",self.past_flag)
 	
 		
 		
@@ -664,7 +665,7 @@ class Cansat():
 						euler_angle = cv2.decomposeProjectionMatrix(proj_matrix)[6]  # オイラー角への変換[deg]
 						self.prev = list(self.prev)
 						self.lost_marker_cnt = 0
-						self.past_flag == True
+						self.past_flag = True
 
 						
 						self.reject_count = 0
@@ -685,20 +686,20 @@ class Cansat():
 								turn_gain = 5*((self.closing_threshold + self.CLOSING_RANGE_THRE)/(distance_of_marker))**2
 								# ~ print("---右に曲がります---")
 								self.motor_control(50 + turn_gain,60,0.5)
-								self.yunosu_pos == "Left"
+								self.yunosu_pos = "Left"
 							
 								
 							elif 0.05 > tvec[0] > -0.05:
 								go_ahead_gain = (distance_of_marker-self.closing_threshold) / self.closing_threshold
 								# ~ print("---motor GO AHEAD---")
 								self.motor_control(40+60*go_ahead_gain,40+60*go_ahead_gain,0.5)
-							
+															
 							
 							else:
 								turn_gain = 5*((self.closing_threshold + self.CLOSING_RANGE_THRE)/(distance_of_marker))**2
 								# ~ print("---左に曲がります---")
 								self.motor_control(50,50 + turn_gain,0.5)
-								self.yunosu_pos == "Right"
+								self.yunosu_pos = "Right"
 								
 								
 
@@ -722,7 +723,7 @@ class Cansat():
 							if tvec[0] >= 0.02:
 								# ~ print("---back 時計周り---")
 								self.motor_control(-55,-75,0.5)
-						
+						        
 							elif tvec[0] <= -0.05:
 								# ~ print("---back 反時計周り---")
 								self.motor_control(-75,-65,0.5)
@@ -730,6 +731,11 @@ class Cansat():
 							else:
 								# ~ print("---back---")
 								self.motor_control(-65,-65,0.5)
+								if tvec[0] > 0:
+									self.yunosu_pos = "Right"
+								else:
+									self.yunosu_pos = "Left"
+								
 						
 						elif distance_of_marker <= self.closing_threshold - self.CLOSING_RANGE_THRE:
 							self.control_log1 = "avoiding"
@@ -790,7 +796,7 @@ class Cansat():
 				elif self.yunosu_pos == "Left":
 					if self.past_flag == True:
 						self.control_log1 = "explore"
-						self.motor_control(-60,60,0.3)
+						self.motor_control(-60,60,0.4)
 					else:
 						# ~ print("ARマーカー探してます(LEFT)")
 						self.control_log1 = "explore"
@@ -799,7 +805,7 @@ class Cansat():
 				elif self.yunosu_pos == "Right":
 					if self.past_flag == True:
 						self.control_log1 = "explore"
-						self.motor_control(60,-60,0.3)
+						self.motor_control(60,-60,0.4)
 					else:
 						# ~ print("ARマーカー探してます(RIGHT)")
 						self.motor_control(70,-70,0.4)
@@ -1221,7 +1227,7 @@ class Cansat():
 				self.lv = -ct.const.STUCK_MOTOR_VREF
 				self.countstuckLoop = 0
 				self.stuckTime = 0
-				if self.state == 1
+				if self.state == 1:
 					self.escapeTime -= 5
 
 			self.countstuckLoop+= 1

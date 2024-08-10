@@ -6,6 +6,7 @@ from collections import deque
 import time
 import tkinter as tk
 from tkinter import Scale
+import os
 
 # ==============================ARマーカーの設定==============================
 dictionary = aruco.getPredefinedDictionary(aruco.DICT_ARUCO_ORIGINAL)
@@ -18,7 +19,7 @@ MAX_CONTOUR_THRESHOLD = 1000
 # ==============================カメラの設定==============================
 camera = input("Which camera do you want to use? (laptop:1 or picamera:2): ")
 if int(camera) == 1:
-    cap = cv2.VideoCapture(1)
+    cap = cv2.VideoCapture(0)
 elif int(camera) == 2:
     from picamera2 import Picamera2 #laptopでは使わないため
     from libcamera import controls #laptopでは使わないため
@@ -49,16 +50,33 @@ TorF = True
 # ar = Artools()
 
 # ==============================オレンジ色検出のためのHSV値の設定==============================
-lower_orange = np.array([105, 56, 0])
-upper_orange = np.array([150, 250, 250])
-lower_orange = np.array([158, 95, 70])
-upper_orange = np.array([179, 250, 250])
+def load_values_from_file(filename):
+    """Load HSV values from a text file."""
+    if os.path.exists(filename):
+        with open(filename, "r") as file:
+            lines = file.readlines()
+            lower_orange = np.array(eval(lines[0].split(":")[1].strip()))
+            upper_orange = np.array(eval(lines[1].split(":")[1].strip()))
+            return lower_orange, upper_orange
+    else:
+        # Default values if file doesn't exist
+        return np.array([158, 85, 70]), np.array([179, 250, 250])
+
+def save_values_to_file(filename):
+    """Save HSV values to a text file."""
+    with open(filename, "w") as file:
+        file.write(f"lower_orange: {lower_orange.tolist()}\n")
+        file.write(f"upper_orange: {upper_orange.tolist()}\n")
+
+# Load initial HSV values from file or use default values
+lower_orange, upper_orange = load_values_from_file("orange_hsv_values.txt")
 
 # ==============================Tkinter GUIの設定==============================
 def update_values():
     global lower_orange, upper_orange
     lower_orange = np.array([hue_lower.get(), sat_lower.get(), val_lower.get()])
     upper_orange = np.array([hue_upper.get(), sat_upper.get(), val_upper.get()])
+    save_values_to_file("orange_hsv_values.txt")
 
 root = tk.Tk()
 root.title("HSV Range Adjuster")
@@ -113,7 +131,6 @@ def main_loop():
         contours, _ = cv2.findContours(mask_orange, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         if contours:
             max_contour = max(contours, key=cv2.contourArea)
-            print("\033[42m","max_contour:",cv2.contourArea(max_contour) ,"\033[0m")
             if cv2.contourArea(max_contour) > MAX_CONTOUR_THRESHOLD:  # 面積が1000より大きい場合のみ描画
                 cv2.drawContours(frame, [max_contour], -1, (0, 255, 0), 3)
                 M = cv2.moments(max_contour)
