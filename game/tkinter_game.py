@@ -1,29 +1,45 @@
 from tkinter import *
 from tkinter import ttk
 import time
-
-from motor_pico import motor as motor
-
+import cv2
+from picamera2 import Picamera2
+from PIL import Image, ImageTk
 import RPi.GPIO as GPIO
+from motor_pico import motor as motor
 
 class Tkmain():
     __run = False
     __arm = True
+
     def __init__(self):
         GPIO.setwarnings(False)
-        self.MotorR = motor(dir = -1)
+        self.MotorR = motor(dir=-1)
         self.MotorL = motor()
-        
+
         self.root = Tk()
         self.root.title('CONTROLLER')
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
-        
+
         # Frame
         self.frame = ttk.Frame(self.root, padding=10)
         self.frame.grid(sticky=(N, W, S, E))
         self.frame.columnconfigure(0, weight=1)
         self.frame.rowconfigure(0, weight=1)
+
+        # Initialize Picamera2
+        self.picam2 = Picamera2()
+        size = (1800, 2400)
+        config = self.picam2.create_preview_configuration(
+            main={"format": 'XRGB8888', "size": size})
+        self.picam2.align_configuration(config)
+        self.picam2.configure(config)
+        self.picam2.start()
+        self.picam2.set_controls({"AfMode": 0, "LensPosition": 5.5})
+
+        # Label to display captured image
+        self.image_label = ttk.Label(self.frame)
+        self.image_label.grid(row=6, column=0, columnspan=5, sticky=(N, S, E, W))
 
     def scale_and_button(self):
 
@@ -47,7 +63,6 @@ class Tkmain():
             self.frame,
             text='( ◜ω◝ )',
             width=10)
-            # command=lambda: print('val:%4d' % self.val.get()))
         self.textbox.grid(row=5, column=2, padx=5, sticky=(E))
 
         # スケールの作成
@@ -61,8 +76,6 @@ class Tkmain():
             to=950,
             command=self.hset)
         self.sc_arm.grid(row=2, column=4, sticky=(N, E, S, W))
-        self.style = ttk.Style()
-        self.style.configure("office.TButton", font=20, anchor="s")
         self.val_arm.set(1650)
 
         # Button
@@ -72,7 +85,6 @@ class Tkmain():
             width=10,
             style="office.TButton",
             command=lambda: self.vup())
-            # command=lambda: print('val:%4d' % self.val.get()))
         self.faster.grid(row=0, column=0, padx=5, sticky=(E))
 
         # Button
@@ -82,7 +94,6 @@ class Tkmain():
             width=10,
             style="office.TButton",
             command=lambda: self.vdown())
-            # command=lambda: print('val:%4d' % self.val.get()))
         self.slower.grid(row=4, column=0, padx=5, sticky=(E))
 
         # Button (Added by kazu)
@@ -92,7 +103,6 @@ class Tkmain():
             width=10,
             style="office.TButton",
             command=lambda: self.hup())
-            # command=lambda: print('val:%4d' % self.val.get()))
         self.upward.grid(row=0, column=4, padx=5, sticky=(E))
 
         # Button (Added by kazu)
@@ -102,9 +112,8 @@ class Tkmain():
             width=10,
             style="office.TButton",
             command=lambda: self.hdown())
-            # command=lambda: print('val:%4d' % self.val.get()))
         self.downward.grid(row=4, column=4, padx=5, sticky=(E))
-        
+
         # Button
         self.go = ttk.Button(
             self.frame,
@@ -112,7 +121,6 @@ class Tkmain():
             width=10,
             style="office.TButton",
             command=lambda: self.__go())
-            # command=lambda: print('val:%4d' % self.val.get()))
         self.go.grid(row=0, column=2, padx=5, sticky=(E))
 
         # Button
@@ -122,9 +130,8 @@ class Tkmain():
             width=10,
             style="office.TButton",
             command=lambda: self.__go_a_little())
-            # command=lambda: print('val:%4d' % self.val.get()))
         self.go_a_little.grid(row=1, column=2, padx=5, sticky=(E))
-        
+
         # Button
         self.back = ttk.Button(
             self.frame,
@@ -132,7 +139,6 @@ class Tkmain():
             width=10,
             style="office.TButton",
             command=lambda: self.__back())
-            # command=lambda: print('val:%4d' % self.val.get()))
         self.back.grid(row=3, column=2, padx=5, sticky=(E))
 
         # Button
@@ -142,7 +148,6 @@ class Tkmain():
             width=10,
             style="office.TButton",
             command=lambda: self.__right())
-            # command=lambda: print('val:%4d' % self.val.get()))
         self.right.grid(row=2, column=3, padx=5, sticky=(E))
 
         # Button
@@ -152,9 +157,8 @@ class Tkmain():
             width=10,
             style="office.TButton",
             command=lambda: self.__left())
-            # command=lambda: print('val:%4d' % self.val.get()))
         self.left.grid(row=2, column=1, padx=5, sticky=(E))
-        
+
         # Button
         self.grasp = ttk.Button(
             self.frame,
@@ -162,7 +166,6 @@ class Tkmain():
             width=10,
             style="office.TButton",
             command=lambda: self.__arm_updown())
-            # command=lambda: print('val:%4d' % self.val.get()))
         self.grasp.grid(row=2, column=2, padx=5, sticky=(E))
 
         # Button (added by kazu)
@@ -172,7 +175,6 @@ class Tkmain():
             width=10,
             style="office.TButton",
             command=lambda: self.__picture())
-            # command=lambda: print('val:%4d' % self.val.get()))
         self.picture.grid(row=1, column=3, padx=5, sticky=(E))
 
         # Button (added by kazu)
@@ -182,9 +184,7 @@ class Tkmain():
             width=10,
             style="office.TButton",
             command=lambda: self.__dance())
-            # command=lambda: print('val:%4d' % self.val.get()))
         self.dance.grid(row=1, column=1, padx=5, sticky=(E))
-
 
         # Button (added by kazu)
         self.finish = ttk.Button(
@@ -193,7 +193,6 @@ class Tkmain():
             width=10,
             style="office.TButton",
             command=lambda: self.__finish())
-            # command=lambda: print('val:%4d' % self.val.get()))
         self.finish.grid(row=3, column=3, padx=5, sticky=(E))
 
     def vup(self):
@@ -202,15 +201,15 @@ class Tkmain():
         else:
             self.val.set(100)
         print('速度:%4d' % self.val.get())
-        self.textbox["text"]='速度:%4d' % self.val.get()
-            
+        self.textbox["text"] = '速度:%4d' % self.val.get()
+
     def vdown(self):
         if self.val.get() > 60:
             self.val.set(self.val.get() - 10)
         else:
             self.val.set(50)
         print('速度:%4d' % self.val.get())
-        self.textbox["text"]='速度:%4d' % self.val.get()
+        self.textbox["text"] = '速度:%4d' % self.val.get()
 
     def hup(self):
         if self.val_arm.get() < 1600:
@@ -218,182 +217,120 @@ class Tkmain():
         else:
             self.val_arm.set(1650)
         print('高さ:%4d' % self.val_arm.get())
-        self.textbox["text"]='wait a second'
-        # ~ self.arm.move(self.val_arm.get())
-        self.textbox["text"]='高さ:%4d' % self.val_arm.get()
-            
+        self.textbox["text"] = 'wait a second'
+        self.textbox["text"] = '高さ:%4d' % self.val_arm.get()
+
     def hdown(self):
         if self.val_arm.get() > 1000:
             self.val_arm.set(self.val_arm.get() - 50)
         else:
             self.val_arm.set(950)
         print('高さ:%4d' % self.val_arm.get())
-        self.textbox["text"]='wait a second'
-        # ~ self.arm.move(self.val_arm.get())
-        self.textbox["text"]='高さ:%4d' % self.val_arm.get()
+        self.textbox["text"] = 'wait a second'
+        self.textbox["text"] = '高さ:%4d' % self.val_arm.get()
 
-    def hset(self,var):
+    def hset(self, var):
         try:
-            value=int(var[:4])
+            value = int(var[:4])
         except ValueError:
-            value=int(var[:3])
+            value = int(var[:3])
         self.val_arm.set(value)
-        # ~ self.arm.move(value)
-        self.textbox["text"]='高さ:%4d' % self.val_arm.get()
+        self.textbox["text"] = '高さ:%4d' % self.val_arm.get()
 
-    
     def __arm_updown(self):
-        # if not self.__arm:
-            # self.__arm = True
-            # print("ARM UP!")
-            # self.arm.up()
-        # else:
-            # self.__arm = False
-            # print("ARM DOWN!")
-            # self.arm.down()
-        self.textbox["text"]='!ATTACK!'
+        self.textbox["text"] = '!ATTACK!'
         self.textbox.update()
-        # ~ self.arm.down()
-        # ~ time.sleep(1)
-        # ~ self.arm.up()
-        self.textbox["text"]='高さ:%4d' % self.val_arm.get()
+        self.textbox["text"] = '高さ:%4d' % self.val_arm.get()
 
     def __go(self):
-        if not self.__run:
-            print("RUN!")
+        if self.__run == False:
+            self.textbox["text"] = '走ります'
+            self.MotorR.forward(speed=self.val.get())
+            self.MotorL.forward(speed=self.val.get())
             self.__run = True
-            self.textbox["text"]='RUN 速度:%4d' % self.val.get()
-            self.MotorR.go(float(self.val.get()))
-            self.MotorL.go(float(self.val.get()))
         else:
-            print("STOP!")
-            self.__run = False
+            self.textbox["text"] = '止まります'
             self.MotorR.stop()
             self.MotorL.stop()
-            self.textbox["text"]='STOP!'
-        # self.arm.up()
-        # ~ self.arm.move(self.val_arm.get())
+            self.__run = False
 
     def __go_a_little(self):
-        print("RUN just a little bit!")
-        self.MotorR.go(float(self.val.get())//1.2)
-        self.MotorL.go(float(self.val.get())//1.2)
-        time.sleep(0.5)
+        self.textbox["text"] = 'ちょっとだけ走る'
+        self.MotorR.forward(speed=self.val.get())
+        self.MotorL.forward(speed=self.val.get())
+        time.sleep(1)
         self.MotorR.stop()
         self.MotorL.stop()
-        # self.arm.up()
-        # ~ self.arm.move(self.val_arm.get())
-        self.textbox["text"]='少し走る'
+        self.textbox["text"] = '止まりました'
 
     def __back(self):
-        print("BACK!")
-        self.MotorR.back(60)
-        self.MotorL.back(60)
-        time.sleep(0.5)
+        self.textbox["text"] = 'うしろに下がります'
+        self.MotorR.backward(speed=self.val.get())
+        self.MotorL.backward(speed=self.val.get())
+        time.sleep(1)
         self.MotorR.stop()
         self.MotorL.stop()
-        # self.arm.up()
-        # ~ self.arm.move(self.val_arm.get())
-        self.textbox["text"]='うしろ'
+        self.textbox["text"] = '止まりました'
 
     def __right(self):
-        print("TURN RIGHT!")
-        self.MotorR.back(float(self.val.get()))
-        self.MotorL.go(float(self.val.get()))
+        self.textbox["text"] = '右を向きます'
+        self.MotorL.forward(speed=self.val.get())
+        self.MotorR.backward(speed=self.val.get())
         time.sleep(0.5)
         self.MotorR.stop()
         self.MotorL.stop()
-        # self.arm.up()
-        # ~ self.arm.move(self.val_arm.get())
-        self.textbox["text"]='みぎ'
+        self.textbox["text"] = '止まりました'
 
     def __left(self):
-        print("TURN LEFT!")
-        self.MotorR.go(float(self.val.get()))
-        self.MotorL.back(float(self.val.get()))
+        self.textbox["text"] = '左を向きます'
+        self.MotorR.forward(speed=self.val.get())
+        self.MotorL.backward(speed=self.val.get())
         time.sleep(0.5)
         self.MotorR.stop()
         self.MotorL.stop()
-        # self.arm.up()
-        # ~ self.arm.move(self.val_arm.get())
-        self.textbox["text"]='ひだり'
-        
-    def __finish(self):
-        print("finish the game!")
-        self.MotorR.stop()
-        self.MotorL.stop()
-        # self.arm.up()
-        # ~ self.arm.move(self.val_arm.get())
-        self.root.destroy()
-        
+        self.textbox["text"] = '止まりました'
+
     def __dance(self):
-        print("ଘ (੭*ˊᵕˋ)੭*")
-        self.textbox["text"]='ଘ (੭*ˊᵕˋ)੭*'
-        self.textbox.update()
-        # ~ self.arm.down()
-        # ~ time.sleep(0.8)
-        print("٩(ˊᗜˋ*)و")
-        self.textbox["text"]='٩(ˊᗜˋ*)و'
-        self.textbox.update()
-        # ~ self.arm.up()
-        # ~ time.sleep(0.8)
-        print("ଘ (੭*ˊᵕˋ)੭*")
-        self.textbox["text"]='ଘ (੭*ˊᵕˋ)੭*'
-        self.textbox.update()
-        # ~ self.arm.down()
-        # ~ time.sleep(0.8)
-        print("٩(ˊᗜˋ*)و")
-        self.textbox["text"]='٩(ˊᗜˋ*)و'
-        self.textbox.update()
-        # ~ self.arm.up()
-        # ~ time.sleep(0.8)
-        print("(‘ω’ )三")
-        self.textbox["text"]='(‘ω’ )三'
-        self.textbox.update()
-        self.MotorR.back(float(self.val.get()))
-        self.MotorL.go(float(self.val.get()))
-        time.sleep(1.5)
-        print("三( ‘ω’)")
-        self.textbox["text"]='三( ‘ω’)'
-        self.textbox.update()
-        self.MotorR.go(float(self.val.get()))
-        self.MotorL.back(float(self.val.get()))
-        time.sleep(1.5)
-        print("(‘ω’ )三")
-        self.textbox["text"]='(‘ω’ )三'
-        self.textbox.update()
-        self.MotorR.back(float(self.val.get()))
-        self.MotorL.go(float(self.val.get()))
-        time.sleep(1.5)
-        print("三( ‘ω’)")
-        self.textbox["text"]='三( ‘ω’)'
-        self.textbox.update()
-        self.MotorR.go(float(self.val.get()))
-        self.MotorL.back(float(self.val.get()))
-        time.sleep(1.5)
+        self.textbox["text"] = '踊ります'
+        self.MotorR.forward(speed=self.val.get())
+        self.MotorL.backward(speed=self.val.get())
+        time.sleep(1)
+        self.MotorR.backward(speed=self.val.get())
+        self.MotorL.forward(speed=self.val.get())
+        time.sleep(1)
         self.MotorR.stop()
         self.MotorL.stop()
-        print("ヾ(*´∀｀*)ﾉ ")
-        self.textbox["text"]='ヾ(*´∀｀*)ﾉ '
-        self.textbox.update()
-        
+        self.textbox["text"] = '止まりました'
+
+    def __finish(self):
+        self.MotorR.stop()
+        self.MotorL.stop()
+        self.root.quit()
+
     def __picture(self):
-        print("This function will be implemented by Yuma soon (｢･ω･)｢")
-        self.textbox["text"]='(｢･ω･)｢ '
-        self.textbox.update()
-        
+        # Capture image
+        self.frame = self.picam2.capture_array()
+        self.frame2 = cv2.rotate(self.frame, cv2.ROTATE_90_CLOCKWISE)
+        filename = f'/home/pi/{time.time()}.jpg'
+        cv2.imwrite(filename, self.frame2)
+        print(f"Image saved as {filename}")
+
+        # Display image
+        image = Image.fromarray(cv2.cvtColor(self.frame2, cv2.COLOR_BGR2RGB))
+        image.thumbnail((300, 300))  # Resize for display in label
+        photo = ImageTk.PhotoImage(image)
+        self.image_label.config(image=photo)
+        self.image_label.image = photo  # Keep a reference to avoid garbage collection
+
     def tkstart(self):
+        self.scale_and_button()
         self.root.mainloop()
 
     def tkstop(self):
         self.MotorR.stop()
         self.MotorL.stop()
-        time.sleep(0.5)
         GPIO.cleanup()
-        
 
 if __name__ == '__main__':
-    tk = Tkmain()
-    tk.scale_and_button()
-    tk.tkstart()
-    tk.tkstop()
+    tkinter = Tkmain()
+    tkinter.tkstart()
