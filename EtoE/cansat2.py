@@ -1067,8 +1067,9 @@ class Cansat():
 			print("'\033[44m'","5-3.moving_release_position",'\033[0m')
 			self.control_log1 = "releasing"
 			self.control_log2 = f"pin{ct.const.SEPARATION_MOD2}:HIGH"
-			self.separation(ct.const.SEPARATION_MOD2,True)
 			print(f"{self.incidence_prob * 100:.0f}%") # 付け足した
+			self.writeMissionlog_2(f"{self.incidence_prob * 100:.0f}%")
+			self.separation(ct.const.SEPARATION_MOD2,True)
 			# ~ self.writeMissionlog(5)
 			self.writeMissionlog_2("2nd module released")
 			time.sleep(5)
