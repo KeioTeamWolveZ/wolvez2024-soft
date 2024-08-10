@@ -261,7 +261,7 @@ class Cansat():
                   + "az:"+str(self.az).rjust(6) + ","\
                   + "q:"+str(self.ex).rjust(6) + ","\
                   + "pressure:"+str(self.pressure).rjust(6) + ","\
-                  + "cameraCount:"+str(self.cameraCount).rjust(6)\
+                  + "cameraCount:"+str(self.cameraCount).rjust(6) + ","\
 		  + "control_log1:"+str(self.control_log1).rjust(6) + ","\
 		  + "control_log2:"+str(self.control_log2).rjust(6) + ","\
 		  + "rv:"+str(self.control_log_rv).rjust(6) + ","\
