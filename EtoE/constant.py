@@ -6,6 +6,9 @@ import numpy as np
 import os
 import pandas as pd
 
+data = pd.read_csv('uketome_distance.csv') # ファイルの読み込み
+distance_data = data['distance [cm]'].values # 飛距離のデータを抽出
+
 # load the latest color threshold
 def load_values_from_file(filename):
     """Load HSV values from a text file."""
@@ -109,7 +112,7 @@ const.UPPER_GOAL = np.array([55, 255, 255])
 
 const.MAX_CONTOUR_THRESHOLD = 100
 
-const.CLOSING_THRE = 0.5
+const.CLOSING_THRE = np.mean(distance_data)
 const.CLOSING_RANGE_THRE = 0.05
 const.CLOSING_RANGE_THRE2 = 0.3
 const.CLOSING_RANGE_THRE_2 = 0.1
@@ -135,7 +138,7 @@ const.MIRRER_COUNT_THRE = 10
 const.VANISH_BY_STUCK_THRE = 240 # ステート6で長時間何も見えなかった場合
 
 # 運動方程式の各パラメータ（posture_judgement）
-const.tolerance = 1  # 落下許容エリアの半径
+const.tolerance = 0.15  # 落下許容エリアの半径
 const.m = 0.005  # 物資ジュール質量
 const.g = 9.81  # 重力加速度
 const.k = 0.05  # 空気抵抗係数
@@ -145,8 +148,6 @@ const.U = np.array([0, 0, 0])  # 風速ベクトル
 const.x0, const.y0, const.z0 = 0.0, -0.02, -0.03  # 物資モジュールの初期位置（カメラに対する投射機構先端の位置）
 
 # 投射成功確率に用いるパラメータ（posture_judgement）
-data = pd.read_excel('受け止めモジュールの飛距離.xlsx') # ファイルの読み込み
-distance_data = data['飛距離 [cm]'].values # 飛距離のデータを抽出
 const.mu = np.mean(distance_data) # 飛距離の平均
 const.std = np.std(distance_data) # 飛距離の標準偏差
 const.prob_threshold = 0.6 # 投射成功確率の閾値

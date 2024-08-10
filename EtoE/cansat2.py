@@ -1078,7 +1078,7 @@ class Cansat():
 				self.frame = self.picam2.capture_array()
 				self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
 				cv2.imwrite(self.results_img_dir+f'/mission_{self.cameraCount}.jpg',self.frame2)
-				# ~ self.releasing_state = 3
+				self.releasing_state = 3
 			pass
     
 		elif self.releasing_state == 3:
@@ -1092,8 +1092,9 @@ class Cansat():
 			print("'\033[44m'","5-3.moving_release_position",'\033[0m')
 			self.control_log1 = "releasing"
 			self.control_log2 = f"pin{ct.const.SEPARATION_MOD2}:HIGH"
-			self.separation(ct.const.SEPARATION_MOD2,True)
 			print(f"{self.incidence_prob * 100:.0f}%") # 付け足した
+			self.writeMissionlog_2(f"{self.incidence_prob * 100:.0f}%")
+			self.separation(ct.const.SEPARATION_MOD2,True)
 			# ~ self.writeMissionlog(5)
 			self.writeMissionlog_2("2nd module released")
 			time.sleep(5)
