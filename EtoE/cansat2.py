@@ -663,7 +663,7 @@ class Cansat():
 
 
 	def moving_release_position(self): # state = 5
-		if time.time() - self.firstTime >= ct.const.TIME_CONSTANT_1 and self.stuck_judgement == 0:
+		if time.time() - self.firstTime >= ct.const.TIME_CONSTANT_1 and self.releasing_state == 1 self.stuck_judgement == 0:
 			self.stuck_detection()
 			self.stuck_judgement = 1
 		elif time.time() - self.firstTime >= ct.const.TIME_CONSTANT_2 and self.releasing_state == 1 and self.stuck_judgement == 1:
@@ -1491,7 +1491,7 @@ class Cansat():
 			# if self.stuckTime == 0:
 				# self.stuckTime = time.time()
 			
-			if self.countstuckLoop > ct.const.STUCK_COUNT_THRE or self.mirror_count > 10 or self.state == 7 or self.state == 5: #加速度が閾値以下になるケースがある程度続いたらスタックと判定
+			if self.countstuckLoop > ct.const.STUCK_COUNT_THRE or self.mirror_count > 10 or self.state == 5: #加速度が閾値以下になるケースがある程度続いたらスタックと判定
 				#トルネード実施
 				print("===================stuck====================")
 				self.motor1.back(ct.const.STUCK_MOTOR_VREF)
@@ -1619,6 +1619,7 @@ class Cansat():
 
 		if cX : # ごーるが見えている時 ->　追従
 			self.flag_COLOR = True
+			self.GREEN_LED.led_on()
 			print("\033[43m", "=====goal_color=====","\033[0m")
 			if max_contour_area > ct.const.GOAL_COLOR_THRE:
 				self.motor1.stop()
@@ -1669,6 +1670,8 @@ class Cansat():
 				else:
 					self.motor1.go(motor_tr_vref)
 					self.motor2.go(motor_tr_vref)
+		
+		self.GREEN_LED.led_off()
 
 	def finish(self): # state = 8
 		if self.finishTime == 0:
