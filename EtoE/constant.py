@@ -79,7 +79,7 @@ const.RELEASING_MOTOR_VREF = 50
 const.RUNNING_MOTOR_VREF = 100
 const.STUCK_MOTOR_VREF = 100
 
-const.SURFACE_GAIN = 1.2
+const.SURFACE_GAIN = 1.0
 
 # # State Threshold
 const.TIME_CONSTANT_1 = 240
@@ -112,7 +112,7 @@ const.UPPER_GOAL = np.array([55, 255, 255])
 
 const.MAX_CONTOUR_THRESHOLD = 100
 
-const.CLOSING_THRE = np.mean(distance_data)
+const.CLOSING_THRE = 0.6
 const.CLOSING_RANGE_THRE = 0.05
 const.CLOSING_RANGE_THRE2 = 0.3
 const.CLOSING_RANGE_THRE_2 = 0.1
