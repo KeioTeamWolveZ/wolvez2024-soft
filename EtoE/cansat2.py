@@ -663,7 +663,7 @@ class Cansat():
 
 
 	def moving_release_position(self): # state = 5
-		if time.time() - self.firstTime >= ct.const.TIME_CONSTANT_1 and self.releasing_state == 1 self.stuck_judgement == 0:
+		if time.time() - self.firstTime >= ct.const.TIME_CONSTANT_1 and self.releasing_state == 1 and self.stuck_judgement == 0:
 			self.stuck_detection()
 			self.stuck_judgement = 1
 		elif time.time() - self.firstTime >= ct.const.TIME_CONSTANT_2 and self.releasing_state == 1 and self.stuck_judgement == 1:
