@@ -35,6 +35,20 @@ def load_pressure_from_file(filename):
         return 100000.00
 latest_pressure = load_pressure_from_file("pressure_threshold.txt")
 
+def load_values_from_file(filename):
+    """Load HSV values from a text file."""
+    if os.path.exists(filename):
+        with open(filename, "r") as file:
+            lines = file.readlines()
+            lower_goal = np.array(eval(lines[0].split(":")[1].strip()))
+            upper_goal = np.array(eval(lines[1].split(":")[1].strip()))
+            return lower_goal, upper_goal
+    else:
+        # Default values if file doesn't exist
+        return np.array([158, 85, 70]), np.array([179, 250, 250])
+lower_goal, upper_goal = load_values_from_file("goal_hsv_values.txt")
+
+
 
 ## Pin Number
 # Motor
@@ -82,8 +96,8 @@ const.STUCK_MOTOR_VREF = 100
 const.SURFACE_GAIN = 1.0
 
 # # State Threshold
-const.TIME_CONSTANT_1 = 240
-const.TIME_CONSTANT_2 = 420
+const.TIME_CONSTANT_1 = 300
+#const.TIME_CONSTANT_2 = 420
 const.TIME_CONSTANT_3 = 600
 
 const.PREPARING_GPS_COUNT_THRE= 30
@@ -91,10 +105,10 @@ const.PREPARING_TIME_THRE = 10
 
 const.FLYING_FLIGHTPIN_COUNT_THRE = 10
 
-const.DROPPING_TIME_THRE = 10 #60
+const.DROPPING_TIME_THRE = 60 #60
 const.DROPPING_ACC_COUNT_THRE = 20
 const.DROPPING_ACC_THRE = 0.008 #加速度の値 0.005
-const.DROPPING_PRESS_THRE = 99087 # 気圧センサのカウンタ latest_pressure + 5m
+const.DROPPING_PRESS_THRE = latest_pressure-30 # 気圧センサのカウンタ latest_pressure + 5m
 const.DROPPING_PRESS_COUNT_THRE = 20 # 気圧センサのカウンタ
 
 const.PARA_ESCAPE_TIME_THRE = 10
@@ -107,8 +121,8 @@ const.UPPER_BLUE = np.array([137, 225, 255])
 const.LOWER_RED = lower_red #np.array([158, 85, 70])
 const.UPPER_RED = upper_red #np.array([179, 250, 250])
 
-const.LOWER_GOAL = np.array([0, 220, 158]) #must change
-const.UPPER_GOAL = np.array([55, 255, 255])
+const.LOWER_GOAL = lower_goal #must change
+const.UPPER_GOAL = upper_goal
 
 const.MAX_CONTOUR_THRESHOLD = 100
 

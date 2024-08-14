@@ -553,7 +553,7 @@ class Cansat():
 	            self.acc_tf = False
 	
 	        # 気圧の判定
-	        if press > self.DROPPING_PRESS_THRE-100: #気圧が閾値以上で着地判定
+	        if press > self.DROPPING_PRESS_THRE: #気圧が閾値以上で着地判定
 	            self.countPressDropLoop+=1 #気圧が閾値以上で着地判定
 	            self.countPressDropLoop+=1     
 	            if self.countPressDropLoop > self.DROPPING_PRESS_COUNT_THRE: #気圧判定の複数回連続成功が必要
@@ -666,10 +666,10 @@ class Cansat():
 		if time.time() - self.firstTime >= ct.const.TIME_CONSTANT_1 and self.releasing_state == 1 and self.stuck_judgement == 0:
 			self.stuck_detection()
 			self.stuck_judgement = 1
-		elif time.time() - self.firstTime >= ct.const.TIME_CONSTANT_2 and self.releasing_state == 1 and self.stuck_judgement == 1:
-			self.stuck_detection()
-			self.stuck_judgement = 2
-		elif time.time() - self.firstTime >= ct.const.TIME_CONSTANT_3 and self.stuck_judgement == 2:
+		#elif time.time() - self.firstTime >= ct.const.TIME_CONSTANT_2 and self.releasing_state == 1 and self.stuck_judgement == 1:
+		#	self.stuck_detection()
+		#	self.stuck_judgement = 2
+		elif time.time() - self.firstTime >= ct.const.TIME_CONSTANT_3:
 			self.state = 7
 			self.stuck_judgement = 999
 			pass
