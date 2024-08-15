@@ -23,8 +23,8 @@ def gpsread():
         if gps.clean_sentences > 10: # ちゃんとしたデーターがある程度たまったら出力する
             h = int(gps.timestamp[0])
             print('時刻 {0}:{1}:{2} ,'.format(h, gps.timestamp[1], gps.timestamp[2]),end='')
-            print('緯度: %2.3f ,' % (gps.latitude[0]),end='')
-            print('経度: %2.3f' % (gps.longitude[0])) 
+            print('緯度: %2.6f ,' % (gps.latitude[0]),end='')
+            print('経度: %2.6f' % (gps.longitude[0])) 
         time.sleep(0.3) #ここ変える
 
 gps = micropyGPS.MicropyGPS(9,'dd') # MicroGPSオブジェクトを生成する。

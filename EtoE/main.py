@@ -3,10 +3,10 @@ from cansat2 import Cansat
 import time 
 import RPi.GPIO as GPIO
 
-start_state = 7
+start_state = 0
 end_state = 8
 
-sepa_mode  = False
+sepa_mode  = True
 
 try:	
 	cansat  = Cansat(start_state,sepa_mode)

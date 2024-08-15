@@ -82,8 +82,8 @@ const.FLIGHTPIN_PIN = 4
 
 ## Variables
 # Goal information
-const.GPS_GOAL_LAT = 35.55500000  # 南緯は負の値で与える
-const.GPS_GOAL_LON = 139.65600000 # 西経は負の値で与える
+const.GPS_GOAL_LAT = 40.142255  # 南緯は負の値で与える
+const.GPS_GOAL_LON = 139.987365 # 西経は負の値で与える
 const.GOAL_DISTANCE_THRE = 0.0005 # [km] (50 [cm])
 const.GOAL_COLOR_THRE = 307570.5 # 色認識によって認識して，ゴール判定を行う面積（要調整）
 
@@ -93,7 +93,7 @@ const.RELEASING_MOTOR_VREF = 50
 const.RUNNING_MOTOR_VREF = 100
 const.STUCK_MOTOR_VREF = 100
 
-const.SURFACE_GAIN = 1.0
+const.SURFACE_GAIN = 1.2
 
 # # State Threshold
 const.TIME_CONSTANT_1 = 300
@@ -107,8 +107,8 @@ const.FLYING_FLIGHTPIN_COUNT_THRE = 10
 
 const.DROPPING_TIME_THRE = 60 #60
 const.DROPPING_ACC_COUNT_THRE = 20
-const.DROPPING_ACC_THRE = 0.008 #加速度の値 0.005
-const.DROPPING_PRESS_THRE = latest_pressure-30 # 気圧センサのカウンタ latest_pressure + 5m
+const.DROPPING_ACC_THRE = 0.018 #加速度の値 0.005
+const.DROPPING_PRESS_THRE = latest_pressure-150 # 気圧センサのカウンタ latest_pressure + 5m
 const.DROPPING_PRESS_COUNT_THRE = 20 # 気圧センサのカウンタ
 
 const.PARA_ESCAPE_TIME_THRE = 10
@@ -156,10 +156,10 @@ const.tolerance = 0.15  # 落下許容エリアの半径
 const.m = 0.005  # 物資ジュール質量
 const.g = 9.81  # 重力加速度
 const.k = 0.05  # 空気抵抗係数
-const.V0 = 4.684517487133138  # 物資モジュールの初速度
-const.theta = np.deg2rad(45)  # 放出角度（ラジアン）
+const.V0 = 8.98175825  # 物資モジュールの初速度
+const.theta = np.deg2rad(60)  # 放出角度（ラジアン）
 const.U = np.array([0, 0, 0])  # 風速ベクトル
-const.x0, const.y0, const.z0 = 0.0, -0.02, -0.03  # 物資モジュールの初期位置（カメラに対する投射機構先端の位置）
+const.x0, const.y0, const.z0 = 0.0, -0.02, -0.035  # 物資モジュールの初期位置（カメラに対する投射機構先端の位置）
 
 # 投射成功確率に用いるパラメータ（posture_judgement）
 const.mu = np.mean(distance_data) # 飛距離の平均

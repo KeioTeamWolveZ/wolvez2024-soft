@@ -46,7 +46,7 @@ def calculate_v0(h, Z, x0, y0, z0, Ux, Uy, Uz, m, g, k, alpha, beta, theta):
 # 例のパラメータ (具体的な値は適宜設定してください)
 x0 = 0
 y0 = -0.02
-z0 = -0.03
+z0 = -0.035
 Ux = 0  # 風速Ux
 Uy = 0  # 風速Uy
 Uz = 0  # 風速Uz
@@ -59,7 +59,7 @@ theta = np.deg2rad(45)  # 放出角度 (45度)
 
 # 関数を呼び出して初期速度v0を計算
 h = 0.1  # y(t)の値
-Z = 0.3  # z(t)の値
+Z = 0.6  # z(t)の値
 t, v0 = calculate_v0(h, Z, x0, y0, z0, Ux, Uy, Uz, m, g, k, alpha, beta, theta)
 print(f"落下時間 t: {t} s")
 print(f"初期速度 v0: {v0} m/s")
