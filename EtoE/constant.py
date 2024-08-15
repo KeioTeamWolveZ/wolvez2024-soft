@@ -82,10 +82,10 @@ const.FLIGHTPIN_PIN = 4
 
 ## Variables
 # Goal information
-const.GPS_GOAL_LAT = 40.142255  # 南緯は負の値で与える
-const.GPS_GOAL_LON = 139.987365 # 西経は負の値で与える
+const.GPS_GOAL_LAT = 40.142308  # 南緯は負の値で与える
+const.GPS_GOAL_LON = 139.987503 # 西経は負の値で与える
 const.GOAL_DISTANCE_THRE = 0.0005 # [km] (50 [cm])
-const.GOAL_COLOR_THRE = 307570.5 # 色認識によって認識して，ゴール判定を行う面積（要調整）
+const.GOAL_COLOR_THRE = 700000 # 色認識によって認識して，ゴール判定を行う面積（要調整）
 
 # # Motor VREF
 const.LANDING_MOTOR_VREF = 80
@@ -108,10 +108,10 @@ const.FLYING_FLIGHTPIN_COUNT_THRE = 10
 const.DROPPING_TIME_THRE = 60 #60
 const.DROPPING_ACC_COUNT_THRE = 20
 const.DROPPING_ACC_THRE = 0.018 #加速度の値 0.005
-const.DROPPING_PRESS_THRE = latest_pressure-150 # 気圧センサのカウンタ latest_pressure + 5m
+const.DROPPING_PRESS_THRE = latest_pressure-200 # 気圧センサのカウンタ latest_pressure + 5m
 const.DROPPING_PRESS_COUNT_THRE = 20 # 気圧センサのカウンタ
 
-const.PARA_ESCAPE_TIME_THRE = 10
+const.PARA_ESCAPE_TIME_THRE = 20
 
 const.LOWER_ORANGE = np.array([0, 220, 158])
 const.UPPER_ORANGE = np.array([55, 255, 255])

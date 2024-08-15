@@ -606,6 +606,7 @@ class Cansat():
 		if not cX : # パラシュートが見えていない時 -> 直進
 			self.motor1.go(motor_st_vref)
 			self.motor2.go(motor_st_vref)
+			self.control_log_rv, self.control_log_lv = motor_st_vref,motor_st_vref
 			self.stuck_detection()
 			print("---motor go---")
 			# 一定時間経過した後に次のステートに移行
@@ -639,11 +640,13 @@ class Cansat():
 				print("---motor right---")
 				self.motor1.go(0)
 				self.motor2.go(motor_tr_vref)
+				self.control_log_rv, self.control_log_lv = 0,motor_tr_vref
 				self.stuck_detection()
 			else:
 				print("---motor left---")
 				self.motor1.go(motor_tr_vref)
 				self.motor2.go(0)
+				self.control_log_rv, self.control_log_lv = motor_tr_vref,0
 				# stuck検知
 				self.stuck_detection()
 		
@@ -681,6 +684,10 @@ class Cansat():
 			self.state = 7
 			self.stuck_judgement = 999
 			pass
+		
+		self.upsidedown_checker()
+		if self.mirror_count > 10:
+			self.stuck_detection()
 
 		if self.releasing_state == 1 :# 接近
 			## 作戦１：放出モジュールが十分に遠いとき
@@ -984,8 +991,8 @@ class Cansat():
 								self.control_log1 = "explore"
 								self.turn_cnt += 1 
 						print("+*+*+*+*",self.turn_cnt,"+*+*+*+*")
-						if self.turn_cnt > 20:
-							self.motor_control(70*ct.const.SURFACE_GAIN,70*ct.const.SURFACE_GAIN,2)
+						if self.turn_cnt > 10:
+							self.motor_control(70*ct.const.SURFACE_GAIN,70*ct.const.SURFACE_GAIN,1)
 							self.turn_cnt = 0
 							print("!!!!!!!!!!!!!!!!!!!!!!!")
 
@@ -1657,6 +1664,7 @@ class Cansat():
 			self.GREEN_LED.led_on()
 			print("\033[43m", "=====goal_color=====","\033[0m")
 			if max_contour_area > ct.const.GOAL_COLOR_THRE:
+				self.motor_control(70,70,2)
 				self.motor1.stop()
 				self.motor2.stop()
 				self.control_log_rv, self.control_log_lv = 0, 0
