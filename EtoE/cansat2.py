@@ -1,6 +1,7 @@
 import pigpio
 import RPi.GPIO as GPIO
 from scipy.optimize import fsolve # 付け足した
+from scipy.stats import norm # 付け足した
 
 import sys
 import cv2
@@ -126,6 +127,7 @@ class Cansat():
 		self.runningTime = 0
 		self.finishTime = 0
 		self.max_contour = 0
+		self.firstTime = 0
 		
 		# =============================================== カウンタ =============================================== 
 		# センサ用
@@ -138,7 +140,9 @@ class Cansat():
 		self.countAccDropLoop = 0
 		self.countPressDropLoop = 0
 		# スタック検知
-		self.countstuckLoop = 0	
+		self.countstuckLoop = 0
+		# アングル検知
+		self.angle_count = 0
 		# 逆さま検知
 		self.mirror_count = 0
 		# flight
@@ -155,6 +159,10 @@ class Cansat():
 		self.state5_loopCount_ar = 1
 		# 評価
 		self.judge_cnt = 0
+		# スタック分類
+		self.stuck_judgement = 0
+		# explore
+		self.turn_cnt = 0
 		# =============================================== bool =============================================== 
 		self.time_tf = False
 		self.acc_tf = False
@@ -165,6 +173,7 @@ class Cansat():
 		self.TorF = True
 		self.rot_cam = False
 		self.distancing_finish = False
+		self.running_finish = False
 		
 		
 		# ============================================= 変数の初期化 ============================================= 
@@ -210,6 +219,8 @@ class Cansat():
 		self.mkdir()
 
 		self.nowangle = 90  # サーボモータの角度
+
+		self.incidence_prob = 0 # 付け足した
 		
 		
 		
@@ -252,11 +263,13 @@ class Cansat():
                   + "az:"+str(self.az).rjust(6) + ","\
                   + "q:"+str(self.ex).rjust(6) + ","\
                   + "pressure:"+str(self.pressure).rjust(6) + ","\
-                  + "cameraCount:"+str(self.cameraCount).rjust(6)\
+                  + "cameraCount:"+str(self.cameraCount).rjust(6) + ","\
 		  + "control_log1:"+str(self.control_log1).rjust(6) + ","\
 		  + "control_log2:"+str(self.control_log2).rjust(6) + ","\
 		  + "rv:"+str(self.control_log_rv).rjust(6) + ","\
-		  + "lv:"+str(self.control_log_lv).rjust(6)
+		  + "lv:"+str(self.control_log_lv).rjust(6)+ ","\
+		  + "AR : " + str(self.flag_AR).rjust(6)+ ","\
+		  + "Color : " + str(self.flag_COLOR).rjust(6)
 		print("-------",datalog,"\n-------")
 
 		with open(f'results/{self.startTime}/control_result.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
@@ -365,7 +378,7 @@ class Cansat():
 		else:
 			print("\033[43m","COLOR:","\033[0m",self.flag_COLOR)
 		
-		
+		self.writeData()
 		print("control_log1 : ",self.control_log1)
 		print("control_log2 : ",self.control_log2)
 		print("control_log_rv :",self.control_log_rv) 
@@ -406,7 +419,7 @@ class Cansat():
 		self.lat = round(float(self.gps.Lat),5)
 		self.lon = round(float(self.gps.Lon),5)
 		
-		self.writeData()
+		
 		if not self.state == 1: #preparingのときは電波を発しない
 			self.sendLoRa()
 		pass
@@ -481,6 +494,8 @@ class Cansat():
 			# para separation
 			time.sleep(3)
 			self.separation(ct.const.SEPARATION_PARA)
+			
+			self.control_log1 = "para separation"
 			# kaiten
 			cX_right = []
 			cX_left = []
@@ -544,7 +559,7 @@ class Cansat():
 	            self.acc_tf = False
 	
 	        # 気圧の判定
-	        if press > self.DROPPING_PRESS_THRE-100: #気圧が閾値以上で着地判定
+	        if press > self.DROPPING_PRESS_THRE: #気圧が閾値以上で着地判定
 	            self.countPressDropLoop+=1 #気圧が閾値以上で着地判定
 	            self.countPressDropLoop+=1     
 	            if self.countPressDropLoop > self.DROPPING_PRESS_COUNT_THRE: #気圧判定の複数回連続成功が必要
@@ -591,6 +606,7 @@ class Cansat():
 		if not cX : # パラシュートが見えていない時 -> 直進
 			self.motor1.go(motor_st_vref)
 			self.motor2.go(motor_st_vref)
+			self.control_log_rv, self.control_log_lv = motor_st_vref,motor_st_vref
 			self.stuck_detection()
 			print("---motor go---")
 			# 一定時間経過した後に次のステートに移行
@@ -624,32 +640,59 @@ class Cansat():
 				print("---motor right---")
 				self.motor1.go(0)
 				self.motor2.go(motor_tr_vref)
+				self.control_log_rv, self.control_log_lv = 0,motor_tr_vref
 				self.stuck_detection()
 			else:
 				print("---motor left---")
 				self.motor1.go(motor_tr_vref)
 				self.motor2.go(0)
+				self.control_log_rv, self.control_log_lv = motor_tr_vref,0
 				# stuck検知
 				self.stuck_detection()
 		
 	def first_releasing(self): # state = 4
 		print("'\033[44m'","4.first_releasing",'\033[0m')
-		self.separation(ct.const.SEPARATION_MOD1)
-		# ~ self.writeMissionlog()
-		# 焼き切り放出
-		time.sleep(5)
-		self.state = 5
-		self.writeMissionlog_2("first releaseing done")
-		pass
+		if self.gz >= 9.8*(1/math.sqrt(2)):
+			self.angle_count += 1
+			if self.angle_count > 10: # コンスタントに入れるべきかも
+				self.separation(ct.const.SEPARATION_MOD1)
+				
+				self.control_log1 = "first separation"
+				# ~ self.writeMissionlog()
+				# 焼き切り放出
+				time.sleep(5)
+				self.state = 5
+				self.writeMissionlog_2("first releaseing done")
+				self.angle_count = 0
+				if self.firstTime == 0:
+					self.firstTime = time.time()
+				pass
+		else:
+			self.angle_count = 0
+			self.state -= 1
+			self.escapeTime = time.time()
+
 
 	def moving_release_position(self): # state = 5
+		if time.time() - self.firstTime >= ct.const.TIME_CONSTANT_1 and self.releasing_state == 1 and self.stuck_judgement == 0:
+			self.stuck_detection()
+			self.stuck_judgement = 1
+		#elif time.time() - self.firstTime >= ct.const.TIME_CONSTANT_2 and self.releasing_state == 1 and self.stuck_judgement == 1:
+		#	self.stuck_detection()
+		#	self.stuck_judgement = 2
+		elif time.time() - self.firstTime >= ct.const.TIME_CONSTANT_3:
+			self.state = 7
+			self.stuck_judgement = 999
+			pass
 		
+		self.upsidedown_checker()
+		if self.mirror_count > 10:
+			self.stuck_detection()
+
 		if self.releasing_state == 1 :# 接近
 			## 作戦１：放出モジュールが十分に遠いとき
 			## 作戦２：放出モジュールが遠いとき
 			print("'\033[44m'","5-1.moving_release_position",'\033[0m')
-			
-			
 			self.cameraCount += 1
 			self.frame = self.picam2.capture_array()
 			self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
@@ -685,6 +728,7 @@ class Cansat():
 			
 			if cX: # color:true
 				self.flag_COLOR = True
+				self.turn_cnt = 0
 				self.GREEN_LED.led_on()
 				if self.state5_loopCount_color == 1:
 					# ~ self.writeMissionlog()
@@ -755,6 +799,7 @@ class Cansat():
 			
 			if ids is not None:
 				self.BLUE_LED.led_on()
+				self.turn_cnt = 0
 				if self.last_marker_num in ids:
 					ids = [self.last_marker_num]
 				else:
@@ -929,20 +974,27 @@ class Cansat():
 							if self.past_flag == True:
 								self.control_log1 = "explore"
 								self.motor_control(-60*ct.const.SURFACE_GAIN,70*ct.const.SURFACE_GAIN,0.4)
+								self.turn_cnt += 1 
 							else:
 								# ~ print("ARマーカー探してます(LEFT)")
 								self.control_log1 = "explore"
 								self.motor_control(-75*ct.const.SURFACE_GAIN,75*ct.const.SURFACE_GAIN,0.4)
-								print("???????????????????????")
+								self.turn_cnt += 1 
 						elif self.yunosu_pos == "Right":
 							if self.past_flag == True:
 								self.control_log1 = "explore"
 								self.motor_control(70*ct.const.SURFACE_GAIN,-70*ct.const.SURFACE_GAIN,0.4)
+								self.turn_cnt += 1 
 							else:
 								# ~ print("ARマーカー探してます(RIGHT)")
 								self.motor_control(75*ct.const.SURFACE_GAIN,-75*ct.const.SURFACE_GAIN,0.4)
 								self.control_log1 = "explore"
-								print("!!!!!!!!!!!!!!!!!!!!!!!")
+								self.turn_cnt += 1 
+						print("+*+*+*+*",self.turn_cnt,"+*+*+*+*")
+						if self.turn_cnt > 10:
+							self.motor_control(70*ct.const.SURFACE_GAIN,70*ct.const.SURFACE_GAIN,1)
+							self.turn_cnt = 0
+							print("!!!!!!!!!!!!!!!!!!!!!!!")
 
 
 
@@ -962,6 +1014,7 @@ class Cansat():
 						# ~ print("Plan_B now")
 						self.motor_control((70+gain1)*ct.const.SURFACE_GAIN,(70+gain2)*ct.const.SURFACE_GAIN,2.5 + self.k)
 						self.last_pos = "Plan_A"
+						self.turn_cnt = 0
 						self.k += 1
 						# ~ print(self.k)
 						self.RED_LED.led_off()
@@ -1050,7 +1103,7 @@ class Cansat():
 				self.frame = self.picam2.capture_array()
 				self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
 				cv2.imwrite(self.results_img_dir+f'/mission_{self.cameraCount}.jpg',self.frame2)
-				# ~ self.releasing_state = 3
+				self.releasing_state = 3
 			pass
     
 		elif self.releasing_state == 3:
@@ -1062,8 +1115,10 @@ class Cansat():
 			self.RED_LED.led_on()
 			self.GREEN_LED.led_on()
 			print("'\033[44m'","5-3.moving_release_position",'\033[0m')
-			self.control_log1 = "releasing"
+			self.control_log1 = "second releasing"
 			self.control_log2 = f"pin{ct.const.SEPARATION_MOD2}:HIGH"
+			print(f"{self.incidence_prob * 100:.0f}%") # 付け足した
+			self.writeMissionlog_2(f"{self.incidence_prob * 100:.0f}%")
 			self.separation(ct.const.SEPARATION_MOD2,True)
 			# ~ self.writeMissionlog(5)
 			self.writeMissionlog_2("2nd module released")
@@ -1461,11 +1516,12 @@ class Cansat():
 			# if self.stuckTime == 0:
 				# self.stuckTime = time.time()
 			
-			if self.countstuckLoop > ct.const.STUCK_COUNT_THRE or self.mirror_count > 10 or self.state >= 7: #加速度が閾値以下になるケースがある程度続いたらスタックと判定
+			if self.countstuckLoop > ct.const.STUCK_COUNT_THRE or self.mirror_count > 10 or self.state == 5: #加速度が閾値以下になるケースがある程度続いたらスタックと判定
 				#トルネード実施
 				print("===================stuck====================")
+				self.control_log1 = "stuck"
 				self.motor1.back(ct.const.STUCK_MOTOR_VREF)
-				self.motor2.back(ct.const.STUCK_MOTOR_VREF)
+				self.motor2.back(ct.const.STUCK_MOTOR_VREF) 
 				time.sleep(1)
 				self.motor1.stop()
 				self.motor2.stop()
@@ -1478,6 +1534,9 @@ class Cansat():
 				self.lv = -ct.const.STUCK_MOTOR_VREF
 				self.countstuckLoop = 0
 				self.stuckTime = 0
+				if self.state == 3:
+					self.escapeTime -= 5
+
 
 			self.countstuckLoop+= 1
 
@@ -1543,6 +1602,39 @@ class Cansat():
 		GPIO.output(pin,0) #電圧をLOWにして焼き切りを終了する
 		
 	def running(self): # state = 7
+		if self.runningTime == 0:
+				self.runningTime = time.time()
+		self.cameraCount += 1
+		self.frame = self.picam2.capture_array()#0,self.results_img_dir+f'/{self.cameraCount}')
+		self.frame2 = cv2.rotate(self.frame,cv2.ROTATE_90_CLOCKWISE)
+		cv2.imwrite(self.results_img_dir+f'/{self.cameraCount}.jpg',self.frame2)
+		height = self.frame2.shape[0]
+		width = self.frame2.shape[1]
+		# ??色のマスクを作成
+		mask_goal = self.color.mask_color(self.frame2,ct.const.LOWER_GOAL,ct.const.UPPER_GOAL)
+		# 輪郭を抽出して最大の面積を算出し、線で囲む
+		mask_goal,cX,cY,max_contour_area = self.color.detect_color(mask_goal,ct.const.MAX_CONTOUR_THRESHOLD)
+		#
+		#contours_red, _ = cv2.findContours(mask_red2, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+		#	if contours_red:
+		#		self.max_contour = max(contours_red, key=cv2.contourArea)
+		#		hull = cv2.convexHull(self.max_contour)
+		#		cv2.drawContours(self.frame2, [hull], -1, (0, 0, 255), 3)
+		#	cv2.imwrite(self.results_img_dir+f'/{self.cameraCount}.jpg',self.frame2)
+		#
+		contours_goal, _ = cv2.findContours(mask_goal, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+		if  contours_goal:
+			max_contours_goal = max(contours_goal, key=cv2.contourArea)
+			hull = cv2.convexHull(max_contours_goal)
+			cv2.drawContours(self.frame2, [hull], -1, (0, 0, 255), 3)
+			cv2.imwrite(self.results_img_dir+f'/{self.cameraCount}.jpg',self.frame2)
+		#
+		print("\033[33m","COLOR : ","\033[0m","cX:",cX,"cY:",cY,"max_contour_area:",max_contour_area)
+		self.upsidedown_checker()
+		print("mirror:",self.mirror)
+		motor_st_vref = 70
+		motor_tr_vref = 100
+		# ゴール座標との差分
 		dlon = self.goallon - self.lon
 		# distance to the goal
 		self.goaldis = ct.const.EARTH_RADIUS * arccos(sin(deg2rad(self.lat))*sin(deg2rad(self.goallat)) + cos(deg2rad(self.lat))*cos(deg2rad(self.goallat))*cos(deg2rad(dlon)))
@@ -1551,44 +1643,96 @@ class Cansat():
 		# angular to the goal (North: 0, South: 180)
 		self.goalphi = 90 - rad2deg(arctan2(cos(deg2rad(self.lat))*tan(deg2rad(self.goallat)) - sin(deg2rad(self.lat))*cos(deg2rad(dlon)), sin(deg2rad(dlon))))
 		if self.goalphi < 0:
-		    self.goalphi += 360
+			self.goalphi += 360
 		print(self.goalphi)
 		
 		self.arg_diff = self.goalphi - (self.ex-0)
 		if self.arg_diff < 0:
-		    self.arg_diff += 360
+			self.arg_diff += 360
 		
 		print(f"Argument to goal: {round(self.arg_diff,2)} [deg]")
-		
-		if self.runningTime == 0:
-		    self.runningTime = time.time()
-		    
-		# elif time.time() - self.runningTime < 10:
-		    # print("run")
-		    
-		elif self.goaldis < ct.const.GOAL_DISTANCE_THRE:
-		    self.motor1.stop()
-		    self.motor2.stop()
-		    self.goaltime = time.time()-self.runningTime
-		    self.running_finish = True
-		    print(f"Goal Time: {self.goaltime}")
-		    print("GOAAAAAAAAAL!!!!!")
-		    self.writeMissionlog_2("goal")
-		    self.state = 8
-		    self.laststate = 8
-		
-		else:
-		    if self.arg_diff <= 180 and self.arg_diff > 20:
-			    self.motor1.go(70)
-			    self.motor2.go(100)
+
+		if self.mirror:
+			# 逆さなら曲がる向きが反対になる
+			print("cX:",cX)
+			motor_st_vref = - motor_st_vref
+			motor_tr_vref = - motor_tr_vref
+			self.control_log1 = "detect : mirror"
+
+		if cX : # ごーるが見えている時 ->　追従
+			self.flag_COLOR = True
+			self.GREEN_LED.led_on()
+			print("\033[43m", "=====goal_color=====","\033[0m")
+			if max_contour_area > ct.const.GOAL_COLOR_THRE:
+				self.motor_control(70,70,2)
+				self.motor1.stop()
+				self.motor2.stop()
+				self.control_log_rv, self.control_log_lv = 0, 0
+				self.goaltime = time.time()-self.runningTime
+				self.running_finish = True
+				print(f"Goal Time: {self.goaltime}")
+				print("GOAAAAAAAAAL")
+				print("max_contour_area:",max_contour_area)
+				self.writeMissionlog_2(f"Finish Goal:{max_contour_area}")
+				self.control_log1 = "finish"
+				self.state = 8
+				self.laststate = 8
+			else:
+				print(cX > width/2)
+				if cX < width/5*2:
+					print("---motor left---")
+					self.motor1.go(0)
+					self.motor2.go(motor_tr_vref)
+					self.control_log_rv, self.control_log_lv = 0, motor_tr_vref
+					self.stuck_detection()
+					self.control_log1 = "turn right"
+				elif cX > width/5*3:
+					print("---motor right---")
+					self.motor1.go(motor_tr_vref)
+					self.motor2.go(0)
+					self.control_log_rv, self.control_log_lv = motor_tr_vref, 0
+					self.control_log1 = "turn left"
+					# stuck検知
+					self.stuck_detection()
+				else:
+					print("---motor go---")
+					self.motor1.go(motor_st_vref)
+					self.motor2.go(motor_st_vref)
+					self.control_log1 = "closing"
+					#self.stuck_detection()
+					self.control_log_rv, self.control_log_lv = motor_st_vref, motor_st_vref
+			# 一定時間経過した後に次のステートに移行
+		else: # ゴールが見えていないとき -> GPS
+			self.flag_COLOR = False
+			if self.goaldis < ct.const.GOAL_DISTANCE_THRE:
+				# GPS的には近い位置だから旋回！今はその場回転
+				self.writeMissionlog_2("gps:goal, color:false")
+				self.motor1.go(motor_st_vref)
+				self.motor2.go(-motor_st_vref)
+				self.control_log_rv, self.control_log_lv = motor_st_vref, -motor_st_vref
+				self.control_log1 = "turn"
 			
-		    elif self.arg_diff > 180 and self.arg_diff < 340:
-			    self.motor1.go(100)
-			    self.motor2.go(70)
-		    
-		    else:
-			    self.motor1.go(100)
-			    self.motor2.go(100)
+			else:
+				if self.arg_diff <= 180 and self.arg_diff > 20:
+					self.motor1.go(motor_st_vref)
+					self.motor2.go(motor_tr_vref)
+					self.control_log_rv, self.control_log_lv = motor_st_vref, motor_tr_vref
+					self.control_log1 = "right"
+				
+				elif self.arg_diff > 180 and self.arg_diff < 340:
+					self.motor1.go(motor_tr_vref)
+					self.motor2.go(motor_st_vref)
+					self.control_log_rv, self.control_log_lv = motor_tr_vref, motor_st_vref
+					self.control_log1 = "left"
+				else:
+					self.motor1.go(motor_tr_vref)
+					self.motor2.go(motor_tr_vref)
+					self.control_log_rv, self.control_log_lv = motor_tr_vref, motor_tr_vref
+					self.control_log1 = "closing"
+					
+				
+		
+		self.GREEN_LED.led_off()
 
 	def finish(self): # state = 8
 		if self.finishTime == 0:
@@ -1664,10 +1808,24 @@ class Cansat():
 		t_initial_guess = 0.5 # 初期推定値
 		t_solution = fsolve(find_t, t_initial_guess, args=(ex, ez, tvec[1]))[0] # y = ygとなるtを求める
 		_, _, z = position(t_solution, ex, ez) # 求めたtでのx, y, zを算出
-		if z > tvec[2] + ct.const.tolerance:
-			self.motor_control(-70, -70, 0.3)
-		elif z < tvec[2] - ct.const.tolerance:
-			self.motor_control(70, 70, 0.3)
+		
+		## ここから追加
+		common_min = max(z - ct.const.mu , tvec[2] - ct.const.tolerance)
+		common_max = min(z + ct.const.mu , tvec[2] + ct.const.tolerance)
+		if common_min <= common_max:
+			prob_upper = norm.cdf(min(z + ct.const.mu, tvec[2] + ct.const.tolerance)*100, ct.const.mu, ct.const.std)
+			prob_lower = norm.cdf(max(z - ct.const.mu, tvec[2] - ct.const.tolerance)*100, ct.const.mu, ct.const.std)
+			self.incidence_prob = prob_upper - prob_lower
+		else:
+			self.incidence_prob = 0
+		print(f"{self.incidence_prob * 100:.0f}%")
+
+		if self.incidence_prob < ct.const.prob_threshold:
+		## ここまで追加
+			if z > tvec[2]:
+				self.motor_control(-70, -70, 0.3)
+			elif z <= tvec[2]:
+				self.motor_control(70, 70, 0.3)
 		else:
 			print("\033[32m", "perfect posture!!!!", "\033[0m")
 			return True
