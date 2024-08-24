@@ -161,6 +161,8 @@ class Cansat():
 		self.judge_cnt = 0
 		# スタック分類
 		self.stuck_judgement = 0
+		# explore
+		self.turn_cnt = 0
 		# =============================================== bool =============================================== 
 		self.time_tf = False
 		self.acc_tf = False
@@ -261,11 +263,13 @@ class Cansat():
                   + "az:"+str(self.az).rjust(6) + ","\
                   + "q:"+str(self.ex).rjust(6) + ","\
                   + "pressure:"+str(self.pressure).rjust(6) + ","\
-                  + "cameraCount:"+str(self.cameraCount).rjust(6)\
+                  + "cameraCount:"+str(self.cameraCount).rjust(6) + ","\
 		  + "control_log1:"+str(self.control_log1).rjust(6) + ","\
 		  + "control_log2:"+str(self.control_log2).rjust(6) + ","\
 		  + "rv:"+str(self.control_log_rv).rjust(6) + ","\
-		  + "lv:"+str(self.control_log_lv).rjust(6)
+		  + "lv:"+str(self.control_log_lv).rjust(6)+ ","\
+		  + "AR : " + str(self.flag_AR).rjust(6)+ ","\
+		  + "Color : " + str(self.flag_COLOR).rjust(6)
 		print("-------",datalog,"\n-------")
 
 		with open(f'results/{self.startTime}/control_result.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
@@ -374,7 +378,7 @@ class Cansat():
 		else:
 			print("\033[43m","COLOR:","\033[0m",self.flag_COLOR)
 		
-		
+		self.writeData()
 		print("control_log1 : ",self.control_log1)
 		print("control_log2 : ",self.control_log2)
 		print("control_log_rv :",self.control_log_rv) 
@@ -415,7 +419,7 @@ class Cansat():
 		self.lat = round(float(self.gps.Lat),5)
 		self.lon = round(float(self.gps.Lon),5)
 		
-		self.writeData()
+		
 		if not self.state == 1: #preparingのときは電波を発しない
 			self.sendLoRa()
 		pass
@@ -490,6 +494,8 @@ class Cansat():
 			# para separation
 			time.sleep(3)
 			self.separation(ct.const.SEPARATION_PARA)
+			
+			self.control_log1 = "para separation"
 			# kaiten
 			cX_right = []
 			cX_left = []
@@ -553,7 +559,7 @@ class Cansat():
 	            self.acc_tf = False
 	
 	        # 気圧の判定
-	        if press > self.DROPPING_PRESS_THRE-100: #気圧が閾値以上で着地判定
+	        if press > self.DROPPING_PRESS_THRE: #気圧が閾値以上で着地判定
 	            self.countPressDropLoop+=1 #気圧が閾値以上で着地判定
 	            self.countPressDropLoop+=1     
 	            if self.countPressDropLoop > self.DROPPING_PRESS_COUNT_THRE: #気圧判定の複数回連続成功が必要
@@ -600,6 +606,7 @@ class Cansat():
 		if not cX : # パラシュートが見えていない時 -> 直進
 			self.motor1.go(motor_st_vref)
 			self.motor2.go(motor_st_vref)
+			self.control_log_rv, self.control_log_lv = motor_st_vref,motor_st_vref
 			self.stuck_detection()
 			print("---motor go---")
 			# 一定時間経過した後に次のステートに移行
@@ -633,11 +640,13 @@ class Cansat():
 				print("---motor right---")
 				self.motor1.go(0)
 				self.motor2.go(motor_tr_vref)
+				self.control_log_rv, self.control_log_lv = 0,motor_tr_vref
 				self.stuck_detection()
 			else:
 				print("---motor left---")
 				self.motor1.go(motor_tr_vref)
 				self.motor2.go(0)
+				self.control_log_rv, self.control_log_lv = motor_tr_vref,0
 				# stuck検知
 				self.stuck_detection()
 		
@@ -647,6 +656,8 @@ class Cansat():
 			self.angle_count += 1
 			if self.angle_count > 10: # コンスタントに入れるべきかも
 				self.separation(ct.const.SEPARATION_MOD1)
+				
+				self.control_log1 = "first separation"
 				# ~ self.writeMissionlog()
 				# 焼き切り放出
 				time.sleep(5)
@@ -663,16 +674,20 @@ class Cansat():
 
 
 	def moving_release_position(self): # state = 5
-		if time.time() - self.firstTime >= ct.const.TIME_CONSTANT_1 and self.stuck_judgement == 0:
+		if time.time() - self.firstTime >= ct.const.TIME_CONSTANT_1 and self.releasing_state == 1 and self.stuck_judgement == 0:
 			self.stuck_detection()
 			self.stuck_judgement = 1
-		elif time.time() - self.firstTime >= ct.const.TIME_CONSTANT_2 and self.releasing_state == 1 and self.stuck_judgement == 1:
-			self.stuck_detection()
-			self.stuck_judgement = 2
-		elif time.time() - self.firstTime >= ct.const.TIME_CONSTANT_3 and self.stuck_judgement == 2:
+		#elif time.time() - self.firstTime >= ct.const.TIME_CONSTANT_2 and self.releasing_state == 1 and self.stuck_judgement == 1:
+		#	self.stuck_detection()
+		#	self.stuck_judgement = 2
+		elif time.time() - self.firstTime >= ct.const.TIME_CONSTANT_3:
 			self.state = 7
 			self.stuck_judgement = 999
 			pass
+		
+		self.upsidedown_checker()
+		if self.mirror_count > 10:
+			self.stuck_detection()
 
 		if self.releasing_state == 1 :# 接近
 			## 作戦１：放出モジュールが十分に遠いとき
@@ -713,6 +728,7 @@ class Cansat():
 			
 			if cX: # color:true
 				self.flag_COLOR = True
+				self.turn_cnt = 0
 				self.GREEN_LED.led_on()
 				if self.state5_loopCount_color == 1:
 					# ~ self.writeMissionlog()
@@ -783,6 +799,7 @@ class Cansat():
 			
 			if ids is not None:
 				self.BLUE_LED.led_on()
+				self.turn_cnt = 0
 				if self.last_marker_num in ids:
 					ids = [self.last_marker_num]
 				else:
@@ -957,20 +974,27 @@ class Cansat():
 							if self.past_flag == True:
 								self.control_log1 = "explore"
 								self.motor_control(-60*ct.const.SURFACE_GAIN,70*ct.const.SURFACE_GAIN,0.4)
+								self.turn_cnt += 1 
 							else:
 								# ~ print("ARマーカー探してます(LEFT)")
 								self.control_log1 = "explore"
 								self.motor_control(-75*ct.const.SURFACE_GAIN,75*ct.const.SURFACE_GAIN,0.4)
-								print("???????????????????????")
+								self.turn_cnt += 1 
 						elif self.yunosu_pos == "Right":
 							if self.past_flag == True:
 								self.control_log1 = "explore"
 								self.motor_control(70*ct.const.SURFACE_GAIN,-70*ct.const.SURFACE_GAIN,0.4)
+								self.turn_cnt += 1 
 							else:
 								# ~ print("ARマーカー探してます(RIGHT)")
 								self.motor_control(75*ct.const.SURFACE_GAIN,-75*ct.const.SURFACE_GAIN,0.4)
 								self.control_log1 = "explore"
-								print("!!!!!!!!!!!!!!!!!!!!!!!")
+								self.turn_cnt += 1 
+						print("+*+*+*+*",self.turn_cnt,"+*+*+*+*")
+						if self.turn_cnt > 10:
+							self.motor_control(70*ct.const.SURFACE_GAIN,70*ct.const.SURFACE_GAIN,1)
+							self.turn_cnt = 0
+							print("!!!!!!!!!!!!!!!!!!!!!!!")
 
 
 
@@ -990,6 +1014,7 @@ class Cansat():
 						# ~ print("Plan_B now")
 						self.motor_control((70+gain1)*ct.const.SURFACE_GAIN,(70+gain2)*ct.const.SURFACE_GAIN,2.5 + self.k)
 						self.last_pos = "Plan_A"
+						self.turn_cnt = 0
 						self.k += 1
 						# ~ print(self.k)
 						self.RED_LED.led_off()
@@ -1090,7 +1115,7 @@ class Cansat():
 			self.RED_LED.led_on()
 			self.GREEN_LED.led_on()
 			print("'\033[44m'","5-3.moving_release_position",'\033[0m')
-			self.control_log1 = "releasing"
+			self.control_log1 = "second releasing"
 			self.control_log2 = f"pin{ct.const.SEPARATION_MOD2}:HIGH"
 			print(f"{self.incidence_prob * 100:.0f}%") # 付け足した
 			self.writeMissionlog_2(f"{self.incidence_prob * 100:.0f}%")
@@ -1491,9 +1516,10 @@ class Cansat():
 			# if self.stuckTime == 0:
 				# self.stuckTime = time.time()
 			
-			if self.countstuckLoop > ct.const.STUCK_COUNT_THRE or self.mirror_count > 10 or self.state == 7 or self.state == 5: #加速度が閾値以下になるケースがある程度続いたらスタックと判定
+			if self.countstuckLoop > ct.const.STUCK_COUNT_THRE or self.mirror_count > 10 or self.state == 5: #加速度が閾値以下になるケースがある程度続いたらスタックと判定
 				#トルネード実施
 				print("===================stuck====================")
+				self.control_log1 = "stuck"
 				self.motor1.back(ct.const.STUCK_MOTOR_VREF)
 				self.motor2.back(ct.const.STUCK_MOTOR_VREF) 
 				time.sleep(1)
@@ -1588,6 +1614,21 @@ class Cansat():
 		mask_goal = self.color.mask_color(self.frame2,ct.const.LOWER_GOAL,ct.const.UPPER_GOAL)
 		# 輪郭を抽出して最大の面積を算出し、線で囲む
 		mask_goal,cX,cY,max_contour_area = self.color.detect_color(mask_goal,ct.const.MAX_CONTOUR_THRESHOLD)
+		#
+		#contours_red, _ = cv2.findContours(mask_red2, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+		#	if contours_red:
+		#		self.max_contour = max(contours_red, key=cv2.contourArea)
+		#		hull = cv2.convexHull(self.max_contour)
+		#		cv2.drawContours(self.frame2, [hull], -1, (0, 0, 255), 3)
+		#	cv2.imwrite(self.results_img_dir+f'/{self.cameraCount}.jpg',self.frame2)
+		#
+		contours_goal, _ = cv2.findContours(mask_goal, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+		if  contours_goal:
+			max_contours_goal = max(contours_goal, key=cv2.contourArea)
+			hull = cv2.convexHull(max_contours_goal)
+			cv2.drawContours(self.frame2, [hull], -1, (0, 0, 255), 3)
+			cv2.imwrite(self.results_img_dir+f'/{self.cameraCount}.jpg',self.frame2)
+		#
 		print("\033[33m","COLOR : ","\033[0m","cX:",cX,"cY:",cY,"max_contour_area:",max_contour_area)
 		self.upsidedown_checker()
 		print("mirror:",self.mirror)
@@ -1616,18 +1657,24 @@ class Cansat():
 			print("cX:",cX)
 			motor_st_vref = - motor_st_vref
 			motor_tr_vref = - motor_tr_vref
+			self.control_log1 = "detect : mirror"
 
 		if cX : # ごーるが見えている時 ->　追従
 			self.flag_COLOR = True
+			self.GREEN_LED.led_on()
 			print("\033[43m", "=====goal_color=====","\033[0m")
 			if max_contour_area > ct.const.GOAL_COLOR_THRE:
+				self.motor_control(70,70,2)
 				self.motor1.stop()
 				self.motor2.stop()
+				self.control_log_rv, self.control_log_lv = 0, 0
 				self.goaltime = time.time()-self.runningTime
 				self.running_finish = True
 				print(f"Goal Time: {self.goaltime}")
 				print("GOAAAAAAAAAL")
 				print("max_contour_area:",max_contour_area)
+				self.writeMissionlog_2(f"Finish Goal:{max_contour_area}")
+				self.control_log1 = "finish"
 				self.state = 8
 				self.laststate = 8
 			else:
@@ -1636,39 +1683,56 @@ class Cansat():
 					print("---motor left---")
 					self.motor1.go(0)
 					self.motor2.go(motor_tr_vref)
+					self.control_log_rv, self.control_log_lv = 0, motor_tr_vref
 					self.stuck_detection()
+					self.control_log1 = "turn right"
 				elif cX > width/5*3:
 					print("---motor right---")
 					self.motor1.go(motor_tr_vref)
 					self.motor2.go(0)
+					self.control_log_rv, self.control_log_lv = motor_tr_vref, 0
+					self.control_log1 = "turn left"
 					# stuck検知
 					self.stuck_detection()
 				else:
 					print("---motor go---")
 					self.motor1.go(motor_st_vref)
 					self.motor2.go(motor_st_vref)
+					self.control_log1 = "closing"
 					#self.stuck_detection()
+					self.control_log_rv, self.control_log_lv = motor_st_vref, motor_st_vref
 			# 一定時間経過した後に次のステートに移行
 		else: # ゴールが見えていないとき -> GPS
 			self.flag_COLOR = False
 			if self.goaldis < ct.const.GOAL_DISTANCE_THRE:
 				# GPS的には近い位置だから旋回！今はその場回転
-				self.writeMissionlog_2("gps:goal")
+				self.writeMissionlog_2("gps:goal, color:false")
 				self.motor1.go(motor_st_vref)
 				self.motor2.go(-motor_st_vref)
+				self.control_log_rv, self.control_log_lv = motor_st_vref, -motor_st_vref
+				self.control_log1 = "turn"
 			
 			else:
 				if self.arg_diff <= 180 and self.arg_diff > 20:
 					self.motor1.go(motor_st_vref)
 					self.motor2.go(motor_tr_vref)
+					self.control_log_rv, self.control_log_lv = motor_st_vref, motor_tr_vref
+					self.control_log1 = "right"
 				
 				elif self.arg_diff > 180 and self.arg_diff < 340:
 					self.motor1.go(motor_tr_vref)
 					self.motor2.go(motor_st_vref)
-				
+					self.control_log_rv, self.control_log_lv = motor_tr_vref, motor_st_vref
+					self.control_log1 = "left"
 				else:
 					self.motor1.go(motor_tr_vref)
 					self.motor2.go(motor_tr_vref)
+					self.control_log_rv, self.control_log_lv = motor_tr_vref, motor_tr_vref
+					self.control_log1 = "closing"
+					
+				
+		
+		self.GREEN_LED.led_off()
 
 	def finish(self): # state = 8
 		if self.finishTime == 0:

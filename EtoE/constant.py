@@ -35,6 +35,20 @@ def load_pressure_from_file(filename):
         return 100000.00
 latest_pressure = load_pressure_from_file("pressure_threshold.txt")
 
+def load_values_from_file(filename):
+    """Load HSV values from a text file."""
+    if os.path.exists(filename):
+        with open(filename, "r") as file:
+            lines = file.readlines()
+            lower_goal = np.array(eval(lines[0].split(":")[1].strip()))
+            upper_goal = np.array(eval(lines[1].split(":")[1].strip()))
+            return lower_goal, upper_goal
+    else:
+        # Default values if file doesn't exist
+        return np.array([158, 85, 70]), np.array([179, 250, 250])
+lower_goal, upper_goal = load_values_from_file("goal_hsv_values.txt")
+
+
 
 ## Pin Number
 # Motor
@@ -68,10 +82,10 @@ const.FLIGHTPIN_PIN = 4
 
 ## Variables
 # Goal information
-const.GPS_GOAL_LAT = 35.55500000  # 南緯は負の値で与える
-const.GPS_GOAL_LON = 139.65600000 # 西経は負の値で与える
+const.GPS_GOAL_LAT = 40.142308  # 南緯は負の値で与える
+const.GPS_GOAL_LON = 139.987503 # 西経は負の値で与える
 const.GOAL_DISTANCE_THRE = 0.0005 # [km] (50 [cm])
-const.GOAL_COLOR_THRE = 15000000 # 色認識によって認識して，ゴール判定を行う面積（要調整）
+const.GOAL_COLOR_THRE = 700000 # 色認識によって認識して，ゴール判定を行う面積（要調整）
 
 # # Motor VREF
 const.LANDING_MOTOR_VREF = 80
@@ -82,8 +96,8 @@ const.STUCK_MOTOR_VREF = 100
 const.SURFACE_GAIN = 1.2
 
 # # State Threshold
-const.TIME_CONSTANT_1 = 240
-const.TIME_CONSTANT_2 = 420
+const.TIME_CONSTANT_1 = 300
+#const.TIME_CONSTANT_2 = 420
 const.TIME_CONSTANT_3 = 600
 
 const.PREPARING_GPS_COUNT_THRE= 30
@@ -91,13 +105,13 @@ const.PREPARING_TIME_THRE = 10
 
 const.FLYING_FLIGHTPIN_COUNT_THRE = 10
 
-const.DROPPING_TIME_THRE = 10 #60
+const.DROPPING_TIME_THRE = 60 #60
 const.DROPPING_ACC_COUNT_THRE = 20
-const.DROPPING_ACC_THRE = 0.008 #加速度の値 0.005
-const.DROPPING_PRESS_THRE = 99087 # 気圧センサのカウンタ latest_pressure + 5m
+const.DROPPING_ACC_THRE = 0.018 #加速度の値 0.005
+const.DROPPING_PRESS_THRE = latest_pressure-200 # 気圧センサのカウンタ latest_pressure + 5m
 const.DROPPING_PRESS_COUNT_THRE = 20 # 気圧センサのカウンタ
 
-const.PARA_ESCAPE_TIME_THRE = 10
+const.PARA_ESCAPE_TIME_THRE = 20
 
 const.LOWER_ORANGE = np.array([0, 220, 158])
 const.UPPER_ORANGE = np.array([55, 255, 255])
@@ -107,12 +121,12 @@ const.UPPER_BLUE = np.array([137, 225, 255])
 const.LOWER_RED = lower_red #np.array([158, 85, 70])
 const.UPPER_RED = upper_red #np.array([179, 250, 250])
 
-const.LOWER_GOAL = np.array([0, 220, 158]) #must change
-const.UPPER_GOAL = np.array([55, 255, 255])
+const.LOWER_GOAL = lower_goal #must change
+const.UPPER_GOAL = upper_goal
 
 const.MAX_CONTOUR_THRESHOLD = 100
 
-const.CLOSING_THRE = np.mean(distance_data)
+const.CLOSING_THRE = 0.6
 const.CLOSING_RANGE_THRE = 0.05
 const.CLOSING_RANGE_THRE2 = 0.3
 const.CLOSING_RANGE_THRE_2 = 0.1
@@ -133,7 +147,7 @@ const.EARTH_RADIUS = 6378.137 # [km]
 
 # # Stack
 const.STUCK_ACC_THRE = 0.5
-const.STUCK_COUNT_THRE = 7
+const.STUCK_COUNT_THRE = 10
 const.MIRRER_COUNT_THRE = 10
 const.VANISH_BY_STUCK_THRE = 240 # ステート6で長時間何も見えなかった場合
 
@@ -142,10 +156,10 @@ const.tolerance = 0.15  # 落下許容エリアの半径
 const.m = 0.005  # 物資ジュール質量
 const.g = 9.81  # 重力加速度
 const.k = 0.05  # 空気抵抗係数
-const.V0 = 4.684517487133138  # 物資モジュールの初速度
-const.theta = np.deg2rad(45)  # 放出角度（ラジアン）
+const.V0 = 8.98175825  # 物資モジュールの初速度
+const.theta = np.deg2rad(60)  # 放出角度（ラジアン）
 const.U = np.array([0, 0, 0])  # 風速ベクトル
-const.x0, const.y0, const.z0 = 0.0, -0.02, -0.03  # 物資モジュールの初期位置（カメラに対する投射機構先端の位置）
+const.x0, const.y0, const.z0 = 0.0, -0.02, -0.035  # 物資モジュールの初期位置（カメラに対する投射機構先端の位置）
 
 # 投射成功確率に用いるパラメータ（posture_judgement）
 const.mu = np.mean(distance_data) # 飛距離の平均
