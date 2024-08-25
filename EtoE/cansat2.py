@@ -1005,11 +1005,11 @@ class Cansat():
 					if self.lost_marker_cnt > 3:
 						self.RED_LED.led_on()
 						if self.yunosu_pos == "Left":
-							gain1 = 30
+							gain1 = 30*self.closing_threshold/distance_of_marker
 							gain2 = 0
 						else:
 							gain1 = 0
-							gain2 = 30
+							gain2 = 30*self.closing_threshold/distance_of_marker
 							
 						# ~ print("Plan_B now")
 						self.motor_control((70+gain1)*ct.const.SURFACE_GAIN,(70+gain2)*ct.const.SURFACE_GAIN,2.5 + self.k)
@@ -1390,11 +1390,11 @@ class Cansat():
 					self.control_log1 = "avoiding"
 					if self.lost_marker_cnt > 10:
 						if self.yunosu_pos == "Left":
-							gain1 = 30
+							gain1 = 40*0.2/distance_of_marker
 							gain2 = 0
 						else:
 							gain1 = 0
-							gain2 = 30
+							gain2 = 40*0.2/distance_of_marker
 							
 						# ~ print("Plan_B now")
 						self.motor_control((70+gain1)*ct.const.SURFACE_GAIN,(70+gain2)*ct.const.SURFACE_GAIN,2.5 + self.k)
