@@ -16,6 +16,7 @@ from glob import escape, glob
 from picamera2 import Picamera2 
 from libcamera import controls
 from numpy import arccos, arctan2, sin, cos, tan, deg2rad, rad2deg
+import signal
 
 import constant as ct
 from Wolvez2024_now.led import led
@@ -180,11 +181,12 @@ class Cansat():
 		
 		
 		# ============================================= 変数の初期化 ============================================= 
+		self.bmp_set = True
 		self.temp = 0 #
 		self.pressure = 0 #
 		self.altitude = 0 #
 		
-		self.bno_set = False
+		self.bno_set = True
 		self.ax= 0 #
 		self.ay= 0 #
 		self.az= 0 #
@@ -274,7 +276,8 @@ class Cansat():
 		  + "rv:"+str(self.control_log_rv).rjust(6) + ","\
 		  + "lv:"+str(self.control_log_lv).rjust(6)+ ","\
 		  + "AR : " + str(self.flag_AR).rjust(6)+ ","\
-		  + "Color : " + str(self.flag_COLOR).rjust(6)
+		  + "Color : " + str(self.flag_COLOR).rjust(6)+ ","\
+		  + "sensor{CAM,BNO,BMP} : " +"{" + str(self.camera_set) + str(self.bno_set) + str(self.bmp_set) + "}"
 		print("-------",datalog,"\n-------")
 		try:
 			with open(f'results/{self.startTime}/control_result.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
@@ -288,49 +291,6 @@ class Cansat():
 		with open(f'results/{self.startTime}/mission_log2.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
 		    test.write(mission_log + '\n')
 		    pass
-		
-		
-	# ~ def writeMissionlog(self,sub=1):
-	    # ~ mission_log = str(self.timer) + ","\
-		    # ~ + "state:"+str(self.state) 
-	    # ~ if self.state == 1:
-		    # ~ mission_log = mission_log + "," + "Flight_PIN:" + "True" # フライトピン
-	    # ~ if self.state == 2:
-		    # ~ if sub == 1:
-			    # ~ mission_log = mission_log + ","\
-			    # ~ + "Casat_Landing:" + str(self.trigger) # 着地判定
-		    # ~ if sub == 2:
-			    # ~ mission_log = mission_log + ","\
-			    # ~ + "Casat_rotation_camera:" + self.rot_cam # 着地判定
-	    # ~ if self.state == 3:
-		    # ~ mission_log = mission_log + ","\
-		    # ~ + "Para_distancing:" + str(self.distancing_finish) # パラから距離を取る
-	    # ~ if self.state == 4:
-	        # ~ mission_log = mission_log + ","\
-	            # ~ + "Releasing_01:"  + "True" # 電池モジュール焼き切り
-	    # ~ if self.state == 5:
-	        # ~ if sub == 1:
-	            # ~ mission_log = mission_log + ","\
-	            # ~ + "color_detected:" + "True" # color
-	        # ~ if sub == 2:
-	            # ~ mission_log = mission_log + ","\
-	            # ~ + "ar_detected:" + "True" # ar
-	        # ~ if sub == 3:
-	            # ~ mission_log = mission_log + ","\
-	            # ~ + "reaching:" + "True" # ar
-	        # ~ if sub == 4:
-	            # ~ mission_log = mission_log + ","\
-	            # ~ + "just_angle:" + "True" # ar
-	        # ~ if sub == 5:
-	            # ~ mission_log = mission_log + ","\
-	            # ~ + "Releasing_02:" + "True" # ar
-	    # ~ if self.state == 8:
-	        # ~ mission_log = mission_log + ","\
-	            # ~ + "Finish:" + "True"
-
-	    # ~ with open(f'results/{self.startTime}/mission_log.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
-		    # ~ test.write(mission_log + '\n')
-		    # ~ pass
 		
 	# =================== mission sequence ===================
 	def sequence(self):
@@ -439,6 +399,7 @@ class Cansat():
 				self.temp,self.pressure,self.altitude = self.bmp.readBMP()
 		except:
 			print("\033[33m","===== BMP error =====", "\033[0m")
+			self.bmp_set = False
 			
 		
 		
@@ -524,7 +485,7 @@ class Cansat():
 			self.servo.go_deg(120)
 			for i in range(5):
 				try:
-					self.frame = self.picam2.capture_array()#0,self.results_img_dir+f'/{self.cameraCount}')
+					self.frame = self.capture_with_timeout(5)#0,self.results_img_dir+f'/{self.cameraCount}')
 					self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)	
 					self.cameraCount += 1
 					cv2.imwrite(self.results_img_dir+f'/right_{self.cameraCount}.jpg',self.frame2)
@@ -540,7 +501,7 @@ class Cansat():
 			self.servo.go_deg(70)
 			for i in range(5):
 				self.cameraCount += 1
-				self.frame = self.picam2.capture_array()#0,self.results_img_dir+f'/{self.cameraCount}')
+				self.frame = self.capture_with_timeout(5)#0,self.results_img_dir+f'/{self.cameraCount}')
 				self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
 				cv2.imwrite(self.results_img_dir+f'/left_{self.cameraCount}.jpg',self.frame2)
 				# 指定色のマスクを作成
@@ -616,7 +577,7 @@ class Cansat():
 		# landstate = 3: カメラ台回転, オレンジ検出 -> パラ脱出
 		# 撮影
 		try:
-			self.frame = self.picam2.capture_array()#0,self.results_img_dir+f'/{self.cameraCount}')
+			self.frame = self.capture_with_timeout(5)#0,self.results_img_dir+f'/{self.cameraCount}')
 			self.frame2 = cv2.rotate(self.frame,cv2.ROTATE_90_CLOCKWISE)
 			self.cameraCount += 1
 			cv2.imwrite(self.results_img_dir+f'/{self.cameraCount}.jpg',self.frame2)
@@ -708,7 +669,28 @@ class Cansat():
 			self.angle_count = 0
 			self.state -= 1
 			self.escapeTime = time.time()
+	# タイムアウトが発生したときに実行されるハンドラ関数
+	def timeout_handler(self, signum, frame):
+		raise TimeoutError("Capture array operation timed out")
 
+	# タイムアウトを設定する関数
+	def capture_with_timeout(self,timeout_seconds):
+		# タイムアウトハンドラを設定
+		signal.signal(signal.SIGALRM, self.timeout_handler)
+		# 指定した秒数後にタイムアウトを発生させる
+		signal.alarm(timeout_seconds)
+
+		try:
+			# キャプチャ処理を実行
+			array = self.picam2.capture_array()
+			return array
+		except TimeoutError:
+			# タイムアウト発生時の処理
+			print("Capture operation timed out")
+			return None
+		finally:
+			# タイムアウト設定を解除
+			signal.alarm(0)
 
 	def moving_release_position(self): # state = 5
 		if time.time() - self.firstTime >= ct.const.TIME_CONSTANT_1 and self.releasing_state == 1 and self.stuck_judgement == 0:
@@ -733,7 +715,7 @@ class Cansat():
 			self.cameraCount += 1
 			try:
 				print("+++++++CAM++++++++")
-				self.frame = self.picam2.capture_array()
+				self.frame = self.capture_with_timeout(5)
 				print("++++++++++++++++++")
 				print(self.frame)
 				self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
@@ -821,21 +803,7 @@ class Cansat():
 								break
 						cnt = 0
 					
-								
-				# ~ else: # color:false
-					# ~ if ids is not None: # color:false ar:true
-						# ~ continue
-					# ~ else: # color:false ar:false
-						# ~ if self.last_pos == "Plan_A":
-							# ~ if self.yunosu_pos == "Left":
-								# ~ print("ARマーカー探してます(LEFT)")
-								# ~ self.control_log1 = "explore"
-								# ~ self.motor_control(-70,70,0.4)
-							# ~ else:
-								# ~ print("ARマーカー探してます(RIGHT)")
-								# ~ self.motor_control(70,-70,0.4)
-								# ~ self.control_log1 = "explore"
-							# ~ pass
+						
 							
 				
 				if ids is not None:
@@ -1062,10 +1030,11 @@ class Cansat():
 				
 				self.BLUE_LED.led_off()
 				self.GREEN_LED.led_off()
-			except:
+			except Exception as e:
 				self.state = 7
 				self.camera_set = False
 				print("camera error")
+				print(e)
 				pass
 			    
     
@@ -1076,8 +1045,8 @@ class Cansat():
 			print("'\033[44m'","5-2.moving_release_position", self.justAngle,'\033[0m')
 			self.control_log1 = "adjust angle"
 			
+			self.frame = self.capture_with_timeout(5)
 			self.cameraCount += 1
-			self.frame = self.picam2.capture_array()
 			self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
 			cv2.imwrite(self.results_img_dir+f'/{self.cameraCount}.jpg',self.frame2)
 			self.height = self.frame2.shape[0]
@@ -1185,8 +1154,8 @@ class Cansat():
 		"""
 		if self.closing_state == 1:
 			print("'\033[44m'","6-1.Go to judgement",'\033[0m')
+			self.frame = self.capture_with_timeout(5)
 			self.cameraCount += 1
-			self.frame = self.picam2.capture_array()
 			self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
 			
 			height = self.frame2.shape[0]
@@ -1456,7 +1425,7 @@ class Cansat():
 			"""
 			print("'\033[44m'","6-2.judgement",'\033[0m')
 			self.cameraCount += 1
-			self.frame = self.picam2.capture_array()
+			self.frame = self.capture_with_timeout(5)
 			self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
 			height = self.frame2.shape[0]
 			width = self.frame2.shape[1]
