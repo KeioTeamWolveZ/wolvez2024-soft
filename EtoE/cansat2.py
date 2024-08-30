@@ -221,6 +221,7 @@ class Cansat():
 		self.nowangle = 90  # サーボモータの角度
 
 		self.incidence_prob = 0 # 付け足した
+
 		
 		
 		
@@ -848,6 +849,8 @@ class Cansat():
 						self.distanceAR = distance_of_marker
 						angle_of_marker = polar_exchange[1] #theta
 						# ~ print("======",distance_of_marker)
+						if distance_of_marker is not None:
+							distance_of_marker_last = distance_of_marker
 						
 						self.control_log1 = "closing"
 						if distance_of_marker >= self.closing_threshold + self.CLOSING_RANGE_THRE:
@@ -1005,11 +1008,11 @@ class Cansat():
 					if self.lost_marker_cnt > 3:
 						self.RED_LED.led_on()
 						if self.yunosu_pos == "Left":
-							gain1 = 30*self.closing_threshold/distance_of_marker
+							gain1 = 30*self.closing_threshold/distance_of_marker_last
 							gain2 = 0
 						else:
 							gain1 = 0
-							gain2 = 30*self.closing_threshold/distance_of_marker
+							gain2 = 30*self.closing_threshold/distance_of_marker_last
 							
 						# ~ print("Plan_B now")
 						self.motor_control((70+gain1)*ct.const.SURFACE_GAIN,(70+gain2)*ct.const.SURFACE_GAIN,2.5 + self.k)
@@ -1283,9 +1286,11 @@ class Cansat():
 						distance_of_marker = polar_exchange[0] #r
 						self.distanceAR = distance_of_marker
 						angle_of_marker = polar_exchange[1] #theta
-						# ~ print("======",distance_of_marker)
-						
+						# ~ print("======",distance_of_marker)				
 						self.control_log1 = "closing"
+						if distance_of_marker is not None:
+							distance_of_marker_last = distance_of_marker
+			
 						if distance_of_marker >= 0.30 + self.CLOSING_RANGE_THRE:
 							if tvec[0] >= 0.1:
 								turn_gain = 5*((self.closing_threshold + self.CLOSING_RANGE_THRE)/(distance_of_marker))**2
@@ -1390,11 +1395,11 @@ class Cansat():
 					self.control_log1 = "avoiding"
 					if self.lost_marker_cnt > 10:
 						if self.yunosu_pos == "Left":
-							gain1 = 40*0.2/distance_of_marker
+							gain1 = 40*0.2/distance_of_marker_last
 							gain2 = 0
 						else:
 							gain1 = 0
-							gain2 = 40*0.2/distance_of_marker
+							gain2 = 40*0.2/distance_of_marker_last
 							
 						# ~ print("Plan_B now")
 						self.motor_control((70+gain1)*ct.const.SURFACE_GAIN,(70+gain2)*ct.const.SURFACE_GAIN,2.5 + self.k)
