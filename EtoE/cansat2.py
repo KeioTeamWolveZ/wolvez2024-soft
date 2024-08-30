@@ -277,7 +277,7 @@ class Cansat():
 		  + "lv:"+str(self.control_log_lv).rjust(6)+ ","\
 		  + "AR : " + str(self.flag_AR).rjust(6)+ ","\
 		  + "Color : " + str(self.flag_COLOR).rjust(6)+ ","\
-		  + "cam,bno,bmp" + str(self.camera_set) + str(self.bno_set) + str(self.bmp_set)
+		  + "cam,bno,bmp : " + str(self.camera_set) + str(self.bno_set) + str(self.bmp_set)
 		print("-------",datalog,"\n-------")
 		try:
 			with open(f'results/{self.startTime}/control_result.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
@@ -292,48 +292,6 @@ class Cansat():
 		    test.write(mission_log + '\n')
 		    pass
 		
-		
-	# ~ def writeMissionlog(self,sub=1):
-	    # ~ mission_log = str(self.timer) + ","\
-		    # ~ + "state:"+str(self.state) 
-	    # ~ if self.state == 1:
-		    # ~ mission_log = mission_log + "," + "Flight_PIN:" + "True" # フライトピン
-	    # ~ if self.state == 2:
-		    # ~ if sub == 1:
-			    # ~ mission_log = mission_log + ","\
-			    # ~ + "Casat_Landing:" + str(self.trigger) # 着地判定
-		    # ~ if sub == 2:
-			    # ~ mission_log = mission_log + ","\
-			    # ~ + "Casat_rotation_camera:" + self.rot_cam # 着地判定
-	    # ~ if self.state == 3:
-		    # ~ mission_log = mission_log + ","\
-		    # ~ + "Para_distancing:" + str(self.distancing_finish) # パラから距離を取る
-	    # ~ if self.state == 4:
-	        # ~ mission_log = mission_log + ","\
-	            # ~ + "Releasing_01:"  + "True" # 電池モジュール焼き切り
-	    # ~ if self.state == 5:
-	        # ~ if sub == 1:
-	            # ~ mission_log = mission_log + ","\
-	            # ~ + "color_detected:" + "True" # color
-	        # ~ if sub == 2:
-	            # ~ mission_log = mission_log + ","\
-	            # ~ + "ar_detected:" + "True" # ar
-	        # ~ if sub == 3:
-	            # ~ mission_log = mission_log + ","\
-	            # ~ + "reaching:" + "True" # ar
-	        # ~ if sub == 4:
-	            # ~ mission_log = mission_log + ","\
-	            # ~ + "just_angle:" + "True" # ar
-	        # ~ if sub == 5:
-	            # ~ mission_log = mission_log + ","\
-	            # ~ + "Releasing_02:" + "True" # ar
-	    # ~ if self.state == 8:
-	        # ~ mission_log = mission_log + ","\
-	            # ~ + "Finish:" + "True"
-
-	    # ~ with open(f'results/{self.startTime}/mission_log.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
-		    # ~ test.write(mission_log + '\n')
-		    # ~ pass
 		
 	# =================== mission sequence ===================
 	def sequence(self):
