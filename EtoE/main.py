@@ -2,12 +2,35 @@ import pigpio
 from cansat2 import Cansat 
 import time 
 import RPi.GPIO as GPIO
+import os
 
-start_state = 0
+
+
+def load_values_from_file(filename):
+    """Load HSV values from a text file."""
+    if os.path.exists(filename):
+        with open(filename, "r") as file:
+            lines = file.readlines()
+            last_state = float(lines[0])
+            return last_state
+    else:
+        # Default values if file doesn't exist
+        return float(999)
+
+
+filename = "state_manager.txt"
+
+last_state = load_values_from_file(filename)
+start_state = 4
 end_state = 8
 
 sepa_mode  = False
 error_cnt = 0
+
+
+if last_state != 999:
+	start_state = last_state
+	
 
 try:	
 	cansat  = Cansat(start_state,sepa_mode)
@@ -19,11 +42,16 @@ try:
 		
 		cansat.sensor()
 		time.sleep(0.03)
-		cansat .sequence()
+		try:
+			cansat.sequence()
+		except:
+			pass
 		if cansat.state > end_state:
 			print("Finished")
 		time.sleep(0.3)
 		print("*****",cansat.state)
+		with open(filename, "w") as file:
+			file.write(f"{cansat.state}")
 		
 		
 except KeyboardInterrupt:
@@ -32,3 +60,11 @@ except KeyboardInterrupt:
     print(cansat.keyboardinterrupt)
     GPIO.cleanup()
 
+finally:
+	GPIO.cleanup()
+	with open(filename, "w") as file:
+		file.write("999")
+	print("save state manager as 999")
+	cansat.motor1.stop()
+	cansat.motor2.stop()
+	
