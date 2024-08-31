@@ -44,6 +44,8 @@ try:
 		time.sleep(0.03)
 		try:
 			cansat.sequence()
+			if cansat.state_error>5:
+				cansat.state = 7
 		except:
 			pass
 		if cansat.state > end_state:

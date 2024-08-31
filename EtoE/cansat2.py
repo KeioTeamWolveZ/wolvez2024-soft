@@ -167,6 +167,8 @@ class Cansat():
 		self.stuck_judgement = 0
 		# explore
 		self.turn_cnt = 0
+		# error
+		self.state_error = 0
 		# =============================================== bool =============================================== 
 		self.time_tf = False
 		self.acc_tf = False
@@ -465,7 +467,7 @@ class Cansat():
 	
 	
 	def preparing(self): # state = 0
-		self.img = self.capture_with_timeout(5)#0,self.results_img_dir+f'/{self.cameraCount}')
+		self.img = self.capture_with_timeout(3)#0,self.results_img_dir+f'/{self.cameraCount}')
 		print("'\033[44m'","0.preparing",'\033[0m')
 		self.RED_LED.led_on()
 		
@@ -537,12 +539,14 @@ class Cansat():
 			time.sleep(1)
 			for i in range(5):
 				try:
-					self.frame = self.capture_with_timeout(5)#0,self.results_img_dir+f'/{self.cameraCount}')
+					self.frame = self.capture_with_timeout(3)#0,self.results_img_dir+f'/{self.cameraCount}')
 					self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)	
 					self.cameraCount += 1
 					cv2.imwrite(self.results_img_dir+f'/right_{self.cameraCount}.jpg',self.frame2)
+					self.state_error = 0
+					time.sleep(0.05)
 				except:
-					self.state = 7
+					self.state_error += 1
 					pass
 				# 指定色のマスクを作成
 				mask_orange = self.color.mask_color(self.frame,ct.const.LOWER_ORANGE,ct.const.UPPER_ORANGE)
@@ -554,7 +558,7 @@ class Cansat():
 			time.sleep(1)
 			for i in range(5):
 				self.cameraCount += 1
-				self.frame = self.capture_with_timeout(5)#0,self.results_img_dir+f'/{self.cameraCount}')
+				self.frame = self.capture_with_timeout(3)#0,self.results_img_dir+f'/{self.cameraCount}')
 				self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
 				cv2.imwrite(self.results_img_dir+f'/left_{self.cameraCount}.jpg',self.frame2)
 				# 指定色のマスクを作成
@@ -630,12 +634,13 @@ class Cansat():
 		# landstate = 3: カメラ台回転, オレンジ検出 -> パラ脱出
 		# 撮影
 		try:
-			self.frame = self.capture_with_timeout(5)#0,self.results_img_dir+f'/{self.cameraCount}')
+			self.frame = self.capture_with_timeout(3)#0,self.results_img_dir+f'/{self.cameraCount}')
 			self.frame2 = cv2.rotate(self.frame,cv2.ROTATE_90_CLOCKWISE)
 			self.cameraCount += 1
 			cv2.imwrite(self.results_img_dir+f'/{self.cameraCount}.jpg',self.frame2)
+			self.state_error = 0
 		except:
-			self.state = 7
+			self.state_error += 1
 			pass
 		height = self.frame2.shape[0]
 		width = self.frame2.shape[1]
@@ -768,7 +773,7 @@ class Cansat():
 			self.cameraCount += 1
 			try:
 				print("+++++++CAM++++++++")
-				self.frame = self.capture_with_timeout(5)
+				self.frame = self.capture_with_timeout(3)
 				print("++++++++++++++++++")
 				self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
 				
@@ -827,20 +832,24 @@ class Cansat():
 					if ids is None: # color:true ar:false
 						cnt = 0
 						for pint in pint_list: #pint change start
-							if ids is None: # color:true ar:false
-								self.cam_pint = pint
-								print("pint:",self.cam_pint)
-								self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
-								frame = self.capture_with_timeout(5)
-								gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # グレースケールに変換
-								corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary)
-								cnt += 1
-								self.previous_pint = pint
-								time.sleep(0.03)
-							else:# color:true ar:true
-								self.flag_AR = True
-								cnt = 0
-								break
+							try:
+								if ids is None: # color:true ar:false
+									self.cam_pint = pint
+									print("pint:",self.cam_pint)
+									self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
+									frame = self.capture_with_timeout(3)
+									gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # グレースケールに変換
+									corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary)
+									cnt += 1
+									self.previous_pint = pint
+									time.sleep(0.05)
+									state_error = 0
+								else:# color:true ar:true
+									self.flag_AR = True
+									cnt = 0
+									break
+							except:
+								self.state_error += 1
 						cnt = 0
 							
 				
@@ -1068,8 +1077,9 @@ class Cansat():
 				
 				self.BLUE_LED.led_off()
 				self.GREEN_LED.led_off()
+				self.state_error = 0
 			except Exception as e:
-				self.state = 7
+				self.state_error += 1
 				self.camera_set = False
 				print("camera error")
 				print(e)
@@ -1083,7 +1093,7 @@ class Cansat():
 			print("'\033[44m'","5-2.moving_release_position", self.justAngle,'\033[0m')
 			self.control_log1 = "adjust angle"
 			
-			self.frame = self.capture_with_timeout(5)
+			self.frame = self.capture_with_timeout(3)
 			self.cameraCount += 1
 			self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
 			cv2.imwrite(self.results_img_dir+f'/{self.cameraCount}.jpg',self.frame2)
@@ -1094,24 +1104,28 @@ class Cansat():
 			self.cam_pint = 10.5
 			while self.cam_pint > 3.0: #pint change start
 				# ~ print("pint:",self.cam_pint)
-				if self.ids is None:
-					self.flag_AR = False
-					self.cam_pint -= 0.5
-					# ~ print("pint:",self.cam_pint)
-					self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
-					self.frame = self.capture_with_timeout(5)
-					self.gray = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY) # グレースケールに変換
-					self.corners, self.ids, self.rejectedImgPoints = aruco.detectMarkers(self.gray, self.dictionary)
-					self.LostMarkerCount += 1
-					time.sleep(0.03)
-					if self.LostMarkerCount > ct.const.LOST_MARKER_THRE: 
-						self.releasing_state = 1
-						self.writeMissionlog_2("state back to look for AR")
-					
-				else:
-					self.LostMarkerCount = 0
-					self.flag_AR = True
-					break
+				try:
+					if self.ids is None:
+						self.flag_AR = False
+						self.cam_pint -= 0.5
+						# ~ print("pint:",self.cam_pint)
+						self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
+						self.frame = self.capture_with_timeout(3)
+						self.gray = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY) # グレースケールに変換
+						self.corners, self.ids, self.rejectedImgPoints = aruco.detectMarkers(self.gray, self.dictionary)
+						self.LostMarkerCount += 1
+						time.sleep(0.05)
+						self.state_error = 0
+						if self.LostMarkerCount > ct.const.LOST_MARKER_THRE: 
+							self.releasing_state = 1
+							self.writeMissionlog_2("state back to look for AR")
+						
+					else:
+						self.LostMarkerCount = 0
+						self.flag_AR = True
+						break
+				except:
+					self.state_error += 1
 					
 			if self.ids is not None:
 				if self.last_marker_num in self.ids and self.last_marker_num in [1,2,4,5]:
@@ -1154,7 +1168,7 @@ class Cansat():
 				self.writeMissionlog_2("just angle")
 				time.sleep(2)
 				# ~ self.writeMissionlog(4)
-				self.frame = self.capture_with_timeout(5)
+				self.frame = self.capture_with_timeout(3)
 				self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
 				cv2.imwrite(self.results_img_dir+f'/mission_{self.cameraCount}.jpg',self.frame2)
 				self.releasing_state = 3
@@ -1193,7 +1207,7 @@ class Cansat():
 		"""
 		if self.closing_state == 1:
 			print("'\033[44m'","6-1.Go to judgement",'\033[0m')
-			self.frame = self.capture_with_timeout(5)
+			self.frame = self.capture_with_timeout(3)
 			self.cameraCount += 1
 			self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
 			
@@ -1248,20 +1262,24 @@ class Cansat():
 				if ids is None: # color:true ar:false
 					cnt = 0
 					for pint in pint_list: #pint change start
-						if ids is None: # color:true ar:false
-							self.cam_pint = pint
-							print("pint:",self.cam_pint)
-							self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
-							frame = self.capture_with_timeout(5)
-							gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # グレースケールに変換
-							corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary)
-							cnt += 1
-							self.previous_pint = pint
-							time.sleep(0.03)
-						else:# color:true ar:true
-							self.flag_AR = True
-							cnt = 0
-							break
+						try:
+							if ids is None: # color:true ar:false
+								self.cam_pint = pint
+								print("pint:",self.cam_pint)
+								self.picam2.set_controls({"AfMode":0,"LensPosition":self.cam_pint})
+								frame = self.capture_with_timeout(3)
+								gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # グレースケールに変換
+								corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, self.dictionary)
+								cnt += 1
+								self.previous_pint = pint
+								time.sleep(0.05)
+								self.state_error = 0
+							else:# color:true ar:true
+								self.flag_AR = True
+								cnt = 0
+								break
+						except:
+							self.state_error += 1
 					cnt = 0
 				
 							
@@ -1452,7 +1470,7 @@ class Cansat():
 			"""
 			print("'\033[44m'","6-2.judgement",'\033[0m')
 			self.cameraCount += 1
-			self.frame = self.capture_with_timeout(5)
+			self.frame = self.capture_with_timeout(3)
 			self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
 			height = self.frame2.shape[0]
 			width = self.frame2.shape[1]
@@ -1630,15 +1648,21 @@ class Cansat():
 			st = time.time()
 			i=0
 			print("capture")
-			while time.time() - st < 7:	
-				self.frame = self.capture_with_timeout(5)
-				self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
-				imgs.append(self.frame2)
-				print("cap:",i)
-				i+=1
-			for i,frame in enumerate(imgs):
-				self.cameraCount += 1
-				cv2.imwrite(self.results_img_dir+f'/releace_{i}.jpg',frame)
+			try:
+				while time.time() - st < 7:	
+					self.frame = self.picam2.capture_array()
+					self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
+					imgs.append(self.frame2)
+					print("cap:",i)
+					i+=1
+			except:
+				print("capture error")
+			try:
+				for i,frame in enumerate(imgs):
+					self.cameraCount += 1
+					cv2.imwrite(self.results_img_dir+f'/releace_{i}.jpg',frame)
+			except:
+				print("save error")
 		else:
 			time.sleep(6) #継続時間を指定
 		GPIO.output(pin,0) #電圧をLOWにして焼き切りを終了する
@@ -1649,7 +1673,7 @@ class Cansat():
 				self.runningTime = time.time()
 		if self.camera_set:
 			self.cameraCount += 1
-			self.frame = self.capture_with_timeout(5)#0,self.results_img_dir+f'/{self.cameraCount}')
+			self.frame = self.capture_with_timeout(3)#0,self.results_img_dir+f'/{self.cameraCount}')
 			self.frame2 = cv2.rotate(self.frame,cv2.ROTATE_90_CLOCKWISE)
 			cv2.imwrite(self.results_img_dir+f'/{self.cameraCount}.jpg',self.frame2)
 			height = self.frame2.shape[0]
