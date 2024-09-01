@@ -281,12 +281,21 @@ class Cansat():
 		  + "AR : " + str(self.flag_AR).rjust(6)+ ","\
 		  + "Color : " + str(self.flag_COLOR).rjust(6)+ ","\
 		  + "sensor{CAM,BNO,BMP} : " +"{" + str(self.camera_set) + str(self.bno_set) + str(self.bmp_set) + "}"
+		
+		if self.distanceAR:
+			datalog = datalog +  "," + "distance est. : " + str(self.distanceAR).rjust(6)
+		else:
+			datalog =  datalog +  "," + "distance est. : " + "none"
 		print("-------",datalog,"\n-------")
+		
 		try:
 			with open(f'results/{self.startTime}/control_result.txt',"a")  as test: # [mode] x:ファイルの新規作成、r:ファイルの読み込み、w:ファイルへの書き込み、a:ファイルへの追記
 					test.write(datalog + '\n')
-		except:
-			print("\033[33m","===== save data error =====", "\033[0m")
+		except Exception as e:
+			print("\033[33m","===== save data error =====")
+			print(e, "\033[0m")
+		print("\033[42m",self.state_error,"\033[0m")
+			
 	def writeMissionlog_2(self, msg):
 		mission_log = f"time:{self.timer}, " + f"state:{self.state}, " + msg
 		# ex) msg = "separation done"
@@ -308,9 +317,11 @@ class Cansat():
 		except TimeoutError as e:
 			# タイムアウトエラーの詳細を表示
 			print(f"Error occurred: {e}")
+			self.state_error += 1
 			return None
 		except Exception as e:
 			# その他のエラーが発生した場合もエラー内容を表示
+			self.state_error += 1
 			print(f"An unexpected error occurred: {e}")
 			return None
 		finally:
@@ -333,10 +344,12 @@ class Cansat():
 				self.running()
 		except TimeoutError as e:
 			# タイムアウトエラーの詳細を表示
+			self.state_error += 1
 			print(f"Error occurred: {e}")
 			return None
 		except Exception as e:
 			# その他のエラーが発生した場合もエラー内容を表示
+			self.state_error += 1
 			print(f"An unexpected error occurred: {e}")
 			return None
 		finally:
@@ -370,7 +383,7 @@ class Cansat():
 				self.state_progress_manager(30,4)
 				pass
 			elif self.state == 5:
-				self.state_progress_manager(10,5)
+				self.state_progress_manager(15,5)
 			elif self.state == 6:
 				self.state_progress_manager(30,6)
 			elif self.state == 7:
@@ -381,9 +394,8 @@ class Cansat():
 				self.motor_test()
 			else:
 				self.state = self.laststate #どこにも引っかからない場合何かがおかしいのでlaststateに戻してあげる
-			self.state_error = 0
 		except:
-			self.state_error+=1
+			pass
 		# ==========================================================
 		if self.flag_AR:
 			print("\033[43m","AR:",self.flag_AR,f" r={self.distanceAR}","\033[0m")
@@ -1145,7 +1157,7 @@ class Cansat():
 			self.separation(ct.const.SEPARATION_MOD2,True)
 			# ~ self.writeMissionlog(5)
 			self.writeMissionlog_2("2nd module released")
-			time.sleep(5)
+			time.sleep(1)
 			self.BLUE_LED.led_off()
 			self.RED_LED.led_off()
 			self.GREEN_LED.led_off()
@@ -1597,6 +1609,7 @@ class Cansat():
 			time.sleep(6) #継続時間を指定
 		GPIO.output(pin,0) #電圧をLOWにして焼き切りを終了する
 		
+		
 	def running(self): # state = 7
 		print("'\033[44m'","7.running",'\033[0m')
 		if self.runningTime == 0:
@@ -1759,7 +1772,7 @@ class Cansat():
 			
 		
 		if tvec[0] > 0.03:
-			if self.nowangle >= 100:
+			if self.nowangle >= 150:
 				print("=@=@=servo: "+str(self.nowangle),">160")
 				self.unable_rotation_count += 1
 				print("\033[44m ===== +1 ===== \033[0m")
@@ -1774,7 +1787,7 @@ class Cansat():
 				self.servo.go_deg(self.nowangle)
 				print("=@=@=servo: "+str(self.nowangle),"B")
 		elif tvec[0] < -0.03:
-			if self.nowangle <= 20:
+			if self.nowangle <= 60:
 				print("=@=@=servo: "+str(self.nowangle),"<=30")
 				self.unable_rotation_count += 1
 				print("\033[44m ===== +1 ===== \033[0m")

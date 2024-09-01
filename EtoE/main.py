@@ -11,6 +11,7 @@ def load_values_from_file(filename):
     if os.path.exists(filename):
         with open(filename, "r") as file:
             lines = file.readlines()
+            print(lines)
             last_state = float(lines[0])
             return last_state
     else:
@@ -21,7 +22,7 @@ def load_values_from_file(filename):
 filename = "state_manager.txt"
 
 last_state = load_values_from_file(filename)
-start_state = 0
+start_state = 4
 end_state = 8
 
 sepa_mode  = False
@@ -44,9 +45,15 @@ try:
 		time.sleep(0.03)
 		try:
 			cansat.sequence()
-			if cansat.state_error>5:
+			if cansat.state_error > 5 and cansat.state < 7:
 				cansat.state = 7
-		except:
+			
+		except Exception as e:
+			cansat.state_error+=1
+			print("\033[33m")
+			print(cansat.state_error)
+			print("Exception")
+			print(e,"\033[0m")
 			pass
 		if cansat.state > end_state:
 			print("Finished")
