@@ -21,7 +21,7 @@ def load_values_from_file(filename):
 filename = "state_manager.txt"
 
 last_state = load_values_from_file(filename)
-start_state = 4
+start_state = 0
 end_state = 8
 
 sepa_mode  = False
