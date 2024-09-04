@@ -566,9 +566,9 @@ class Cansat():
 			self.servo.go_deg(70)
 			time.sleep(1)
 			for i in range(5):
-				self.cameraCount += 1
 				self.frame = self.picam2.capture_array()#0,self.results_img_dir+f'/{self.cameraCount}')
 				self.frame2 = cv2.rotate(self.frame ,cv2.ROTATE_90_CLOCKWISE)
+				self.cameraCount += 1
 				cv2.imwrite(self.results_img_dir+f'/left_{self.cameraCount}.jpg',self.frame2)
 				# 指定色のマスクを作成
 				mask_orange = self.color.mask_color(self.frame,ct.const.LOWER_ORANGE,ct.const.UPPER_ORANGE)
@@ -1725,7 +1725,7 @@ class Cansat():
 					self.running_finish = True
 					print(f"Goal Time: {self.goaltime}")
 					print("GOAAAAAAAAAL")
-					print("max_contour_area:",max_contour_area)
+					print("max_contour_area :",max_contour_area)
 					self.writeMissionlog_2(f"Finish Goal:{max_contour_area}")
 					self.control_log1 = "finish"
 					self.state = 8
