@@ -25,7 +25,7 @@ last_state = load_values_from_file(filename)
 start_state = 0
 end_state = 8
 
-sepa_mode  = True
+sepa_mode  = False
 error_cnt = 0
 
 
