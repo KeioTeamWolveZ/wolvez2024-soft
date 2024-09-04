@@ -1,13 +1,26 @@
 import cv2
 import cv2.aruco as aruco
 import numpy as np
+import tkinter as tk
+from tkinter import filedialog
 
 # 変更するパラメータ
 marker_len = 0.0165  # m
 goal_radius = 0.15  # m
 mtx = np.load('mtx.npy')
 dist = np.load('dist.npy')
-image = cv2.imread('jpg')
+
+# Tkinterウィンドウを非表示にする
+root = tk.Tk()
+root.withdraw()
+
+# ファイル選択ダイアログを表示
+file_path = filedialog.askopenfilename(filetypes=[("Image files", "*.jpg *.png")])
+if not file_path:
+    print("ファイルが選択されませんでした。")
+    exit()
+
+image = cv2.imread(file_path)
 
 # グローバル変数の定義
 ellipse_center = None
