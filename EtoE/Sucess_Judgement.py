@@ -7,7 +7,7 @@ marker_len = 0.0165  # m
 goal_radius = 0.15  # m
 mtx = np.load('mtx.npy')
 dist = np.load('dist.npy')
-image = cv2.imread('results//photo_15cm_0.jpg')
+image = cv2.imread('jpg')
 
 # グローバル変数の定義
 ellipse_center = None
