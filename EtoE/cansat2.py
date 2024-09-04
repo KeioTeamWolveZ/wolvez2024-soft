@@ -1717,6 +1717,19 @@ class Cansat():
 		else: # ゴールが見えていないとき -> GPS
 			self.flag_COLOR = False
 			if self.goaldis < ct.const.GOAL_DISTANCE_THRE:
+				if not self.camera_set:
+					self.motor1.stop()
+					self.motor2.stop()
+					self.control_log_rv, self.control_log_lv = 0, 0
+					self.goaltime = time.time()-self.runningTime
+					self.running_finish = True
+					print(f"Goal Time: {self.goaltime}")
+					print("GOAAAAAAAAAL")
+					print("max_contour_area:",max_contour_area)
+					self.writeMissionlog_2(f"Finish Goal:{max_contour_area}")
+					self.control_log1 = "finish"
+					self.state = 8
+					self.laststate = 8
 				# GPS的には近い位置だから旋回！今はその場回転
 				self.writeMissionlog_2("gps:goal, color:false")
 				self.motor1.go(motor_st_vref)
