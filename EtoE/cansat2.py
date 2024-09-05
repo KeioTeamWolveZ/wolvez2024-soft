@@ -44,7 +44,7 @@ from Wolvez2024_now.Ar_tools import Artools
 
 """
 class Cansat():
-	def __init__(self,state,sepa_mode):
+	def __init__(self,state,sepa_mode,time_rep):
 		
 		# ================================================ GPIO ================================================ 
 		GPIO.setwarnings(False)
@@ -161,6 +161,7 @@ class Cansat():
 		#loop
 		self.state5_loopCount_color = 1	
 		self.state5_loopCount_ar = 1
+		self.time_rep = time_rep ###############
 		# 評価
 		self.judge_cnt = 0
 		# スタック分類
@@ -733,9 +734,10 @@ class Cansat():
 			self.escapeTime = time.time()
 
 	def moving_release_position(self): # state = 5
-		if time.time() - self.firstTime >= ct.const.TIME_CONSTANT_1 and self.releasing_state == 1 and self.stuck_judgement == 0:
+		if time.time() - self.firstTime >= ct.const.TIME_CONSTANT_1 and self.stuck_judgement < self.time_rep: # and self.releasing_state == 1 はいったん抜いてます
 			self.stuck_detection()
-			self.stuck_judgement = 1
+			self.stuck_judgement += 1
+			self.firstTime = time.time()
 		#elif time.time() - self.firstTime >= ct.const.TIME_CONSTANT_2 and self.releasing_state == 1 and self.stuck_judgement == 1:
 		#	self.stuck_detection()
 		#	self.stuck_judgement = 2
