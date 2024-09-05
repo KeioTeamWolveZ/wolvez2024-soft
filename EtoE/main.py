@@ -27,6 +27,7 @@ end_state = 8
 
 sepa_mode  = False
 error_cnt = 0
+time_rep = 2
 
 
 if last_state != 999:
@@ -34,7 +35,7 @@ if last_state != 999:
 	
 
 try:	
-	cansat  = Cansat(start_state,sepa_mode)
+	cansat  = Cansat(start_state,sepa_mode,time_rep)
 	try:
 		cansat.sensor_setup()
 	except:
