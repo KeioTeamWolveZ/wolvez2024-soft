@@ -105,7 +105,8 @@ const.PREPARING_TIME_THRE = 10
 
 const.FLYING_FLIGHTPIN_COUNT_THRE = 10
 
-const.DROPPING_TIME_THRE = 60 #60
+const.DROPPING_TIME_THRE = 10 #60
+const.TIME_THRESHOLD_MASTER = 20
 const.DROPPING_ACC_COUNT_THRE = 20
 const.DROPPING_ACC_THRE = 0.018 #加速度の値 0.005
 const.DROPPING_PRESS_THRE = latest_pressure-200 # 気圧センサのカウンタ latest_pressure + 5m
