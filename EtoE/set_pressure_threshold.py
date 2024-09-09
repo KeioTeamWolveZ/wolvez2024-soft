@@ -4,6 +4,7 @@ import numpy as np
 
 sensor = BMP085.BMP085()
 log_file_path = 'pressure_threshold.txt'
+print("ctrl + c")
 
 while True:
 	temperature = sensor.read_temperature()

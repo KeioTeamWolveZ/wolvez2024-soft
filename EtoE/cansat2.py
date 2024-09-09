@@ -333,7 +333,7 @@ class Cansat():
 		signal.alarm(timeout_seconds)
 
 		try:
-			if state == 3:
+			if self.state == 3:
 				self.para_escaping()
 			elif state == 4:
 				self.first_releasing()
@@ -384,11 +384,11 @@ class Cansat():
 				self.state_progress_manager(30,4)
 				pass
 			elif self.state == 5:
-				self.state_progress_manager(15,5)
+				self.state_progress_manager(60,5)
 			elif self.state == 6:
-				self.state_progress_manager(30,6)
+				self.state_progress_manager(60,6)
 			elif self.state == 7:
-				self.state_progress_manager(30,7)
+				self.state_progress_manager(60,7)
 			elif self.state == 8:
 				self.finish()
 			elif self.state == 99:
@@ -523,7 +523,7 @@ class Cansat():
 					self.flight = False	
 			else:
 				self.countFlyLoop = 0 #何故かLOWだったときカウントをリセット
-				time.sleep(3)
+				time.sleep(30)
 			print("=====flying=====")
 		
 		self.writeMissionlog_2("flying")
@@ -1607,6 +1607,7 @@ class Cansat():
 				self.cameraCount += 1
 				cv2.imwrite(self.results_img_dir+f'/releace_{i}.jpg',frame)
 				print(self.results_img_dir+f'/releace_{i}.jpg')
+			self.state = 6
 		else:
 			time.sleep(6) #継続時間を指定
 		GPIO.output(pin,0) #電圧をLOWにして焼き切りを終了する
@@ -1779,6 +1780,20 @@ class Cansat():
 		    time.sleep(0.5)
 		    cv2.destroyAllWindows()
 		    sys.exit()
+		else:
+		    self.motor1.stop()
+		    self.motor2.stop()
+		    # ~ GPIO.output(ct.const.SEPARATION_PARA,0) #焼き切りが危ないのでlowにしておく
+		    # ~ GPIO.output(ct.const.SEPARATION_MOD1,0) #焼き切りが危ないのでlowにしておく
+		    # ~ GPIO.output(ct.const.SEPARATION_MOD2,0) #焼き切りが危ないのでlowにしておく
+		    self.RED_LED.led_off()
+		    self.BLUE_LED.led_off()
+		    self.GREEN_LED.led_off()
+		    self.picam2.stop()
+		    time.sleep(0.5)
+		    cv2.destroyAllWindows()
+		    sys.exit()
+			
 
 	def adjust_angle(self, tvec):
 		print(f"\033[33m", f"adjust angle : tvec = {tvec}", "\033[0m")	

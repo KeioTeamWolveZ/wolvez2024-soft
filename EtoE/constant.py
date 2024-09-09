@@ -82,8 +82,8 @@ const.FLIGHTPIN_PIN = 4
 
 ## Variables
 # Goal information
-const.GPS_GOAL_LAT = 40.142308  # 南緯は負の値で与える
-const.GPS_GOAL_LON = 139.987503 # 西経は負の値で与える
+const.GPS_GOAL_LAT = 40.883655  # 南緯は負の値で与える
+const.GPS_GOAL_LON = 119.119593 # 西経は負の値で与える
 const.GOAL_DISTANCE_THRE = 0.0005 # [km] (50 [cm])
 const.GOAL_COLOR_THRE = 700000 # 色認識によって認識して，ゴール判定を行う面積（要調整）
 
@@ -93,7 +93,7 @@ const.RELEASING_MOTOR_VREF = 50
 const.RUNNING_MOTOR_VREF = 100
 const.STUCK_MOTOR_VREF = 100
 
-const.SURFACE_GAIN = 1.2
+const.SURFACE_GAIN = 0.85
 
 # # State Threshold
 const.TIME_CONSTANT_1 = 300
@@ -105,10 +105,10 @@ const.PREPARING_TIME_THRE = 10
 
 const.FLYING_FLIGHTPIN_COUNT_THRE = 10
 
-const.DROPPING_TIME_THRE = 10 #60
-const.TIME_THRESHOLD_MASTER = 20
+const.DROPPING_TIME_THRE = 60 #60
+const.TIME_THRESHOLD_MASTER = 180
 const.DROPPING_ACC_COUNT_THRE = 20
-const.DROPPING_ACC_THRE = 0.018 #加速度の値 0.005
+const.DROPPING_ACC_THRE = 0.05 #加速度の値 0.005
 const.DROPPING_PRESS_THRE = latest_pressure-200 # 気圧センサのカウンタ latest_pressure + 5m
 const.DROPPING_PRESS_COUNT_THRE = 20 # 気圧センサのカウンタ
 

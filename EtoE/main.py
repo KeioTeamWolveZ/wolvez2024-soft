@@ -27,7 +27,7 @@ end_state = 8
 
 sepa_mode  = False
 error_cnt = 0
-time_rep = 2
+time_rep = 5
 
 
 if last_state != 999:
