@@ -132,7 +132,7 @@ const.CLOSING_RANGE_THRE = 0.05
 const.CLOSING_RANGE_THRE2 = 0.3
 const.CLOSING_RANGE_THRE_2 = 0.1
 
-const.SEPARATION_TIME_THRE = 5 #焼き切り時間
+const.SEPARATION_TIME_THRE = 7 #焼き切り時間
 const.LANDING_MOTOR_TIME_THRE = 10 #分離シートから離れるためにモータを回転させる時間
 # const.RELEASING_MOTOR_TIME_THRE = 0.7 #放出と放出の間にモータを回転させる時間
 # const.TURNING_MOTOR_TIME_THRE = 1.5 #turning time after the end of second-releasing

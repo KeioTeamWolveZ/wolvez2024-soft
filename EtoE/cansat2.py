@@ -1295,7 +1295,7 @@ class Cansat():
 						# ~ print("======",distance_of_marker)
 						
 						self.control_log1 = "closing"
-						if distance_of_marker >= 0.30 + self.CLOSING_RANGE_THRE:
+						if distance_of_marker >= 0.30 + self.CLOSING_RANGE_THRE + 0.5:
 							if tvec[0] >= 0.1:
 								turn_gain = 5*((self.closing_threshold + self.CLOSING_RANGE_THRE)/(distance_of_marker))**2
 								# ~ print("---右に曲がります---")
@@ -1316,11 +1316,11 @@ class Cansat():
 								
 
 						elif distance_of_marker >= 0.2:
-							if tvec[0] >= 0.08:
+							if tvec[0] >= 0.2:
 								# ~ print("---時計周り---")
 								self.motor_control(65*ct.const.SURFACE_GAIN,-65*ct.const.SURFACE_GAIN,0.4)
 					
-							elif tvec[0] <= -0.08:
+							elif tvec[0] <= -0.2:
 								# ~ print("---反時計周り---")
 								self.motor_control(-65*ct.const.SURFACE_GAIN,65*ct.const.SURFACE_GAIN,0.4)
 							
@@ -1410,6 +1410,8 @@ class Cansat():
 						self.last_pos = "Plan_A"
 						self.k += 1
 						# ~ print(self.k)
+				time.sleep(1)
+				self.closing_state = 2
 			self.BLUE_LED.led_off()
 			self.GREEN_LED.led_off()
 		elif self.closing_state == 2:
