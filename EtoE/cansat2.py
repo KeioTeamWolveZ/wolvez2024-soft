@@ -1026,8 +1026,8 @@ class Cansat():
 								self.control_log1 = "explore"
 								self.turn_cnt += 1 
 						print("+*+*+*+*",self.turn_cnt,"+*+*+*+*")
-						if self.turn_cnt > 10:
-							self.motor_control(70*ct.const.SURFACE_GAIN,70*ct.const.SURFACE_GAIN,1)
+						if self.turn_cnt > 12:
+							self.motor_control(70*ct.const.SURFACE_GAIN,70*ct.const.SURFACE_GAIN,0.7)
 							self.turn_cnt = 0
 							print("!!!!!!!!!!!!!!!!!!!!!!!")
 
