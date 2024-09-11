@@ -105,8 +105,8 @@ const.PREPARING_TIME_THRE = 10
 
 const.FLYING_FLIGHTPIN_COUNT_THRE = 10
 
-const.DROPPING_TIME_THRE = 60 #60
-const.TIME_THRESHOLD_MASTER = 180
+const.DROPPING_TIME_THRE = 1200 #60
+const.TIME_THRESHOLD_MASTER = 1800
 const.DROPPING_ACC_COUNT_THRE = 20
 const.DROPPING_ACC_THRE = 0.05 #加速度の値 0.005
 const.DROPPING_PRESS_THRE = latest_pressure-200 # 気圧センサのカウンタ latest_pressure + 5m
@@ -132,7 +132,7 @@ const.CLOSING_RANGE_THRE = 0.05
 const.CLOSING_RANGE_THRE2 = 0.3
 const.CLOSING_RANGE_THRE_2 = 0.1
 
-const.SEPARATION_TIME_THRE = 7 #焼き切り時間
+const.SEPARATION_TIME_THRE = 6 #焼き切り時間
 const.LANDING_MOTOR_TIME_THRE = 10 #分離シートから離れるためにモータを回転させる時間
 # const.RELEASING_MOTOR_TIME_THRE = 0.7 #放出と放出の間にモータを回転させる時間
 # const.TURNING_MOTOR_TIME_THRE = 1.5 #turning time after the end of second-releasing

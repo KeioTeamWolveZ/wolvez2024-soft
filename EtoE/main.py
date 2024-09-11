@@ -22,10 +22,10 @@ def load_values_from_file(filename):
 filename = "state_manager.txt"
 
 last_state = 999#load_values_fromc_file(filename)
-start_state = 6
+start_state = 0
 end_state = 8
 
-sepa_mode  = True
+sepa_mode  = False
 error_cnt = 0
 time_rep = 5
 

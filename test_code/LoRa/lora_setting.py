@@ -40,7 +40,7 @@ class LoraSettingClass:
         # LoRa(ES920LR)設定
 #         print("setting up lora")
         print("##### debug ROI start #####")
-        set_mode=['1','d','15','e','0001','f','0002','g','0001','n','2','l','2','p','1','y','z']
+        set_mode=['1','d','10','e','0001','f','0002','g','0001','n','2','l','2','p','1','y','z']
         self.set_mode = set_mode
         print("##### debug ROI end #####")
         
